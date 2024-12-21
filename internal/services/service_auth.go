@@ -1,0 +1,79 @@
+package services
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"real-time-forum/internal/models"
+	"real-time-forum/internal/repositories"
+
+	"github.com/gofrs/uuid/v5"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type AuthService struct {
+	UserRepo *repositories.UserRepository
+}
+
+func HashPassword(psswd string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(psswd), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func (a *AuthService) Register(info models.SignUpData) error {
+	checkByEmail, err := a.UserRepo.FindUser(info.Email, "byEmail")
+	if checkByEmail != nil {
+		return fmt.Errorf("email")
+	}
+	if err != nil {
+		return fmt.Errorf("user")
+	}
+
+	hash, err := HashPassword(info.Passwd)
+	if err != nil {
+		return err
+	}
+	nAge, _ := strconv.Atoi(info.Age)
+	user_id := uuid.Must(uuid.NewV4())
+	user := &models.User{
+		ID:           user_id,
+		Age:          nAge,
+		Gender:       info.Gender,
+		FirstName:    info.FirstName,
+		LastName:     info.LastName,
+		Username:     info.Username,
+		Email:        info.Email,
+		PasswordHash: hash,
+	}
+	return a.UserRepo.Create(user)
+}
+
+func (a *AuthService) Login(emailOrUSername, password string) (*models.User, error) {
+	var userByEmail *models.User
+	var err error
+	if strings.Contains(emailOrUSername, "@") {
+		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byEmail")
+	} else {
+		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byUserName")
+	}
+
+	if userByEmail == nil || err != nil {
+		return nil, fmt.Errorf("in email or username")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(userByEmail.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, err
+	}
+
+	return userByEmail, nil
+}
+
+func (a *AuthService) GetUserBySessionID(sessionID string) (*models.User, error) {
+	user, err := a.UserRepo.GetUserBySessionID(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
