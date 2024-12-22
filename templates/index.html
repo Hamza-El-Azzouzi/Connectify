@@ -8,16 +8,19 @@
 </head>
 <body>
     <div id="app">
-        <!-- <div id="navbar">
-            <button onclick="navigateTo('feed')">Feed</button>
-            <button onclick="navigateTo('create-post')">Create Post</button>
-            <button onclick="navigateTo('private-messages')">Messages</button>
-            <button onclick="logout()">Logout</button>
-        </div> -->
+        <div id="navbar">
+            <button class="navFed" data-page="feed">Feed</button>
+            <button data-page="create-post">Create Post</button>
+            <button data-page="private-messages">Messages</button>
+            <button id="logout-button">Logout</button>
+            <button data-page="login">login</button>
+        </div>
         <div id="main-content">
             <!-- Content will be dynamically loaded here -->
         </div>
     </div>
-    <script type="module" src="/static/js//app.js" defer></script>
+    
+    <script type="module" src="/static/js/app.js" defer>
+    </script>
 </body>
 </html>
