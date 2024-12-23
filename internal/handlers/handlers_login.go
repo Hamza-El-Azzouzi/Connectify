@@ -35,12 +35,14 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 		}
+		fmt.Println(info)
 		if !h.AuthMidlaware.IsValidGender(info.Gender) ||
 			!h.AuthMidlaware.IsValidAge(info.Age) ||
 			!h.AuthMidlaware.IsValidEmail(info.Email) ||
 			!h.AuthMidlaware.IsValidName(info.Username) ||
 			!h.AuthMidlaware.IsValidPassword(info.Passwd) ||
 			!h.AuthMidlaware.IsmatchPassword(info.Passwd, info.ConfirmPasswd) {
+				fmt.Println("er")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

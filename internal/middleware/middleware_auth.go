@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -44,7 +45,9 @@ func (h *AuthMiddleware) IsValidEmail(email string) bool {
 	return isValid
 }
 func (h *AuthMiddleware) IsValidGender(gender string) bool {
+	
 	if gender == "Male" || gender == "Female" {
+		fmt.Println(gender)
 		return true
 	}
 	return false
@@ -54,16 +57,19 @@ func (h *AuthMiddleware) IsValidAge(age string) bool {
 	if err != nil || nAge < 16 || nAge > 120 {
 		return false
 	}
+	fmt.Println(age)
 	return true
 }
 
 func (h *AuthMiddleware) IsValidName(username string) bool {
 	isValid, _ := regexp.MatchString(ExpName, username)
+	fmt.Println("email",isValid)
 	return isValid
 }
 
 func (h *AuthMiddleware) IsmatchPassword(password string, confirmPassword string) bool {
 	match := password == confirmPassword
+	fmt.Println("passw",match)
 	return match
 }
 
@@ -75,5 +81,6 @@ func (h *AuthMiddleware) IsValidPassword(password string) bool {
 			return false
 		}
 	}
+	fmt.Println("matched ")
 	return true
 }
