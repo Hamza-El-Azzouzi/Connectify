@@ -13,15 +13,15 @@ export function loginPage() {
         <form class="singUpForm">
             <h1>Create Account</h1>
             <input type="text" name = "first_name" placeholder="First Name">
-             <p id="firstNameErr"></p>
+             <p id="firstNameErr" class="err"></p>
             <input type="text" name = "last_name" placeholder="Last Name">
-             <p id="lastNameErr"></p>
+             <p id="lastNameErr" class="err"></p>
             <input type="text" name = "user_name" placeholder="User Name">
-             <p id="nameErr"></p>
-            <input type="email" name = "email" placeholder="Email">
-             <p id="emailErr"></p>
+             <p id="nameErr" class="err"></p>
+            <input type="text" name = "email" placeholder="Email">
+             <p id="emailErr" class="err"></p>
             <input type="text" name = "age" placeholder="Age">
-             <p id="ageErr"></p>
+             <p id="ageErr" class="err"></p>
             <div class="radio-group">
                 <label>
                     <input type="radio" name="gender" value="Male"> Male
@@ -30,11 +30,11 @@ export function loginPage() {
                     <input type="radio" name="gender" value="Female"> Female
                 </label>
             </div>
-             <p id="genderErr"></p>
+             <p id="genderErr" class="err"></p>
             <input type="password" name="password" placeholder="Password">
-             <p id="passwdErr1st"></p>
+             <p id="passwdErr1st" class="err"></p>
              <input type="password" name="confirmepassword" placeholder="Confirme Password">
-              <p id="confirmPasswdErr"></p>
+              <p id="confirmPasswdErr" class="err"></p>
                <input type="submit" value="Continue">
   
         </form>
@@ -51,7 +51,9 @@ export function loginPage() {
             <h1>Sign In</h1>
             <span>or use your email password</span>
              <input type="text" name ="emailOrUSername" placeholder="Email Or Username">
+              <p id="emailErrSignIn" class="err"></p>
            <input type="password" name="password" placeholder="Password">
+           <p id="passwdErr1stSigIn" class="err"></p>
            <input type="submit" value="Sign In">
         </form>
     `;
@@ -98,202 +100,252 @@ export function loginPage() {
 
 
 
+let ErrMessageFistName = null
+let ErrMessageLastName = null
+let ErrMessageName = null
+let ErrMessageEmail = null
+let ErrMessageAge = null
+let ErrMessageEmailSignIn= null
+let ErrMessageGender = null
+let ErrMessagePasswd1st = null
+let ErrMessagePasswd1stSignIn = null
+let ErrMessageConfirmPasswd = null
+let first_name = null
+let last_name = null
+let user_name = null
+let age = null
+let email = null
+let emailOrUSername = null
+let gender = null
+let password = null
+let confirmepassword = null
 
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    ErrMessageFistName = document.getElementById("firstNameErr")
+    ErrMessageLastName = document.getElementById("lastNameErr")
+    ErrMessageName = document.getElementById("nameErr")
+
+    ErrMessageEmail = document.getElementById("emailErr")
+    ErrMessageEmailSignIn = document.getElementById("emailErrSignIn")
+    ErrMessageAge = document.getElementById("ageErr")
+    ErrMessageGender = document.getElementById('genderErr')
+    ErrMessagePasswd1st = document.getElementById('passwdErr1st')
+    ErrMessagePasswd1stSignIn  = document.getElementById('passwdErr1stSigIn')
+    ErrMessageConfirmPasswd = document.getElementById('confirmPasswdErr')
+    first_name = document.querySelector("input[name='first_name']")
+    last_name = document.querySelector("input[name='last_name']")
+    user_name = document.querySelector("input[name='user_name']")
+    age = document.querySelector("input[name='age']")
+    email = document.querySelector("input[name='email']")
+    emailOrUSername = document.querySelector("input[name='emailOrUSername']")
+    gender = document.querySelector("input[name='gender']")
+    password = document.querySelector("input[name='password']")
+    confirmepassword = document.querySelector("input[name='confirmepassword']")
+})
 
 const Err = document.getElementById("otherErr")
 
 const ExpUserName = /^[a-zA-Z0-9_.]{3,20}$/
 const ExpName = /^[a-zA-Z]{3,20}$/
-const ExpAge = /^[1-9]{1,3}$/
+const ExpAge = /^(1[6-9]|[2-9][0-9]|1[01][0-9]|120)$/;
 const ExpEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const ExpPasswd = /^(?=(.*[a-z]))(?=(.*[A-Z]))(?=(.*[0-9]))(?=(.*[^a-zA-Z0-9]))(.{8,20})$/
 
-const InvalidPsswd = () => {
-    ErrMessagePasswd1st.innerHTML = `<h4 style="text-align: center">--------Password Requirements--------</h4>
-    <ul>
-        <li>At least one <strong>lowercase letter</strong> (a-z)</li>
-        <li>At least one <strong>uppercase letter</strong> (A-Z)</li>
-        <li>At least one <strong>digit</strong> (0-9)</li>
-        <li>At least one <strong>special character</strong> (anything not a letter or a digit)</li>
-        <li>Password must be at least <strong>8 characters long</strong></li>
-    </ul>`
-    ErrMessagePasswd1st.style.textAlign = "left"
-    ErrMessagePasswd1st.style.color = "red"
-    ErrMessagePasswd1st.style.marginTop = "0px"
-}
+// const InvalidPsswd = () => {
+//     ErrMessagePasswd1st.innerHTML = `<h4 style="text-align: center">--------Password Requirements--------</h4>
+//     <ul>
+//         <li>At least one <strong>lowercase letter</strong> (a-z)</li>
+//         <li>At least one <strong>uppercase letter</strong> (A-Z)</li>
+//         <li>At least one <strong>digit</strong> (0-9)</li>
+//         <li>At least one <strong>special character</strong> (anything not a letter or a digit)</li>
+//         <li>Password must be at least <strong>8 characters long</strong></li>
+//     </ul>`
+//     ErrMessagePasswd1st.style.textAlign = "left"
+//     ErrMessagePasswd1st.style.color = "red"
+//     ErrMessagePasswd1st.style.marginTop = "0px"
+// }
 const InvalidFirstName = "Invalid First Name!!"
 const InvalidLastName = "Invalid Last Name!!"
 const InvalidEmail = "Invalid Email!!"
 const InvalidAge = "Invalid Age!!"
 const InvalidGender = "Invalid Gender!!"
 const InvalidName = "Invalid Name!!"
+const InvalidPassWord = "Inavli Password!!"
 const NotMatch = "Password Confirmation doesn't match!!"
 const VerifyData = () => {
     let exist = false
-    document.addEventListener("DOMContentLoaded", () => {
-        const ErrMessageFistName = document.getElementById("firstNameErr")
-        const ErrMessageLastName = document.getElementById("lastNameErr")
-        const ErrMessageName = document.getElementById("nameErr")
+    ErrMessageFistName.textContent = ""
+    ErrMessageLastName.textContent = ""
+    ErrMessageName.textContent = ""
+    ErrMessageEmail.textContent = ""
+    ErrMessageAge.textContent = ""
+    ErrMessageGender.textContent = ""
+    ErrMessageConfirmPasswd.textContent = ""
+    ErrMessagePasswd1st.textContent = ""
 
-        const ErrMessageEmail = document.getElementById("emailErr")
-        const ErrMessageAge = document.getElementById("ageErr")
-        const ErrMessageGender = document.getElementById('genderErr')
+    if (!ExpName.test(first_name.value)) {
+        ErrMessageFistName.textContent = InvalidFirstName
 
-        const ErrMessagePasswd1st = document.getElementById("passwdErr1st")
-        const ErrMessageConfirmPasswd = document.getElementById('confirmPasswdErr')
-        ErrMessageFistName.textContent = ""
-        ErrMessageLastName.textContent = ""
-        ErrMessageName.textContent = ""
-        ErrMessageEmail.textContent = ""
-        ErrMessageAge.textContent = ""
-        ErrMessageGender.textContent = ""
-        ErrMessageConfirmPasswd.textContent = ""
-        ErrMessagePasswd1st.textContent = ""
-        Err.textContent = ""
+        exist = true
+    }
 
-        switch (true) {
-            case (!ExpName.test(first_name.value)):
-                Error(ErrMessageFistName, InvalidFirstName)
-                exist = true
-                break
-            case (!ExpName.test(last_name.value)):
-                Error(ErrMessageName, InvalidLastName)
-                exist = true
-                break
+    if (!ExpName.test(last_name.value)) {
+        ErrMessageLastName.textContent = InvalidLastName
 
-            case (gender.value !== "Male" || gender.value !== "Female"):
-                Error(ErrMessageName, InvalidGender)
-                exist = true
-                break
-            case (!ExpAge.test(age.value)):
-                Error(ErrMessageName, InvalidAge)
-                exist = true
-                break
-            case (!ExpUserName.test(user_name.value)):
-                Error(ErrMessageName, InvalidName)
-                exist = true
-                break
-            case (!ExpEmail.test(email.value)):
-                Error(ErrMessageEmail, InvalidEmail)
-                exist = true
-                break
-            case (!ExpPasswd.test(password.value)):
-                InvalidPsswd()
-                exist = true
-                break
-            case (password.value !== confirmepassword.value):
-                Error(ErrMessageConfirmPasswd, NotMatch)
-                exist = true
-        }
-        return exist
-    })
+        exist = true
+    }
+
+    if (gender.value !== "Male" && gender.value !== "Female") {
+        ErrMessageGender.textContent = InvalidGender
+
+        exist = true
+    }
+
+    if (!ExpAge.test(age.value)) {
+        ErrMessageAge.textContent = InvalidAge
+        exist = true
+    }
+
+
+    if (!ExpUserName.test(user_name.value)) {
+        ErrMessageName.textContent = InvalidName
+
+        exist = true
+    }
+
+
+    if (!ExpEmail.test(email.value)) {
+        console.log("email")
+        ErrMessageEmail.textContent = InvalidEmail
+
+        exist = true
+    }
+
+
+    if (!ExpPasswd.test(password.value)) {
+        console.log("password")
+        ErrMessagePasswd1st.textContent = InvalidPassWord
+        exist = true
+    }
+
+
+    if (password.value !== confirmepassword.value) {
+        console.log("confirm")
+        ErrMessagePasswd1st.textContent = NotMatch
+        //
+        exist = true
+    }
+
+    return exist
+
 
 }
+function VerifyLogin() {
+    console.log("tt")
+    let exist = false
+    let emailOrUSernameValue = emailOrUSername.value
+    let passwordValue = password.value
+    ErrMessageEmailSignIn.textContent = ""
+    ErrMessagePasswd1stSignIn.textContent = ""
+    if (emailOrUSernameValue.length === 0) {
+        ErrMessageEmailSignIn.textContent = "Invalid Email Or User Name"
+        console.log("f")
+        exist = true
+    }
+    if (passwordValue.length === 0) {
+        ErrMessagePasswd1stSignIn.textContent = "Invalid PassWord"
+        exist = true
+    }
+    return exist
+}
 document.addEventListener("DOMContentLoaded", () => {
-    const first_name = document.querySelector("input[name='first_name']")
-    const last_name = document.querySelector("input[name='last_name']")
-    const user_name = document.querySelector("input[name='user_name']")
-    const age = document.querySelector("input[name='age']")
-    const email = document.querySelector("input[name='email']")
-    const emailOrUSername = document.querySelector("input[name='emailOrUSername']")
-    const gender = document.querySelector("input[name='gender']")
-    const password = document.querySelector("input[name='password']")
-    const confirmepassword = document.querySelector("input[name='confirmepassword']")
-    const form = document.querySelector(".singUpForm");
-    const formSignIn = document.querySelector(".singInForm");
+    let form = document.querySelector(".singUpForm");
+    let formSignIn = document.querySelector(".singInForm");
+    if (form) {
+        form.action = "/api/register";
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
 
-    form.action = "/api/register";
-    formSignIn.action = "/api/login"
-    // Attach submit event listener
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        if (!VerifyData()) {
-            fetch("/api/register", {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                method: "POST",
-                body: JSON.stringify({
-                    username: user_name.value,
-                    age: age.value,
-                    gender: gender.value,
-                    first_name: first_name.value,
-                    last_name: last_name.value,
-                    email:email.value,
-                    password:password.value,
-                    confirmPassword: confirmepassword.value,
-                }),
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to submit data");
-                    }
-                    return response.json();
+            if (!VerifyData()) {
+                fetch("/api/register", {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        username: user_name.value,
+                        age: age.value,
+                        gender: gender.value,
+                        first_name: first_name.value,
+                        last_name: last_name.value,
+                        email: email.value,
+                        password: password.value,
+                        confirmPassword: confirmepassword.value,
+                    }),
                 })
-                .then((reply) => {
-                    switch (true) {
-                        case reply.REplyMssg === "session":
-                            Error(Err, "You already have an active session");
-                            break;
-                        case reply.REplyMssg === "Done":
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((reply) => {
+                        console.log(reply)
+
+                        if (reply.REplyMssg === "Done") {
                             console.log("Registered successfully");
                             NavigateTo("feed")
-                            // Uncomment to redirect
-                            // window.location.href = "/login";
-                            break;
-                        case reply.REplyMssg === "email":
-                            Error(ErrMessageEmail, "Email already exists!");
-                            break;
-                        case reply.REplyMssg === "user":
-                            Error(ErrMessageName, "Username already exists!");
-                            break;
-                        case reply.REplyMssg === "passwd":
-                            Error(ErrMessagePasswd1st, "Password too long!");
-                            break;
-                        case reply.REplyMssg === "notMatch":
-                            Error(ErrMessageConfirmPasswd, NotMatch);
-                            break;
-                        case reply.REplyMssg === "password":
-                            Error(ErrMessagePasswd1st, "Password too long!");
-                            break;
-                        default:
-                            Error(Err, "An unknown error occurred.");
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error:", error);
-                    Error(Err, "Failed to register. Please try again later.");
-                });
-        }
-    });
-    formSignIn.addEventListener("submit", (event) => {
+                        }
+                        if (reply.REplyMssg === "email") {
 
-        event.preventDefault()
-        VerifyData()
-    
-        fetch("/api/login", {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: password.value, })
+                            ErrMessageEmail.textContent = "Email already exists!"
+                        }
+                        if (reply.REplyMssg === "user") {
+
+                            ErrMessageName.textContent = "Username already exists!"
+                        }
+                        if (reply.REplyMssg === "passwd") {
+
+                            ErrMessagePasswd1st.textContent = "Password too long!"
+                        }
+
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        Error(Err, "Failed to register. Please try again later.");
+                    });
+            }
+        });
+    }
+    if (formSignIn) {
+        formSignIn.action = "/api/login"
+        formSignIn.addEventListener("submit", (event) => {
+
+            event.preventDefault()
+            console.log(formSignIn)
+            if (!VerifyLogin()) {
+                fetch("/api/login", {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: password.value, })
+                }).then(response => response.json())
+                    .then(reply => {
+                        switch (true) {
+                            case (reply.REplyMssg == "Done"):
+                                NavigateTo("feed")
+                                break
+                            case (reply.REplyMssg == "email"):
+
+                                ErrMessageEmail.textContent = "email not found!!, create an account"
+                                break
+                            case (reply.REplyMssg == "passwd"):
+                                ErrMessagePasswd1st.textContent = "incorrect Password!!, Try Again"
+                        }
+                    })
+            }
+
+
         })
-            .then(response => response.json())
-            .then(reply => {
-                switch (true) {
-                    case (reply.REplyMssg == "Done"):
-                        NavigateTo("feed")
-                        break
-                    case (reply.REplyMssg == "already logged in"):
-                        Error(Err, "there is another account logged in")
-                        break
-                    case (reply.REplyMssg == "email"):
-                        Error(ErrMessageEmail, "email not found!!, create an account")
-                        break
-                    case (reply.REplyMssg == "passwd"):
-                        Error(ErrMessagePasswd, "incorrect Password!!, TRy again")
-                }
-            })
-    })
+    }
 });

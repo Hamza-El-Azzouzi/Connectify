@@ -1,16 +1,21 @@
 // Import modules for dynamic components
 // import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
+var cookie = document.cookie
 const app = document.getElementById("main-content");
 
 // Manage navigation
 export function NavigateTo(page) {
+    // const cookie = document.cookie
+    // console.log(cookie)
     switch (page) {
         case 'login':
             app.innerHTML = '';
-            loginPage();
+            loginPage()
+
             break;
         case 'feed':
+            console.log(cookie)
             app.innerHTML = '';
             app.innerHTML = '<h2>feed page</h2>';
             break;
@@ -28,7 +33,13 @@ document.getElementById("navbar").addEventListener("click", (e) => {
 
 
 
-NavigateTo('login');
+// console.log(cookie)
+if (cookie.includes("sessionId")) {
+    NavigateTo('feed');
+} else {
+    NavigateTo('login');
+}
+
 
 // const btnfed = document.querySelector(".navFed")
 // btnfed.addEventListener("click",{

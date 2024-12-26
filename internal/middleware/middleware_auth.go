@@ -47,14 +47,13 @@ func (h *AuthMiddleware) IsValidEmail(email string) bool {
 func (h *AuthMiddleware) IsValidGender(gender string) bool {
 	
 	if gender == "Male" || gender == "Female" {
-		fmt.Println(gender)
 		return true
 	}
 	return false
 }
 func (h *AuthMiddleware) IsValidAge(age string) bool {
 	nAge ,err :=strconv.Atoi(age)
-	if err != nil || nAge < 16 || nAge > 120 {
+	if err != nil || nAge <= 16 || nAge > 120 {
 		return false
 	}
 	fmt.Println(age)

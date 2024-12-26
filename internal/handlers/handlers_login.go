@@ -42,7 +42,6 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 			!h.AuthMidlaware.IsValidName(info.Username) ||
 			!h.AuthMidlaware.IsValidPassword(info.Passwd) ||
 			!h.AuthMidlaware.IsmatchPassword(info.Passwd, info.ConfirmPasswd) {
-				fmt.Println("er")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -128,7 +127,7 @@ func SetCookies(w http.ResponseWriter, name, value string, expires time.Time) {
 		Value:    value,
 		Path:     "/",
 		Expires:  expires,
-		HttpOnly: true,
+		HttpOnly: false,
 	}
 
 	http.SetCookie(w, cookie)
