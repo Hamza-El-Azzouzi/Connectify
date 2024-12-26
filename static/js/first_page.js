@@ -1,3 +1,4 @@
+import { NavigateTo } from "./app.js";
 export function loginPage() {
     const app = document.getElementById("main-content");
     const container = document.createElement('div');
@@ -46,13 +47,12 @@ export function loginPage() {
     signInForm.className = 'form-container sign-in';
 
     const signInFormContent = `
-        <form>
+        <form class="singInForm">
             <h1>Sign In</h1>
             <span>or use your email password</span>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Password">
-            <a href="#">Forget Your Password?</a>
-            <button>Sign In</button>
+             <input type="text" name ="emailOrUSername" placeholder="Email Or Username">
+           <input type="password" name="password" placeholder="Password">
+           <input type="submit" value="Sign In">
         </form>
     `;
     signInForm.innerHTML = signInFormContent;
@@ -195,13 +195,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const user_name = document.querySelector("input[name='user_name']")
     const age = document.querySelector("input[name='age']")
     const email = document.querySelector("input[name='email']")
+    const emailOrUSername = document.querySelector("input[name='emailOrUSername']")
     const gender = document.querySelector("input[name='gender']")
     const password = document.querySelector("input[name='password']")
     const confirmepassword = document.querySelector("input[name='confirmepassword']")
     const form = document.querySelector(".singUpForm");
+    const formSignIn = document.querySelector(".singInForm");
 
     form.action = "/api/register";
-
+    formSignIn.action = "/api/login"
     // Attach submit event listener
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -236,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             break;
                         case reply.REplyMssg === "Done":
                             console.log("Registered successfully");
+                            NavigateTo("feed")
                             // Uncomment to redirect
                             // window.location.href = "/login";
                             break;
@@ -264,4 +267,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
     });
+    formSignIn.addEventListener("submit", (event) => {
+
+        event.preventDefault()
+        VerifyData()
+    
+        fetch("/api/login", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: password.value, })
+        })
+            .then(response => response.json())
+            .then(reply => {
+                switch (true) {
+                    case (reply.REplyMssg == "Done"):
+                        NavigateTo("feed")
+                        break
+                    case (reply.REplyMssg == "already logged in"):
+                        Error(Err, "there is another account logged in")
+                        break
+                    case (reply.REplyMssg == "email"):
+                        Error(ErrMessageEmail, "email not found!!, create an account")
+                        break
+                    case (reply.REplyMssg == "passwd"):
+                        Error(ErrMessagePasswd, "incorrect Password!!, TRy again")
+                }
+            })
+    })
 });
