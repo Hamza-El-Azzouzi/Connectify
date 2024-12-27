@@ -187,7 +187,7 @@ func (p *PostHandler) DetailsPost(w http.ResponseWriter, r *http.Request) {
 
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.Error(w, http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	var commentData models.CommentData
@@ -198,7 +198,7 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if err != nil {
-		utils.Error(w, http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	isLogged, userId := p.AuthMidlaware.IsUserLoggedIn(w, r)
@@ -218,7 +218,7 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	}
 	comment, err := p.CommentService.GetCommentByPost(commentData.PostId, 0)
 	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -280,7 +280,7 @@ func (p *PostHandler) PostFilter(w http.ResponseWriter, r *http.Request) {
 
 func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	var err error
@@ -288,12 +288,12 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	pagination := r.URL.Query().Get("offset")
 	nPagination, err := strconv.Atoi(pagination)
 	if err != nil {
-		utils.Error(w, http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	comment, err := p.CommentService.GetCommentByPost(postID, nPagination)
 	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
