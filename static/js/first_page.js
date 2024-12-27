@@ -52,7 +52,7 @@ export function loginPage() {
             <span>or use your email password</span>
              <input type="text" name ="emailOrUSername" placeholder="Email Or Username">
               <p id="emailErrSignIn" class="err"></p>
-           <input type="password" name="password" placeholder="Password">
+           <input type="password" name="passwordSigne" placeholder="Password">
            <p id="passwdErr1stSigIn" class="err"></p>
            <input type="submit" value="Sign In">
         </form>
@@ -118,6 +118,7 @@ let email = null
 let emailOrUSername = null
 let gender = null
 let password = null
+let passwordSignIn= null
 let confirmepassword = null
 
 
@@ -142,6 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emailOrUSername = document.querySelector("input[name='emailOrUSername']")
     gender = document.querySelector("input[name='gender']")
     password = document.querySelector("input[name='password']")
+    passwordSignIn = document.querySelector("input[name='passwordSigne']")
     confirmepassword = document.querySelector("input[name='confirmepassword']")
 })
 
@@ -153,19 +155,6 @@ const ExpAge = /^(1[6-9]|[2-9][0-9]|1[01][0-9]|120)$/;
 const ExpEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const ExpPasswd = /^(?=(.*[a-z]))(?=(.*[A-Z]))(?=(.*[0-9]))(?=(.*[^a-zA-Z0-9]))(.{8,20})$/
 
-// const InvalidPsswd = () => {
-//     ErrMessagePasswd1st.innerHTML = `<h4 style="text-align: center">--------Password Requirements--------</h4>
-//     <ul>
-//         <li>At least one <strong>lowercase letter</strong> (a-z)</li>
-//         <li>At least one <strong>uppercase letter</strong> (A-Z)</li>
-//         <li>At least one <strong>digit</strong> (0-9)</li>
-//         <li>At least one <strong>special character</strong> (anything not a letter or a digit)</li>
-//         <li>Password must be at least <strong>8 characters long</strong></li>
-//     </ul>`
-//     ErrMessagePasswd1st.style.textAlign = "left"
-//     ErrMessagePasswd1st.style.color = "red"
-//     ErrMessagePasswd1st.style.marginTop = "0px"
-// }
 const InvalidFirstName = "Invalid First Name!!"
 const InvalidLastName = "Invalid Last Name!!"
 const InvalidEmail = "Invalid Email!!"
@@ -243,10 +232,10 @@ const VerifyData = () => {
 
 }
 function VerifyLogin() {
-    console.log("tt")
+
     let exist = false
     let emailOrUSernameValue = emailOrUSername.value
-    let passwordValue = password.value
+    let passwordValue = passwordSignIn.value
     ErrMessageEmailSignIn.textContent = ""
     ErrMessagePasswd1stSignIn.textContent = ""
     if (emailOrUSernameValue.length === 0) {
@@ -254,6 +243,7 @@ function VerifyLogin() {
         console.log("f")
         exist = true
     }
+    console.log(passwordValue)
     if (passwordValue.length === 0) {
         ErrMessagePasswd1stSignIn.textContent = "Invalid PassWord"
         exist = true
@@ -328,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Content-Type": "application/json",
                     },
                     method: "POST",
-                    body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: password.value, })
+                    body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: passwordSignIn.value, })
                 }).then(response => response.json())
                     .then(reply => {
                         switch (true) {
