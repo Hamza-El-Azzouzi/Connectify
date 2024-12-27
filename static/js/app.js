@@ -1,6 +1,7 @@
 // Import modules for dynamic components
 // import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
+import { feedPage } from "./feed.js";
 var cookie = document.cookie
 const app = document.getElementById("main-content");
 
@@ -17,7 +18,7 @@ export function NavigateTo(page) {
         case 'feed':
             console.log(cookie)
             app.innerHTML = '';
-            app.innerHTML = '<h2>feed page</h2>';
+            feedPage();
             break;
         default:
             app.innerHTML = '<h2>404 - Page Not Found</h2>';

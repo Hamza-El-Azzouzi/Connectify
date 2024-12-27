@@ -1,5 +1,8 @@
 import { NavigateTo } from "./app.js";
+
 export function loginPage() {
+    var link  = document.querySelector('link[rel="stylesheet"]');
+    link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
     const container = document.createElement('div');
     container.className = 'container';
