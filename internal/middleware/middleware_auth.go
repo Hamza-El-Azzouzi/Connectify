@@ -83,3 +83,4 @@ func (h *AuthMiddleware) IsValidPassword(password string) bool {
 	fmt.Println("matched ")
 	return true
 }
+

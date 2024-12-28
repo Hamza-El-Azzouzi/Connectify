@@ -14,6 +14,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/logout", authHandler.LogoutHandle)
 	mux.HandleFunc("/api/register", authHandler.RegisterHandle)
 	mux.HandleFunc("/api/login", authHandler.LoginHandle)
+	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 
 	// mux.HandleFunc("/", postHandler.Home)
 
@@ -23,7 +24,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	// mux.HandleFunc("/createPost", postHandler.PostSaver)
 
-	mux.HandleFunc("/sendcomment", postHandler.CommentSaver)
+	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
 	// mux.HandleFunc("/detailsPost/", postHandler.DetailsPost)
 	mux.HandleFunc("/comment", postHandler.CommentGetter)
 	// mux.HandleFunc("/like/", likeHandler.LikePost)

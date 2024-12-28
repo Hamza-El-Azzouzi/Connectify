@@ -2,20 +2,52 @@
 // import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
 var cookie = document.cookie
+var hasIntegrity = false
+export function setIntegrity(val){
+    hasIntegrity =  val
+}
 const app = document.getElementById("main-content");
+function checkIntegrity(){
+    if (cookie.includes("sessionId")) {
+        fetch("/api/integrity", {
+            headers: {
+                "Content-Type": "application/json",
+            }, method: "GET"
+        }).then(response => { return response.json() }).then((reply) => {
+            if (reply.REplyMssg === "Done") {
+                NavigateTo('feed')
+                return true
+            } else {
+                NavigateTo('login')
+                return false
+            }
+        })
+    }else{
+        NavigateTo("login")
+       return false
+    }
+}
 
-// Manage navigation
+hasIntegrity = checkIntegrity()
 export function NavigateTo(page) {
-    // const cookie = document.cookie
-    // console.log(cookie)
+    // hasIntegrity = checkIntegrity()
     switch (page) {
-        case 'login':
-            app.innerHTML = '';
-            loginPage()
-
-            break;
+        case "login":
+            if (!hasIntegrity){
+                console.log("login", hasIntegrity)
+                app.innerHTML = '';
+                loginPage()
+                break;
+            }else{
+                NavigateTo("feed")
+            }
+            
         case 'feed':
-            console.log(cookie)
+            if (!hasIntegrity) {
+                NavigateTo('login')
+                return
+            }
+            console.log("feed", hasIntegrity)
             app.innerHTML = '';
             app.innerHTML = '<h2>feed page</h2>';
             break;
@@ -34,11 +66,7 @@ document.getElementById("navbar").addEventListener("click", (e) => {
 
 
 // console.log(cookie)
-if (cookie.includes("sessionId")) {
-    NavigateTo('feed');
-} else {
-    NavigateTo('login');
-}
+
 
 
 // const btnfed = document.querySelector(".navFed")

@@ -20,6 +20,17 @@ func (s *SessionsRepositorie) DeletSession(sessionID string) error {
 	_, err = preparedQuery.Exec(sessionID)
 	return err
 }
+func (s *SessionsRepositorie) CheckSession(sessionId string) error{
+	exist := false
+	query := `SELECT count(*) FROM sessions WHERE session_id = ?`
+	row := s.DB.QueryRow(query, sessionId)
+	err := row.Scan(&exist)
+	if err == nil {
+		return nil
+	}
+
+	return err
+}
 
 func (s *SessionsRepositorie) Createession(sessionID string, expiration time.Time, userID uuid.UUID) error {
 	preparedQuery, err := s.DB.Prepare(`INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)`)

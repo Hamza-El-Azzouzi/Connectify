@@ -1,5 +1,7 @@
-import { NavigateTo } from "./app.js";
+import { NavigateTo, setIntegrity } from "./app.js";
+
 export function loginPage() {
+    
     const app = document.getElementById("main-content");
     const container = document.createElement('div');
     container.className = 'container';
@@ -305,8 +307,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
             }
         });
-    }
+    } 
     if (formSignIn) {
+        console.log(formSignIn)
         formSignIn.action = "/api/login"
         formSignIn.addEventListener("submit", (event) => {
 
@@ -323,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(reply => {
                         switch (true) {
                             case (reply.REplyMssg == "Done"):
+                                setIntegrity(true)
                                 NavigateTo("feed")
                                 break
                             case (reply.REplyMssg == "email"):

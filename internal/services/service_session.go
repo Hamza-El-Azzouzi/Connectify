@@ -16,6 +16,9 @@ type SessionService struct {
 func (s *SessionService) DeleteSession(sessionID string) error {
 	return s.SessionRepo.DeletSession(sessionID)
 }
+func (s *SessionService) CheckSession(sessionID string) error {
+	return s.SessionRepo.CheckSession(sessionID)
+}
 
 func (s *SessionService) CreateSession(sessionID string, expiration time.Time, userID uuid.UUID) error {
 	err := s.SessionRepo.CheckUserAlreadyLogged(userID)
