@@ -8,6 +8,7 @@ export function setIntegrity(val){
 }
 const app = document.getElementById("main-content");
 function checkIntegrity(){
+    
     if (cookie.includes("sessionId")) {
         fetch("/api/integrity", {
             headers: {
@@ -30,7 +31,7 @@ function checkIntegrity(){
 
 hasIntegrity = checkIntegrity()
 export function NavigateTo(page) {
-    // hasIntegrity = checkIntegrity()
+
     switch (page) {
         case "login":
             if (!hasIntegrity){

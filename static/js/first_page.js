@@ -1,153 +1,219 @@
 import { NavigateTo, setIntegrity } from "./app.js";
 
 export function loginPage() {
-    
+    // var link = document.querySelector('link[rel="stylesheet"]');
+    // link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
-    const container = document.createElement('div');
-    container.className = 'container';
-    container.id = 'container';
 
-    // Create sign-up form
-    const signUpForm = document.createElement('div');
-    signUpForm.className = 'form-container sign-up';
+    // Create the main container
+    const mainDiv = document.createElement('div');
+    mainDiv.className = 'main';
 
-    const signUpFormContent = `
-        <form class="singUpForm">
-            <h1>Create Account</h1>
-            <input type="text" name = "first_name" placeholder="First Name">
-             <p id="firstNameErr" class="err"></p>
-            <input type="text" name = "last_name" placeholder="Last Name">
-             <p id="lastNameErr" class="err"></p>
-            <input type="text" name = "user_name" placeholder="User Name">
-             <p id="nameErr" class="err"></p>
-            <input type="text" name = "email" placeholder="Email">
-             <p id="emailErr" class="err"></p>
-            <input type="text" name = "age" placeholder="Age">
-             <p id="ageErr" class="err"></p>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="gender" value="Male"> Male
-                </label>
-                <label>
-                    <input type="radio" name="gender" value="Female"> Female
-                </label>
-            </div>
-             <p id="genderErr" class="err"></p>
-            <input type="password" name="password" placeholder="Password">
-             <p id="passwdErr1st" class="err"></p>
-             <input type="password" name="confirmepassword" placeholder="Confirme Password">
-              <p id="confirmPasswdErr" class="err"></p>
-               <input type="submit" value="Continue">
-  
-        </form>
-    `;
-    // <button class="singUpbtn" type="submit">Sign Up</button>
-    signUpForm.innerHTML = signUpFormContent;
+    // Checkbox input for toggling
+    const checkboxInput = document.createElement('input');
+    checkboxInput.type = 'checkbox';
+    checkboxInput.id = 'chk';
+    checkboxInput.setAttribute('aria-hidden', 'true');
+    mainDiv.appendChild(checkboxInput);
 
-    // Create sign-in form
-    const signInForm = document.createElement('div');
-    signInForm.className = 'form-container sign-in';
+    // Signup container
+    const signupDiv = document.createElement('div');
+    signupDiv.className = 'signup';
 
-    const signInFormContent = `
-        <form class="singInForm">
-            <h1>Sign In</h1>
-            <span>or use your email password</span>
-             <input type="text" name ="emailOrUSername" placeholder="Email Or Username">
-              <p id="emailErrSignIn" class="err"></p>
-           <input type="password" name="passwordSigne" placeholder="Password">
-           <p id="passwdErr1stSigIn" class="err"></p>
-           <input type="submit" value="Sign In">
-        </form>
-    `;
-    signInForm.innerHTML = signInFormContent;
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'toggle-container';
+    const signupForm = document.createElement('form');
+    signupForm.name = "SignUp"
+    signupForm.id = "SignUp"
+    const signupLabel = document.createElement('label');
+    signupLabel.setAttribute('for', 'chk');
+    signupLabel.setAttribute('aria-hidden', 'true');
+    signupLabel.textContent = 'Sign up';
+    signupForm.appendChild(signupLabel);
 
-    const toggleContent = `
-        <div class="toggle">    
-            <div class="toggle-panel toggle-left">
-                <h1>Welcome Back!</h1>
-                <p>Enter your personal details to use all of site features</p>
-                <button class="hidden" id="login">Sign In</button>
-            </div>
-            <div class="toggle-panel toggle-right">
-                <h1>Hello, Friend!</h1>
-                <p>Register with your personal details to use all of site features</p>
-                <button class="hidden" id="register">Sign Up</button>
-            </div>
-        </div>
-    `;
-    toggleContainer.innerHTML = toggleContent;
+    const signupInputs = [
+        { type: 'text', name: 'first_name', placeholder: 'First Name', required: false },
+        { type: 'text', name: 'last_name', placeholder: 'Last Name', required: false },
+        { type: 'text', name: 'user_name', placeholder: 'User name', required: false },
+        { type: '', name: 'gender', placeholder: 'Select your gender', required: false },
+        { type: 'text', name: 'email', placeholder: 'Email', required: false },
+        { type: 'text', name: 'age', placeholder: 'age', required: false },
+        { type: 'password', name: 'pswd', placeholder: 'Password', required: false },
+        { type: 'password', name: 'confpswd', placeholder: 'Confirme Password', required: false },
+    ];
+    let element = new Map()
+    signupInputs.forEach(inputData => {
+        const input = document.createElement('input');
+        const errParagraph = document.createElement("p")
+        errParagraph.id = inputData.name + "Err"
+        Object.assign(input, inputData);
+        if (inputData.name === "email"){
+            const selectElemnt = document.createElement('select')
+            selectElemnt.placeholder = "test"
+            const optionMale = document.createElement('option')
+            optionMale.value = "Male"
+            optionMale.textContent= "Male"
+            const optionFemale = document.createElement('option')
+            optionFemale.value = "Female"
+            optionFemale.textContent= "Female"
+            selectElemnt.appendChild(optionMale)
+            selectElemnt.appendChild(optionFemale)
+            element["gender"] = selectElemnt
+            signupForm.append(selectElemnt)
+            
+        }
+        element[inputData.name] = input
+            signupForm.appendChild(input);
+        signupForm.appendChild(errParagraph)
+    });
+    console.log(element)
+    const signupButton = document.createElement('button');
+    signupButton.textContent = 'Sign up';
+    signupForm.appendChild(signupButton);
 
-    // Append forms and toggle to container
-    container.appendChild(signUpForm);
-    container.appendChild(signInForm);
-    container.appendChild(toggleContainer);
+    signupDiv.appendChild(signupForm);
+    mainDiv.appendChild(signupDiv);
 
-    // Append container to body
-    app.appendChild(container);
+    // Login container
+    const loginDiv = document.createElement('div');
+    loginDiv.className = 'login';
 
+    const loginForm = document.createElement('form');
+    loginForm.name = "logIn"
+    const loginLabel = document.createElement('label');
+    loginLabel.setAttribute('for', 'chk');
+    loginLabel.setAttribute('aria-hidden', 'true');
+    loginLabel.textContent = 'Login';
+    loginForm.appendChild(loginLabel);
 
-    const registerBtn = document.getElementById('register');
-    const loginBtn = document.getElementById('login');
+    const loginInputs = [
+        { type: 'text', name: 'emailOrUSername', placeholder: 'Ememail Or Usernameail', required: false },
+        { type: 'password', name: 'pswdSignIn', placeholder: 'Password', required: false },
+    ];
 
-    registerBtn.addEventListener('click', () => {
-        container.classList.add("active");
+    loginInputs.forEach(inputData => {
+        const input = document.createElement('input');
+        Object.assign(input, inputData);
+        loginForm.appendChild(input);
     });
 
-    loginBtn.addEventListener('click', () => {
-        container.classList.remove("active");
+    const loginButton = document.createElement('button');
+    loginButton.textContent = 'Login';
+    loginForm.appendChild(loginButton);
+
+    loginDiv.appendChild(loginForm);
+    mainDiv.appendChild(loginDiv);
+
+    // Append the main container to the app
+    app.appendChild(mainDiv);
+
+    signupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        // if (!VerifyData()) {
+        fetch("/api/register", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify({
+                username: element["user_name"].value,
+                age: element["age"].value,
+                // gender: element["gender"].value,
+                first_name: element["first_name"].value,
+                last_name: element["last_name"].value,
+                email: element["email"].value,
+                password: element["pswd"].value,
+                confirmPassword: element["confpswd"].value,
+            }),
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((reply) => {
+                console.log(reply)
+
+                if (reply.REplyMssg === "Done") {
+                    console.log("Registered successfully");
+                    NavigateTo("feed")
+                }
+                if (reply.REplyMssg === "email") {
+
+                    ErrMessageEmail.textContent = "Email already exists!"
+                }
+                if (reply.REplyMssg === "user") {
+
+                    ErrMessageName.textContent = "Username already exists!"
+                }
+                if (reply.REplyMssg === "passwd") {
+
+                    ErrMessagePasswd1st.textContent = "Password too long!"
+                }
+
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                Error(Err, "Failed to register. Please try again later.");
+            });
+        // }
     });
+
+    loginForm.addEventListener("submit", (event) => {
+
+        event.preventDefault()
+        console.log(formSignIn)
+        if (!VerifyLogin()) {
+            fetch("/api/login", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: passwordSignIn.value, })
+            }).then(response => response.json())
+                .then(reply => {
+                    switch (true) {
+                        case (reply.REplyMssg == "Done"):
+                            setIntegrity(true)
+                            NavigateTo("feed")
+                            break
+                        case (reply.REplyMssg == "email"):
+
+                            ErrMessageEmail.textContent = "email not found!!, create an account"
+                            break
+                        case (reply.REplyMssg == "passwd"):
+                            ErrMessagePasswd1st.textContent = "incorrect Password!!, Try Again"
+                    }
+                })
+        }
+
+
+    })
 }
 
 
 
-let ErrMessageFistName = null
-let ErrMessageLastName = null
-let ErrMessageName = null
-let ErrMessageEmail = null
-let ErrMessageAge = null
-let ErrMessageEmailSignIn= null
-let ErrMessageGender = null
-let ErrMessagePasswd1st = null
-let ErrMessagePasswd1stSignIn = null
-let ErrMessageConfirmPasswd = null
-let first_name = null
-let last_name = null
-let user_name = null
-let age = null
-let email = null
-let emailOrUSername = null
-let gender = null
-let password = null
-let passwordSignIn= null
-let confirmepassword = null
+
+var ErrMessageFistName = null
+var ErrMessageLastName = null
+var ErrMessageName = null
+var ErrMessageEmail = null
+var ErrMessageAge = null
+var ErrMessageEmailSignIn = null
+var ErrMessageGender = null
+var ErrMessagePasswd1st = null
+var ErrMessagePasswd1stSignIn = null
+var ErrMessageConfirmPasswd = null
+var first_name = null
+var last_name = null
+var user_name = null
+var age = null
+var email = null
+var emailOrUSername = null
+var gender = null
+var password = null
+var passwordSignIn = null
+var confirmepassword = null
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    ErrMessageFistName = document.getElementById("firstNameErr")
-    ErrMessageLastName = document.getElementById("lastNameErr")
-    ErrMessageName = document.getElementById("nameErr")
-
-    ErrMessageEmail = document.getElementById("emailErr")
-    ErrMessageEmailSignIn = document.getElementById("emailErrSignIn")
-    ErrMessageAge = document.getElementById("ageErr")
-    ErrMessageGender = document.getElementById('genderErr')
-    ErrMessagePasswd1st = document.getElementById('passwdErr1st')
-    ErrMessagePasswd1stSignIn  = document.getElementById('passwdErr1stSigIn')
-    ErrMessageConfirmPasswd = document.getElementById('confirmPasswdErr')
-    first_name = document.querySelector("input[name='first_name']")
-    last_name = document.querySelector("input[name='last_name']")
-    user_name = document.querySelector("input[name='user_name']")
-    age = document.querySelector("input[name='age']")
-    email = document.querySelector("input[name='email']")
-    emailOrUSername = document.querySelector("input[name='emailOrUSername']")
-    gender = document.querySelector("input[name='gender']")
-    password = document.querySelector("input[name='password']")
-    passwordSignIn = document.querySelector("input[name='passwordSigne']")
-    confirmepassword = document.querySelector("input[name='confirmepassword']")
-})
 
 const Err = document.getElementById("otherErr")
 
@@ -166,7 +232,34 @@ const InvalidName = "Invalid Name!!"
 const InvalidPassWord = "Inavli Password!!"
 const NotMatch = "Password Confirmation doesn't match!!"
 const VerifyData = () => {
+    document.addEventListener("DOMContentLoaded", () => {
+
+
+
+        ErrMessageFistName = document.getElementById("first_nameErr")
+        ErrMessageLastName = document.getElementById("last_nameErr")
+        ErrMessageName = document.getElementById("user_nameErr")
+        ErrMessageEmail = document.getElementById("emailErr")
+        ErrMessageAge = document.getElementById("ageErr")
+        ErrMessageGender = document.getElementById('genderErr')
+        ErrMessagePasswd1st = document.getElementById('pswdErr')
+        ErrMessageConfirmPasswd = document.getElementById('confpswdErr')
+
+        ErrMessageEmailSignIn = document.getElementById("emailErrSignIn")
+        ErrMessagePasswd1stSignIn = document.getElementById('passwdErr1stSigIn')
+        first_name = document.querySelector("input[name='first_name']")
+        last_name = document.querySelector("input[name='last_name']")
+        user_name = document.querySelector("input[name='user_name']")
+        age = document.querySelector("input[name='age']")
+        email = document.querySelector("input[name='email']")
+        emailOrUSername = document.querySelector("input[name='emailOrUSername']")
+        gender = document.querySelector("input[name='gender']")
+        password = document.querySelector("input[name='pswd']")
+        passwordSignIn = document.querySelector("input[name='pswdSignIn']")
+        confirmepassword = document.querySelector("input[name='confpswd']")
+    })
     let exist = false
+
     ErrMessageFistName.textContent = ""
     ErrMessageLastName.textContent = ""
     ErrMessageName.textContent = ""
@@ -252,94 +345,9 @@ function VerifyLogin() {
     }
     return exist
 }
-document.addEventListener("DOMContentLoaded", () => {
-    let form = document.querySelector(".singUpForm");
-    let formSignIn = document.querySelector(".singInForm");
-    if (form) {
-        form.action = "/api/register";
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
+// console.log(ErrMessageFistName)
+// document.addEventListener("DOMContentLoaded", () => {
+//     var form = document.getElementById("SignUp");
+//     console.log(form)
 
-            if (!VerifyData()) {
-                fetch("/api/register", {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    method: "POST",
-                    body: JSON.stringify({
-                        username: user_name.value,
-                        age: age.value,
-                        gender: gender.value,
-                        first_name: first_name.value,
-                        last_name: last_name.value,
-                        email: email.value,
-                        password: password.value,
-                        confirmPassword: confirmepassword.value,
-                    }),
-                })
-                    .then((response) => {
-                        return response.json();
-                    })
-                    .then((reply) => {
-                        console.log(reply)
-
-                        if (reply.REplyMssg === "Done") {
-                            console.log("Registered successfully");
-                            NavigateTo("feed")
-                        }
-                        if (reply.REplyMssg === "email") {
-
-                            ErrMessageEmail.textContent = "Email already exists!"
-                        }
-                        if (reply.REplyMssg === "user") {
-
-                            ErrMessageName.textContent = "Username already exists!"
-                        }
-                        if (reply.REplyMssg === "passwd") {
-
-                            ErrMessagePasswd1st.textContent = "Password too long!"
-                        }
-
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        Error(Err, "Failed to register. Please try again later.");
-                    });
-            }
-        });
-    } 
-    if (formSignIn) {
-        console.log(formSignIn)
-        formSignIn.action = "/api/login"
-        formSignIn.addEventListener("submit", (event) => {
-
-            event.preventDefault()
-            console.log(formSignIn)
-            if (!VerifyLogin()) {
-                fetch("/api/login", {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: passwordSignIn.value, })
-                }).then(response => response.json())
-                    .then(reply => {
-                        switch (true) {
-                            case (reply.REplyMssg == "Done"):
-                                setIntegrity(true)
-                                NavigateTo("feed")
-                                break
-                            case (reply.REplyMssg == "email"):
-
-                                ErrMessageEmail.textContent = "email not found!!, create an account"
-                                break
-                            case (reply.REplyMssg == "passwd"):
-                                ErrMessagePasswd1st.textContent = "incorrect Password!!, Try Again"
-                        }
-                    })
-            }
-
-
-        })
-    }
-});
+// })
