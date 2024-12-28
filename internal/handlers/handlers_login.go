@@ -116,7 +116,7 @@ func sendResponse(w http.ResponseWriter, reply string) {
 
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -151,4 +151,22 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 
 	SetCookies(w, "sessionId", "", time.Now().Add(-1*time.Hour))
 	sendResponse(w, "Done")
+}
+
+func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request){
+	if r.Method == http.MethodGet{
+		sessionId, err := r.Cookie("sessionId")
+		if err == nil || sessionId.Value != "" {
+			err := h.SessionService.CheckSession(sessionId.Value)
+			if err != nil {
+				sendResponse(w,"No User Found")
+				return
+			}else{
+				sendResponse(w,"Done")
+			}
+		}
+	}else{
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+
 }
