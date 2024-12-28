@@ -43,13 +43,15 @@ fieldset {
 }
 
 .control input:hover ~ .control__content {
-  box-shadow: 0 0 0 0.25rem #7161e2;
+  box-shadow: 0 0 0 0.25rem #512da8;
   background-color: rgba(0, 0, 0, 0.1);
 }
 
 .control input:checked ~ .control__content {
-  background-color: #5b529e;
+  background-color:#512da8;
+  color: white;
 }
+
 .container {
   display: flex;
   flex-direction: column;
@@ -57,6 +59,7 @@ fieldset {
   margin: 20px auto;
   max-width: 800px;
 }
+
 .form-container {
   background: #fff;
   padding: 20px;
@@ -65,18 +68,31 @@ fieldset {
   width: 100%;
   max-width: 600px;
   margin-bottom: 20px;
+  transition: width 0.3s ease;
+  overflow: hidden;
 }
+
 .form-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 15px;
 }
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
 .form-header img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
+
 .form-header input {
   width: 100%;
   padding: 10px;
@@ -87,12 +103,24 @@ fieldset {
   outline: none;
   background: none;
 }
+
 .form-header input::placeholder {
   color: #aaa;
 }
+
 .form-group {
   margin-bottom: 15px;
 }
+
+#postForm {
+  display: none;
+  flex-direction: column;
+}
+
+#postForm.active {
+  display: flex;
+}
+
 .form-group input,
 .form-group textarea {
   width: 100%;
@@ -104,14 +132,17 @@ fieldset {
   outline: none;
   background: none;
 }
+
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: #aaa;
 }
+
 .form-group textarea {
   resize: none;
   height: 80px;
 }
+
 .form-footer {
   display: flex;
   justify-content: space-between;
@@ -120,29 +151,28 @@ fieldset {
   padding-top: 10px;
   margin-top: 10px;
 }
-.form-footer .icons {
-  display: flex;
-  gap: 15px;
-}
-.form-footer .icons img {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-.form-footer button {
+
+.post-button {
+  align-self: flex-end; 
   padding: 10px 20px;
-  border: none;
-  border-radius: 20px;
+  font-size: 14px;
   background-color: #512da8;
   color: white;
-  font-size: 14px;
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  margin-top: 10px; 
 }
+
+.post-button:hover {
+  background-color: #7450c9;
+}
+
 .feed {
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
 }
+
 .post {
   background: #fff;
   padding: 15px;
@@ -150,36 +180,43 @@ fieldset {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
 }
+
 .post-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
 }
+
 .post-header img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
+
 .post-header h4 {
   margin: 0;
   font-size: 16px;
   color: #333;
 }
+
 .post-content {
   margin-bottom: 10px;
   font-size: 14px;
   color: #555;
 }
+
 .post-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .post-footer .actions {
   display: flex;
   gap: 15px;
 }
+
 .post-footer .actions button {
   padding: 5px 10px;
   border: none;
@@ -189,6 +226,11 @@ fieldset {
   font-size: 12px;
   cursor: pointer;
 }
+
 .post-footer .actions button:hover {
   background: #e0e0e0;
+}
+
+.err {
+  color: red;
 }

@@ -23,87 +23,51 @@ type PostHandler struct {
 	AuthHandler     *AuthHandler
 }
 
-func (p *PostHandler) Home(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
-		return
-	}
-	utils.OpenHtml("index.html", w, nil)
-}
+// func (p *PostHandler) Home(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodGet {
+// 		utils.Error(w, http.StatusMethodNotAllowed)
+// 		return
+// 	}
+// 	utils.OpenHtml("index.html", w, nil)
+// }
 
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
+		// utils.Error(w, http.StatusMethodNotAllowed)
 		return
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) != 3 {
-		utils.Error(w, http.StatusNotFound)
+		// utils.Error(w, http.StatusNotFound)
 		return
 	}
 	pagination := pathParts[2]
 	if pagination == "" {
-		utils.Error(w, http.StatusNotFound)
+		// utils.Error(w, http.StatusNotFound)
 		return
 	}
 	nPagination, err := strconv.Atoi(pagination)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound)
+		// utils.Error(w, http.StatusNotFound)
 		return
 	}
 	posts, err := p.PostService.AllPosts(nPagination)
 	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
+		// utils.Error(w, http.StatusInternalServerError)
 		return
 	}
 
 	categories, errCat := p.CategoryService.GetAllCategories()
 	if errCat != nil {
-		utils.Error(w, http.StatusInternalServerError)
+		// utils.Error(w, http.StatusInternalServerError)
 		return
 	}
-
 	data := map[string]any{
-		"LoggedIn":   true,
 		"categories": categories,
 		"posts":      posts,
 	}
-	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-
-	if isLogged {
-		data["LoggedIn"] = isLogged
-		data["Username"] = usermid.Username
-	} else {
-		data["LoggedIn"] = isLogged
-	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
-}
-
-func (p *PostHandler) PostCreation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
-		return
-	}
-
-	categories, err := p.CategoryService.GetAllCategories()
-	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
-		return
-	}
-	data := map[string]any{
-		"LoggedIn":   false,
-		"categories": categories,
-	}
-	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-	if isLogged {
-		data["LoggedIn"] = isLogged
-		data["Username"] = usermid.Username
-	} else {
-		data["LoggedIn"] = isLogged
-	}
-
-	utils.OpenHtml("ask_question.html", w, data)
 }
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
