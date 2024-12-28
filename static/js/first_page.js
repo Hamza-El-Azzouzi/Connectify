@@ -310,12 +310,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     } 
     if (formSignIn) {
-        console.log(formSignIn)
         formSignIn.action = "/api/login"
         formSignIn.addEventListener("submit", (event) => {
-
-            event.preventDefault()
             console.log(formSignIn)
+            event.preventDefault()
+           
             if (!VerifyLogin()) {
                 fetch("/api/login", {
                     headers: {

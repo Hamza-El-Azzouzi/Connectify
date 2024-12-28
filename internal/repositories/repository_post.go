@@ -66,7 +66,7 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 			posts.id
 		ORDER BY 
 			posts.created_at DESC 
-		LIMIT 5 OFFSET ?;`
+		LIMIT 20 OFFSET ?;`
 	rows, err := r.DB.Query(query, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)

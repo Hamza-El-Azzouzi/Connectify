@@ -1,4 +1,5 @@
 export function feedPage() {
+    getPosts();
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
     const app = document.getElementById("main-content");
@@ -29,55 +30,6 @@ export function feedPage() {
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
 
-    const postsFeedContent = `
-        <div class="post">
-            <div class="post-header">
-                <h4>John Doe</h4>
-            </div>
-            <div class="post-content">
-                This is an example post content. Sharing some exciting news today!
-            </div>
-            <div class="post-footer">
-                <div class="actions">
-                    <button>Like</button>
-                    <button>Dislike</button>
-                    <button>Comment</button>
-                </div>
-            </div>
-        </div>
-        <div class="post">
-            <div class="post-header">
-                <h4>Jane Smith</h4>
-            </div>
-            <div class="post-content">
-                Had a wonderful day at the park! Nature is truly amazing.
-            </div>
-            <div class="post-footer">
-                <div class="actions">
-                    <button>Like</button>
-                    <button>Dislike</button>
-                    <button>Comment</button>
-                </div>
-            </div>
-        </div>
-        <div class="post">
-            <div class="post-header">
-                <h4>Alex Johnson</h4>
-            </div>
-            <div class="post-content">
-                Excited to announce my new blog post is live. Check it out on my website!
-            </div>
-            <div class="post-footer">
-                <div class="actions">
-                    <button>Like</button>
-                    <button>Dislike</button>
-                    <button>Comment</button>
-                </div>
-            </div>
-        </div>
-    `
-    postsFeed.innerHTML = postsFeedContent;
-
     container.appendChild(postForm);
     container.appendChild(postsFeed);
     app.appendChild(container);
@@ -98,7 +50,111 @@ export function feedPage() {
             }
         }, 100);
     });
-    validatePost();
+    postFormElement.addEventListener("submit", (event) => {
+        event.preventDefault();
+        let isValid = true;
+
+        document.getElementById('title-error').textContent = '';
+        document.getElementById('category-error').textContent = '';
+        document.getElementById('textarea-error').textContent = '';
+
+
+        const title = document.querySelector('.form-input').value;
+        const content = document.getElementById('postContent').value;
+        const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]');
+        const selectedCategories = Array.from(checkboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.id);
+
+        if (title.length > 250) {
+            document.getElementById('title-error').textContent = 'Maximum 255 characters.';
+            isValid = false;
+        }
+        if (!title.trim()) {
+            document.getElementById('title-error').textContent = 'Title is required.';
+            isValid = false;
+        }
+
+        if (selectedCategories.length === 0) {
+            document.getElementById('category-error').textContent = 'Please select at least one category.';
+            isValid = false;
+        }
+
+        if (content.length > 10000) {
+            document.getElementById('textarea-error').textContent = "Maximum 10000 characters.";
+            isValid = false;
+        }
+        if (!content.trim()) {
+            document.getElementById('textarea-error').textContent = 'content is required.';
+            isValid = false;
+        }
+        if (isValid) {
+            const data = {
+                title,
+                content,
+                categories: selectedCategories
+            };
+            document.querySelector('.form-input').value="";
+            document.getElementById('postContent').value="";
+            document.querySelectorAll('#category-list input[type="checkbox"]').forEach(el => el.checked = false);
+            fetch("/api/createpost", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify(data)
+            }).then(response => response.json())
+                .then(reply => {
+                    if (reply.REplyMssg == "Done") {
+                        getPosts();
+                    }
+                })
+        }
+    })
+}
+
+function getPosts() {
+    fetch(`/Posts/1`)
+        .then((response) => response.json())
+        .then((data) => {
+            populatePosts(data.posts);
+        })
+        .catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+}
+
+function populatePosts(posts) {
+    const feed = document.querySelector(".feed");
+    if (posts && posts.length > 0) {
+        feed.innerHTML = posts
+            .map(
+                (post) => `
+                <div class="post">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <h4>${post.Username}</h4>
+                        </div>
+                        <span class="timestamp">Posted on: ${post.FormattedDate}</span>
+                    </div>
+                    <div class="post-title">${post.Title}</div>
+                    <div class="post-categories">Categories: ${post.CategoryName}</div>
+                    <div class="post-content">
+                        ${post.Content}
+                    </div>
+                    <div class="post-footer">
+                        <div class="actions">
+                            <button>${post.LikeCount} Like</button>
+                            <button>${post.DisLikeCount} Dislike</button>
+                            <button>${post.CommentCount} Comment</button>
+                        </div>
+                    </div>
+                </div>
+            `
+            ).join("");
+    } else {
+        feed.innerHTML = `<div class="no-results">No Results Found.</div>`;
+    }
 }
 
 function getCategories() {
@@ -118,7 +174,7 @@ function populateCategories(categories) {
         .map(
             (category) => `
                 <label class="control" for="${category.ID}">
-                    <input type="checkbox" name="topics" id="${category.ID}">
+                    <input type="checkbox" name="category" id="${category.ID}">
                     <span class="control__content">
                         <svg aria-hidden="true" focusable="false" width="30" height="30" viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="15" fill="#1E1B1D"></circle><path d="M10.78 21h1.73l.73-3.2h2.24l-.74 3.2h1.76l.72-3.2h3.3v-1.6H17.6l.54-2.4H21v-1.6h-2.5l.72-3.2h-1.73l-.73 3.2h-2.24l.74-3.2H13.5l-.73 3.2H9.5v1.6h2.93l-.56 2.4H9v1.6h2.52l-.74 3.2zm2.83-4.8l.54-2.4h2.24l-.54 2.4H13.6z" fill="#fff"></path></svg>
                         ${category.Name}
@@ -127,44 +183,4 @@ function populateCategories(categories) {
             `
         )
         .join("");
-}
-
-function validatePost(){
-    document.getElementById('postForm').addEventListener('submit', function (event) {
-        let isValid = true;
-    
-        document.getElementById('title-error').textContent = '';
-        document.getElementById('category-error').textContent = '';
-        document.getElementById('textarea-error').textContent = '';
-    
-    
-        const titleInput = document.querySelector('input[name="title"]');
-        if (titleInput.value.length > 250) {
-            document.getElementById('title-error').textContent = 'Maximum 255 characters.';
-            isValid = false;
-        }
-        if (!titleInput.value.trim()) {
-            document.getElementById('title-error').textContent = 'Title is required.';
-            isValid = false;
-        }
-    
-        const categoryCheckboxes = document.querySelectorAll('input[name="category"]:checked');
-        if (categoryCheckboxes.length === 0) {
-            document.getElementById('category-error').textContent = 'Please select at least one category.';
-            isValid = false;
-        }
-    
-        const textareaInput = document.querySelector('textarea[name="textarea"]');
-        if (textareaInput.value.length > 10000) {
-            document.getElementById('textarea-error').textContent = "Maximum 10000 characters.";
-            isValid = false;
-        }
-        if (!textareaInput.value.trim()) {
-            document.getElementById('textarea-error').textContent = 'Description is required.';
-            isValid = false;
-        }
-        if (!isValid) {
-            event.preventDefault();
-        }
-    });
 }

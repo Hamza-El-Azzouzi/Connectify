@@ -33,25 +33,25 @@ type PostHandler struct {
 
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		// utils.Error(w, http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
-		// utils.Error(w, http.StatusNotFound)
-		return
-	}
-	pagination := pathParts[2]
-	if pagination == "" {
-		// utils.Error(w, http.StatusNotFound)
-		return
-	}
-	nPagination, err := strconv.Atoi(pagination)
-	if err != nil {
-		// utils.Error(w, http.StatusNotFound)
-		return
-	}
-	posts, err := p.PostService.AllPosts(nPagination)
+	// pathParts := strings.Split(r.URL.Path, "/")
+	// if len(pathParts) != 3 {
+	// 	// utils.Error(w, http.StatusNotFound)
+	// 	return
+	// }
+	// pagination := pathParts[2]
+	// if pagination == "" {
+	// 	// utils.Error(w, http.StatusNotFound)
+	// 	return
+	// }
+	// nPagination, err := strconv.Atoi(pagination)
+	// if err != nil {
+	// 	// utils.Error(w, http.StatusNotFound)
+	// 	return
+	// }
+	posts, err := p.PostService.AllPosts(0)
 	if err != nil {
 		// utils.Error(w, http.StatusInternalServerError)
 		return
@@ -72,37 +72,36 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.Error(w, http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	err := r.ParseForm()
+	var postData models.PostData
+
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	defer r.Body.Close()
 	if err != nil {
-		utils.Error(w, http.StatusInternalServerError)
-		return
-	}
-	title := r.Form.Get("title")
-	categories := r.Form["category"]
-	subject := r.Form.Get("textarea")
-
-	if title == "" || subject == "" || len(categories) == 0 {
-		utils.Error(w, http.StatusBadRequest)
-		return
-	}
-	if len(title) > 250 || len(subject) > 10000 {
-		utils.Error(w, http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	if postData.Title == "" || postData.Content == "" || len(postData.Categories) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if len(postData.Title) > 250 || len(postData.Content) > 10000 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
 	if isLogged {
-		err = p.PostService.PostSave(usermid.ID, title, subject, categories)
+		err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
 		if err != nil {
-			utils.Error(w, http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
 		} else {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			sendResponse(w, "Done")
 		}
 	} else {
-		utils.Error(w, http.StatusForbidden)
+		w.WriteHeader(http.StatusForbidden)
 	}
 }
 

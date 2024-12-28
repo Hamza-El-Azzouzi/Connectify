@@ -51,3 +51,9 @@ type CommentData struct {
 	Comment string `json:"content"`
 	PostId  string `json:"postId"`
 }
+
+type PostData struct {
+	Title string `json:"title"`
+	Content string `json:"content"`
+	Categories []string `json:"categories"`
+}
