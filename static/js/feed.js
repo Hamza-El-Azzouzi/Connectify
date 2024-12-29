@@ -1,3 +1,5 @@
+let isLoading = false;
+
 export function feedPage() {
     getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
@@ -105,6 +107,8 @@ export function feedPage() {
             }).then(response => response.json())
                 .then(reply => {
                     if (reply.REplyMssg == "Done") {
+                        const feed = document.querySelector(".feed");
+                        feed.innerHTML = "";
                         getPosts(0);
                     }
                 })
@@ -183,8 +187,47 @@ function populateCategories(categories) {
 }
 
 window.addEventListener("scrollend", () => {
+    if (isLoading) return;
+
     if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+        isLoading = true;
+
+        const feed = document.querySelector('.feed');
+        const placeholder = document.createElement('div');
+        placeholder.className = 'post-placeholder';
+        placeholder.innerHTML = `
+            <div class="post-header">
+                <div class="user-info">
+                    <h4 style="background: #e0e0e0; height: 20px; width: 100px; border-radius: 4px;"></h4>
+                </div>
+                <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
+            </div>
+            <div class="post-title" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
+            <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
+            <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
+            <div class="post-footer">
+                <div class="actions">
+                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                    <button style="background: #e0e0e0; height: 16px; width: 80px; border-radius: 4px; border: none;"></button>
+                </div>
+            </div>
+        `;
+        feed.appendChild(placeholder);
+        window.scrollTo(0, document.body.scrollHeight);
         let posts = document.querySelectorAll(".post");
-        getPosts(posts.length);
+
+        console.log("Start waiting...");
+
+        setTimeout(() => {
+            try {
+                getPosts(posts.length);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                feed.removeChild(placeholder);
+                isLoading = false;
+            }
+        }, 5000);
     }
 })

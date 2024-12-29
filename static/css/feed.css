@@ -255,3 +255,35 @@ fieldset {
 .err {
   color: red;
 }
+
+.post-placeholder {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.post-placeholder div,
+.post-placeholder span,
+.post-placeholder button {
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+      background-position: -200px 0;
+  }
+  100% {
+      background-position: 200px 0;
+  }
+}
+
+div[style*="background"],
+span[style*="background"],
+button[style*="background"] {
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+}
