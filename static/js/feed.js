@@ -1,5 +1,5 @@
 export function feedPage() {
-    getPosts();
+    getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
     const app = document.getElementById("main-content");
@@ -29,7 +29,6 @@ export function feedPage() {
     getCategories();
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
-
     container.appendChild(postForm);
     container.appendChild(postsFeed);
     app.appendChild(container);
@@ -94,8 +93,8 @@ export function feedPage() {
                 content,
                 categories: selectedCategories
             };
-            document.querySelector('.form-input').value="";
-            document.getElementById('postContent').value="";
+            document.querySelector('.form-input').value = "";
+            document.getElementById('postContent').value = "";
             document.querySelectorAll('#category-list input[type="checkbox"]').forEach(el => el.checked = false);
             fetch("/api/createpost", {
                 headers: {
@@ -106,15 +105,15 @@ export function feedPage() {
             }).then(response => response.json())
                 .then(reply => {
                     if (reply.REplyMssg == "Done") {
-                        getPosts();
+                        getPosts(0);
                     }
                 })
         }
     })
 }
 
-function getPosts() {
-    fetch(`/Posts/1`)
+function getPosts(offset) {
+    fetch(`/Posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
             populatePosts(data.posts);
@@ -127,33 +126,31 @@ function getPosts() {
 function populatePosts(posts) {
     const feed = document.querySelector(".feed");
     if (posts && posts.length > 0) {
-        feed.innerHTML = posts
-            .map(
-                (post) => `
-                <div class="post">
-                    <div class="post-header">
-                        <div class="user-info">
-                            <h4>${post.Username}</h4>
-                        </div>
-                        <span class="timestamp">Posted on: ${post.FormattedDate}</span>
+        posts.forEach((post) => {
+            const postElement = document.createElement("div");
+            postElement.className = "post";
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <div class="user-info">
+                        <h4>${post.Username}</h4>
                     </div>
-                    <div class="post-title">${post.Title}</div>
-                    <div class="post-categories">Categories: ${post.CategoryName}</div>
-                    <div class="post-content">
-                        ${post.Content}
-                    </div>
-                    <div class="post-footer">
-                        <div class="actions">
-                            <button>${post.LikeCount} Like</button>
-                            <button>${post.DisLikeCount} Dislike</button>
-                            <button>${post.CommentCount} Comment</button>
-                        </div>
+                    <span class="timestamp">Posted on: ${post.FormattedDate}</span>
+                </div>
+                <div class="post-title">${post.Title}</div>
+                <div class="post-categories">Categories: ${post.CategoryName}</div>
+                <div class="post-content">
+                    ${post.Content}
+                </div>
+                <div class="post-footer">
+                    <div class="actions">
+                        <button>${post.LikeCount} Like</button>
+                        <button>${post.DisLikeCount} Dislike</button>
+                        <button>${post.CommentCount} Comment</button>
                     </div>
                 </div>
-            `
-            ).join("");
-    } else {
-        feed.innerHTML = `<div class="no-results">No Results Found.</div>`;
+            `;
+            feed.appendChild(postElement);
+        })
     }
 }
 
@@ -184,3 +181,10 @@ function populateCategories(categories) {
         )
         .join("");
 }
+
+window.addEventListener("scrollend", () => {
+    if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+        let posts = document.querySelectorAll(".post");
+        getPosts(posts.length);
+    }
+})

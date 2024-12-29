@@ -36,30 +36,30 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	// pathParts := strings.Split(r.URL.Path, "/")
-	// if len(pathParts) != 3 {
-	// 	// utils.Error(w, http.StatusNotFound)
-	// 	return
-	// }
-	// pagination := pathParts[2]
-	// if pagination == "" {
-	// 	// utils.Error(w, http.StatusNotFound)
-	// 	return
-	// }
-	// nPagination, err := strconv.Atoi(pagination)
-	// if err != nil {
-	// 	// utils.Error(w, http.StatusNotFound)
-	// 	return
-	// }
-	posts, err := p.PostService.AllPosts(0)
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 3 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	pagination := pathParts[2]
+	if pagination == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	nPagination, err := strconv.Atoi(pagination)
 	if err != nil {
-		// utils.Error(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	posts, err := p.PostService.AllPosts(nPagination)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	categories, errCat := p.CategoryService.GetAllCategories()
 	if errCat != nil {
-		// utils.Error(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	data := map[string]any{
