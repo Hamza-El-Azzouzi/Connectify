@@ -1,5 +1,6 @@
 import { NavigateTo, setIntegrity } from "./app.js";
-
+let element = new Map()
+let errElement = new Map()
 export function loginPage() {
     // var link = document.querySelector('link[rel="stylesheet"]');
     // link.href = '/static/css/style.css';
@@ -32,39 +33,54 @@ export function loginPage() {
     const signupInputs = [
         { type: 'text', name: 'first_name', placeholder: 'First Name', required: false },
         { type: 'text', name: 'last_name', placeholder: 'Last Name', required: false },
+                { type: 'text', name: 'email', placeholder: 'Email', required: false },
         { type: 'text', name: 'user_name', placeholder: 'User name', required: false },
-        { type: '', name: 'gender', placeholder: 'Select your gender', required: false },
-        { type: 'text', name: 'email', placeholder: 'Email', required: false },
         { type: 'text', name: 'age', placeholder: 'age', required: false },
         { type: 'password', name: 'pswd', placeholder: 'Password', required: false },
         { type: 'password', name: 'confpswd', placeholder: 'Confirme Password', required: false },
     ];
-    let element = new Map()
+
     signupInputs.forEach(inputData => {
         const input = document.createElement('input');
         const errParagraph = document.createElement("p")
         errParagraph.id = inputData.name + "Err"
+        errElement[errParagraph.id] = errParagraph
         Object.assign(input, inputData);
-        if (inputData.name === "email"){
-            const selectElemnt = document.createElement('select')
-            selectElemnt.placeholder = "test"
-            const optionMale = document.createElement('option')
-            optionMale.value = "Male"
-            optionMale.textContent= "Male"
-            const optionFemale = document.createElement('option')
-            optionFemale.value = "Female"
-            optionFemale.textContent= "Female"
-            selectElemnt.appendChild(optionMale)
-            selectElemnt.appendChild(optionFemale)
+        if (inputData.name === "email") {
+            const selectElemnt = document.createElement('select');
+            selectElemnt.name = "gender";
+            const placeholderOption = document.createElement('option');
+            placeholderOption.textContent = "Select gender";
+            placeholderOption.disabled = true;
+            placeholderOption.selected = true;
+
+            const optionMale = document.createElement('option');
+            optionMale.value = "Male";
+            optionMale.textContent = "Male";
+
+            const optionFemale = document.createElement('option');
+            optionFemale.value = "Female";
+            optionFemale.textContent = "Female";
+            selectElemnt.appendChild(placeholderOption);
+            selectElemnt.appendChild(optionMale);
+            selectElemnt.appendChild(optionFemale);
+            const errParagraph = document.createElement("p")
+            errParagraph.id = selectElemnt.name + "Err"
+            errElement[errParagraph.id] = errParagraph
             element["gender"] = selectElemnt
             signupForm.append(selectElemnt)
-            
+            signupForm.appendChild(errParagraph)
+
+
         }
+
         element[inputData.name] = input
-            signupForm.appendChild(input);
+        signupForm.appendChild(input);
         signupForm.appendChild(errParagraph)
     });
+    console.log(errElement)
     console.log(element)
+
     const signupButton = document.createElement('button');
     signupButton.textContent = 'Sign up';
     signupForm.appendChild(signupButton);
@@ -102,13 +118,12 @@ export function loginPage() {
     loginDiv.appendChild(loginForm);
     mainDiv.appendChild(loginDiv);
 
-    // Append the main container to the app
     app.appendChild(mainDiv);
 
     signupForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
-        // if (!VerifyData()) {
+        if (!VerifyData()) {
         fetch("/api/register", {
             headers: {
                 "Content-Type": "application/json",
@@ -117,7 +132,7 @@ export function loginPage() {
             body: JSON.stringify({
                 username: element["user_name"].value,
                 age: element["age"].value,
-                // gender: element["gender"].value,
+                gender: element["gender"].value,
                 first_name: element["first_name"].value,
                 last_name: element["last_name"].value,
                 email: element["email"].value,
@@ -137,15 +152,15 @@ export function loginPage() {
                 }
                 if (reply.REplyMssg === "email") {
 
-                    ErrMessageEmail.textContent = "Email already exists!"
+                    errElement["emailErr"].textContent = "Email already exists!"
                 }
                 if (reply.REplyMssg === "user") {
 
-                    ErrMessageName.textContent = "Username already exists!"
+                    errElement["user_nameErr"].textContent = "Username already exists!"
                 }
                 if (reply.REplyMssg === "passwd") {
 
-                    ErrMessagePasswd1st.textContent = "Password too long!"
+                    errElement["pswdErr"].textContent = "Password too long!"
                 }
 
             })
@@ -153,7 +168,7 @@ export function loginPage() {
                 console.error("Error:", error);
                 Error(Err, "Failed to register. Please try again later.");
             });
-        // }
+        }
     });
 
     loginForm.addEventListener("submit", (event) => {
@@ -188,35 +203,6 @@ export function loginPage() {
     })
 }
 
-
-
-
-var ErrMessageFistName = null
-var ErrMessageLastName = null
-var ErrMessageName = null
-var ErrMessageEmail = null
-var ErrMessageAge = null
-var ErrMessageEmailSignIn = null
-var ErrMessageGender = null
-var ErrMessagePasswd1st = null
-var ErrMessagePasswd1stSignIn = null
-var ErrMessageConfirmPasswd = null
-var first_name = null
-var last_name = null
-var user_name = null
-var age = null
-var email = null
-var emailOrUSername = null
-var gender = null
-var password = null
-var passwordSignIn = null
-var confirmepassword = null
-
-
-
-
-const Err = document.getElementById("otherErr")
-
 const ExpUserName = /^[a-zA-Z0-9_.]{3,20}$/
 const ExpName = /^[a-zA-Z]{3,20}$/
 const ExpAge = /^(1[6-9]|[2-9][0-9]|1[01][0-9]|120)$/;
@@ -232,93 +218,64 @@ const InvalidName = "Invalid Name!!"
 const InvalidPassWord = "Inavli Password!!"
 const NotMatch = "Password Confirmation doesn't match!!"
 const VerifyData = () => {
-    document.addEventListener("DOMContentLoaded", () => {
-
-
-
-        ErrMessageFistName = document.getElementById("first_nameErr")
-        ErrMessageLastName = document.getElementById("last_nameErr")
-        ErrMessageName = document.getElementById("user_nameErr")
-        ErrMessageEmail = document.getElementById("emailErr")
-        ErrMessageAge = document.getElementById("ageErr")
-        ErrMessageGender = document.getElementById('genderErr')
-        ErrMessagePasswd1st = document.getElementById('pswdErr')
-        ErrMessageConfirmPasswd = document.getElementById('confpswdErr')
-
-        ErrMessageEmailSignIn = document.getElementById("emailErrSignIn")
-        ErrMessagePasswd1stSignIn = document.getElementById('passwdErr1stSigIn')
-        first_name = document.querySelector("input[name='first_name']")
-        last_name = document.querySelector("input[name='last_name']")
-        user_name = document.querySelector("input[name='user_name']")
-        age = document.querySelector("input[name='age']")
-        email = document.querySelector("input[name='email']")
-        emailOrUSername = document.querySelector("input[name='emailOrUSername']")
-        gender = document.querySelector("input[name='gender']")
-        password = document.querySelector("input[name='pswd']")
-        passwordSignIn = document.querySelector("input[name='pswdSignIn']")
-        confirmepassword = document.querySelector("input[name='confpswd']")
-    })
+    
     let exist = false
 
-    ErrMessageFistName.textContent = ""
-    ErrMessageLastName.textContent = ""
-    ErrMessageName.textContent = ""
-    ErrMessageEmail.textContent = ""
-    ErrMessageAge.textContent = ""
-    ErrMessageGender.textContent = ""
-    ErrMessageConfirmPasswd.textContent = ""
-    ErrMessagePasswd1st.textContent = ""
+    errElement["first_nameErr"].textContent = ""
+    errElement["last_nameErr"].textContent = ""
+    errElement["ageErr"].textContent = ""
+    errElement["user_nameErr"].textContent = ""
+    errElement["emailErr"].textContent = ""
+    errElement["pswdErr"].textContent = ""
+    errElement["confpswdErr"].textContent = ""
+    errElement["genderErr"].textContent = ""
 
-    if (!ExpName.test(first_name.value)) {
-        ErrMessageFistName.textContent = InvalidFirstName
-
-        exist = true
-    }
-
-    if (!ExpName.test(last_name.value)) {
-        ErrMessageLastName.textContent = InvalidLastName
+    if (!ExpName.test(element["first_name"].value)) {
+        errElement["first_nameErr"].textContent = InvalidFirstName
 
         exist = true
     }
 
-    if (gender.value !== "Male" && gender.value !== "Female") {
-        ErrMessageGender.textContent = InvalidGender
+    if (!ExpName.test(element["last_name"].value)) {
+        errElement["last_nameErr"].textContent = InvalidLastName
+
+        exist = true
+    }
+console.log(element["gender"].value)
+    if (element["gender"].value !== "Male" && element["gender"].value !== "Female") {
+        errElement["genderErr"].textContent = InvalidGender
 
         exist = true
     }
 
-    if (!ExpAge.test(age.value)) {
-        ErrMessageAge.textContent = InvalidAge
+    if (!ExpAge.test(element["age"].value)) {
+        errElement["ageErr"].textContent = InvalidAge
         exist = true
     }
 
 
-    if (!ExpUserName.test(user_name.value)) {
-        ErrMessageName.textContent = InvalidName
-
+    if (!ExpUserName.test(element["user_name"].value)) {
+        errElement["user_nameErr"].textContent = InvalidName
         exist = true
     }
 
 
-    if (!ExpEmail.test(email.value)) {
+    if (!ExpEmail.test(element["email"].value)) {
         console.log("email")
-        ErrMessageEmail.textContent = InvalidEmail
-
+        errElement["emailErr"].textContent = InvalidEmail
         exist = true
     }
 
 
-    if (!ExpPasswd.test(password.value)) {
+    if (!ExpPasswd.test(element["pswd"].value)) {
         console.log("password")
-        ErrMessagePasswd1st.textContent = InvalidPassWord
+        errElement["pswdErr"].textContent = InvalidPassWord
         exist = true
     }
 
 
-    if (password.value !== confirmepassword.value) {
-        console.log("confirm")
-        ErrMessagePasswd1st.textContent = NotMatch
-        //
+    if (element["pswd"].value !== element["confpswd"].value) {
+        errElement["confpswdErr"].textContent = NotMatch
         exist = true
     }
 
