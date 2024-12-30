@@ -11,6 +11,7 @@ export function feedPage() {
     container.id = 'container';
     const postForm = document.createElement('div');
     postForm.className = "form-container";
+    postForm.tabIndex = "0";
     const postFormContent = `
         <div class="form-header" id="formHeader">
             <input type="text" placeholder="Title" name="title" class="form-input">
@@ -32,6 +33,10 @@ export function feedPage() {
     getCategories();
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
+    let posts = document.querySelectorAll(".post");
+    if (posts.length === 0) {
+        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`
+    }
     container.appendChild(postForm);
     container.appendChild(postsFeed);
     app.appendChild(container);
@@ -45,9 +50,9 @@ export function feedPage() {
         postFormElement.classList.add('active');
     });
 
-    formContainer.addEventListener('focusout', () => {
+    formContainer.addEventListener('focusout', (event) => {
         setTimeout(() => {
-            if (!formContainer.contains(document.activeElement)) {
+            if (!formContainer.contains(event.relatedTarget)) {
                 formContainer.classList.remove('expanded');
                 postFormElement.classList.remove('active');
             }
@@ -93,6 +98,8 @@ export function feedPage() {
             isValid = false;
         }
         if (isValid) {
+            formContainer.classList.remove('expanded');
+            postFormElement.classList.remove('active');
             const data = {
                 title,
                 content,
@@ -123,9 +130,9 @@ function getPosts(offset) {
     fetch(`/Posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
-            if (!data.posts){
+            if (!data.posts) {
                 stopLoading = true;
-            }else{
+            } else {
                 stopLoading = false;
                 populatePosts(data.posts);
             }
@@ -137,6 +144,7 @@ function getPosts(offset) {
 
 function populatePosts(posts) {
     const feed = document.querySelector(".feed");
+    feed.innerHTML = "";
     if (posts && posts.length > 0) {
         posts.forEach((post) => {
             const postElement = document.createElement("div");
