@@ -293,6 +293,16 @@ button[style*="background"] {
   background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
   background-size: 200px 100%;
 }
+
+.no-results {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
 .comment-section {
   background-color: #fff;
   padding: 15px;
