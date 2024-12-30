@@ -1,4 +1,5 @@
 let isLoading = false;
+let stopLoading = false;
 
 export function feedPage() {
     getPosts(0);
@@ -38,7 +39,7 @@ export function feedPage() {
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
-    const categoryListElement = document.querySelector("#category-list");
+
     formInput.addEventListener('focus', () => {
         formContainer.classList.add('expanded');
         postFormElement.classList.add('active');
@@ -122,7 +123,12 @@ function getPosts(offset) {
     fetch(`/Posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
-            populatePosts(data.posts);
+            if (!data.posts){
+                stopLoading = true;
+            }else{
+                stopLoading = false;
+                populatePosts(data.posts);
+            }
         })
         .catch((error) => {
             console.error("Error fetching data:", error);
@@ -191,7 +197,7 @@ function populateCategories(categories) {
 window.addEventListener("scrollend", () => {
     if (isLoading) return;
 
-    if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+    if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight && !stopLoading) {
         isLoading = true;
 
         const feed = document.querySelector('.feed');
