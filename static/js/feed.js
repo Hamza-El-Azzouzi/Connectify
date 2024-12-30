@@ -228,14 +228,18 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                 if (offset === 0) {
                     commentsContainer.innerHTML = '<p class="no-comment">No comments yet.</p>';
                 }
-                loadMoreButton.style.display = 'none'; // Hide "Load More" button if no more comments
+                loadMoreButton.style.display = 'none';
             } else {
                 if (offset === 0) {
                     commentsContainer.innerHTML = comments.map(comment => `
                         <div class="comment">
-                            <div class="comment-user">${comment.Username}</div>
+                            <div class="comment-header">
+                                <div class="user-info">
+                                    <h4>${comment.Username}</h4>
+                                </div>
+                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                            </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
-                            <div class="comment-timestamp timestamp">${comment.FormattedDate}</div>
                         </div>
                     `).join('');
                 } else {
@@ -243,9 +247,13 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                         const commentElement = document.createElement('div');
                         commentElement.className = 'comment';
                         commentElement.innerHTML = `
-                            <div class="comment-user">${comment.Username}</div>
+                            <div class="comment-header">
+                                <div class="user-info">
+                                    <h4>${comment.Username}</h4>
+                                </div>
+                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                            </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
-                            <div class="comment-timestamp">${comment.FormattedDate}</div>
                         `;
                         commentsContainer.appendChild(commentElement);
                     });
@@ -281,9 +289,13 @@ function submitComment(postId, comment, commentsContainer) {
             const commentElement = document.createElement('div');
             commentElement.className = 'comment';
             commentElement.innerHTML = `
-                <div class="comment-user">${newComment.Username}</div>
+                <div class="comment-header">
+                    <div class="user-info">
+                        <h4>${newComment.Username}</h4>
+                    </div>
+                    <span class="timestamp">Commented on: ${newComment.FormattedDate}</span>
+                </div>
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
-                <div class="comment-timestamp">${newComment.FormattedDate}</div>
             `;
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild); // Add new comment at the top
             const noComment=  commentsContainer.querySelector('.no-comment');
