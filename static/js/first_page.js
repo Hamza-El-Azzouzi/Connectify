@@ -94,6 +94,7 @@ export function loginPage() {
 
     const loginForm = document.createElement('form');
     loginForm.name = "logIn"
+    loginForm.id = "formSignIn"
     const loginLabel = document.createElement('label');
     loginLabel.setAttribute('for', 'chk');
     loginLabel.setAttribute('aria-hidden', 'true');
@@ -101,14 +102,20 @@ export function loginPage() {
     loginForm.appendChild(loginLabel);
 
     const loginInputs = [
-        { type: 'text', name: 'emailOrUSername', placeholder: 'Ememail Or Usernameail', required: false },
+        { type: 'text', name: 'emailOrUSername', placeholder: 'Email Or Username', required: false },
         { type: 'password', name: 'pswdSignIn', placeholder: 'Password', required: false },
     ];
 
     loginInputs.forEach(inputData => {
         const input = document.createElement('input');
+        const errParagraph = document.createElement("p")
+       
         Object.assign(input, inputData);
+        element[inputData.name] = input
         loginForm.appendChild(input);
+        errParagraph.id = inputData.name + "Err"
+        errElement[errParagraph.id] = errParagraph
+        loginForm.appendChild(errParagraph);
     });
 
     const loginButton = document.createElement('button');
@@ -181,7 +188,7 @@ export function loginPage() {
                     "Content-Type": "application/json",
                 },
                 method: "POST",
-                body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: passwordSignIn.value, })
+                body: JSON.stringify({ emailOrUSername: element["emailOrUSername"].value, password: element["pswdSignIn"].value, })
             }).then(response => response.json())
                 .then(reply => {
                     switch (true) {
@@ -189,12 +196,12 @@ export function loginPage() {
                             setIntegrity(true)
                             NavigateTo("feed")
                             break
-                        case (reply.REplyMssg == "email"):
-
-                            ErrMessageEmail.textContent = "email not found!!, create an account"
+                        case (reply.REplyMssg == "Account Not found"):
+                            
+                            errElement["emailOrUSernameErr"].textContent = "email not found!!, create an account"
                             break
                         case (reply.REplyMssg == "passwd"):
-                            ErrMessagePasswd1st.textContent = "incorrect Password!!, Try Again"
+                            errElement["pswdSignInErr"].textContent = "incorrect Password!!, Try Again"
                     }
                 })
         }
@@ -286,25 +293,18 @@ console.log(element["gender"].value)
 function VerifyLogin() {
 
     let exist = false
-    let emailOrUSernameValue = emailOrUSername.value
-    let passwordValue = passwordSignIn.value
-    ErrMessageEmailSignIn.textContent = ""
-    ErrMessagePasswd1stSignIn.textContent = ""
+    let emailOrUSernameValue = element["emailOrUSername"].value
+    let passwordValue = element["pswdSignIn"].value
+    errElement["emailOrUSernameErr"].textContent = ""
+    errElement["pswdSignInErr"].textContent = ""
     if (emailOrUSernameValue.length === 0) {
-        ErrMessageEmailSignIn.textContent = "Invalid Email Or User Name"
-        console.log("f")
+        errElement["emailOrUSernameErr"].textContent = "Invalid Email Or User Name"
         exist = true
     }
     console.log(passwordValue)
     if (passwordValue.length === 0) {
-        ErrMessagePasswd1stSignIn.textContent = "Invalid PassWord"
+        errElement["pswdSignInErr"].textContent = InvalidPassWord
         exist = true
     }
     return exist
 }
-// console.log(ErrMessageFistName)
-// document.addEventListener("DOMContentLoaded", () => {
-//     var form = document.getElementById("SignUp");
-//     console.log(form)
-
-// })
