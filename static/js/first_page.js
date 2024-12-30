@@ -1,156 +1,214 @@
 import { NavigateTo, setIntegrity } from "./app.js";
-
+let element = new Map()
+let errElement = new Map()
 export function loginPage() {
-    var link  = document.querySelector('link[rel="stylesheet"]');
+    var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
-    const container = document.createElement('div');
-    container.className = 'container';
-    container.id = 'container';
 
-    // Create sign-up form
-    const signUpForm = document.createElement('div');
-    signUpForm.className = 'form-container sign-up';
+    // Create the main container
+    const mainDiv = document.createElement('div');
+    mainDiv.className = 'main';
 
-    const signUpFormContent = `
-        <form class="singUpForm">
-            <h1>Create Account</h1>
-            <input type="text" name = "first_name" placeholder="First Name">
-             <p id="firstNameErr" class="err"></p>
-            <input type="text" name = "last_name" placeholder="Last Name">
-             <p id="lastNameErr" class="err"></p>
-            <input type="text" name = "user_name" placeholder="User Name">
-             <p id="nameErr" class="err"></p>
-            <input type="text" name = "email" placeholder="Email">
-             <p id="emailErr" class="err"></p>
-            <input type="text" name = "age" placeholder="Age">
-             <p id="ageErr" class="err"></p>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="gender" value="Male"> Male
-                </label>
-                <label>
-                    <input type="radio" name="gender" value="Female"> Female
-                </label>
-            </div>
-             <p id="genderErr" class="err"></p>
-            <input type="password" name="password" placeholder="Password">
-             <p id="passwdErr1st" class="err"></p>
-             <input type="password" name="confirmepassword" placeholder="Confirme Password">
-              <p id="confirmPasswdErr" class="err"></p>
-               <input type="submit" value="Continue">
-  
-        </form>
-    `;
-    // <button class="singUpbtn" type="submit">Sign Up</button>
-    signUpForm.innerHTML = signUpFormContent;
+    // Checkbox input for toggling
+    const checkboxInput = document.createElement('input');
+    checkboxInput.type = 'checkbox';
+    checkboxInput.id = 'chk';
+    checkboxInput.setAttribute('aria-hidden', 'true');
+    mainDiv.appendChild(checkboxInput);
 
-    // Create sign-in form
-    const signInForm = document.createElement('div');
-    signInForm.className = 'form-container sign-in';
+    // Signup container
+    const signupDiv = document.createElement('div');
+    signupDiv.className = 'signup';
 
-    const signInFormContent = `
-        <form class="singInForm">
-            <h1>Sign In</h1>
-            <span>or use your email password</span>
-             <input type="text" name ="emailOrUSername" placeholder="Email Or Username">
-              <p id="emailErrSignIn" class="err"></p>
-           <input type="password" name="passwordSigne" placeholder="Password">
-           <p id="passwdErr1stSigIn" class="err"></p>
-           <input type="submit" value="Sign In">
-        </form>
-    `;
-    signInForm.innerHTML = signInFormContent;
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'toggle-container';
+    const signupForm = document.createElement('form');
+    signupForm.name = "SignUp"
+    signupForm.id = "SignUp"
+    const signupLabel = document.createElement('label');
+    signupLabel.setAttribute('for', 'chk');
+    signupLabel.setAttribute('aria-hidden', 'true');
+    signupLabel.textContent = 'Sign up';
+    signupForm.appendChild(signupLabel);
 
-    const toggleContent = `
-        <div class="toggle">    
-            <div class="toggle-panel toggle-left">
-                <h1>Welcome Back!</h1>
-                <p>Enter your personal details to use all of site features</p>
-                <button class="hidden" id="login">Sign In</button>
-            </div>
-            <div class="toggle-panel toggle-right">
-                <h1>Hello, Friend!</h1>
-                <p>Register with your personal details to use all of site features</p>
-                <button class="hidden" id="register">Sign Up</button>
-            </div>
-        </div>
-    `;
-    toggleContainer.innerHTML = toggleContent;
+    const signupInputs = [
+        { type: 'text', name: 'first_name', placeholder: 'First Name', required: false },
+        { type: 'text', name: 'last_name', placeholder: 'Last Name', required: false },
+        { type: 'text', name: 'email', placeholder: 'Email', required: false },
+        { type: 'text', name: 'user_name', placeholder: 'User name', required: false },
+        { type: 'text', name: 'age', placeholder: 'age', required: false },
+        { type: 'password', name: 'pswd', placeholder: 'Password', required: false },
+        { type: 'password', name: 'confpswd', placeholder: 'Confirme Password', required: false },
+    ];
 
-    // Append forms and toggle to container
-    container.appendChild(signUpForm);
-    container.appendChild(signInForm);
-    container.appendChild(toggleContainer);
+    signupInputs.forEach(inputData => {
+        const input = document.createElement('input');
+        const errParagraph = document.createElement("p")
+        errParagraph.id = inputData.name + "Err"
+        errElement[errParagraph.id] = errParagraph
+        Object.assign(input, inputData);
+        if (inputData.name === "email") {
+            const selectElemnt = document.createElement('select');
+            selectElemnt.name = "gender";
+            const placeholderOption = document.createElement('option');
+            placeholderOption.textContent = "Select gender";
+            placeholderOption.disabled = true;
+            placeholderOption.selected = true;
 
-    // Append container to body
-    app.appendChild(container);
+            const optionMale = document.createElement('option');
+            optionMale.value = "Male";
+            optionMale.textContent = "Male";
+
+            const optionFemale = document.createElement('option');
+            optionFemale.value = "Female";
+            optionFemale.textContent = "Female";
+            selectElemnt.appendChild(placeholderOption);
+            selectElemnt.appendChild(optionMale);
+            selectElemnt.appendChild(optionFemale);
+            const errParagraph = document.createElement("p")
+            errParagraph.id = selectElemnt.name + "Err"
+            errElement[errParagraph.id] = errParagraph
+            element["gender"] = selectElemnt
+            signupForm.append(selectElemnt)
+            signupForm.appendChild(errParagraph)
 
 
-    const registerBtn = document.getElementById('register');
-    const loginBtn = document.getElementById('login');
+        }
 
-    registerBtn.addEventListener('click', () => {
-        container.classList.add("active");
+        element[inputData.name] = input
+        signupForm.appendChild(input);
+        signupForm.appendChild(errParagraph)
+    });
+    console.log(errElement)
+    console.log(element)
+
+    const signupButton = document.createElement('button');
+    signupButton.textContent = 'Sign up';
+    signupForm.appendChild(signupButton);
+
+    signupDiv.appendChild(signupForm);
+    mainDiv.appendChild(signupDiv);
+
+    // Login container
+    const loginDiv = document.createElement('div');
+    loginDiv.className = 'login';
+
+    const loginForm = document.createElement('form');
+    loginForm.name = "logIn"
+    loginForm.id = "formSignIn"
+    const loginLabel = document.createElement('label');
+    loginLabel.setAttribute('for', 'chk');
+    loginLabel.setAttribute('aria-hidden', 'true');
+    loginLabel.textContent = 'Login';
+    loginForm.appendChild(loginLabel);
+
+    const loginInputs = [
+        { type: 'text', name: 'emailOrUSername', placeholder: 'Email Or Username', required: false },
+        { type: 'password', name: 'pswdSignIn', placeholder: 'Password', required: false },
+    ];
+
+    loginInputs.forEach(inputData => {
+        const input = document.createElement('input');
+        const errParagraph = document.createElement("p")
+
+        Object.assign(input, inputData);
+        element[inputData.name] = input
+        loginForm.appendChild(input);
+        errParagraph.id = inputData.name + "Err"
+        errElement[errParagraph.id] = errParagraph
+        loginForm.appendChild(errParagraph);
     });
 
-    loginBtn.addEventListener('click', () => {
-        container.classList.remove("active");
+    const loginButton = document.createElement('button');
+    loginButton.textContent = 'Login';
+    loginForm.appendChild(loginButton);
+
+    loginDiv.appendChild(loginForm);
+    mainDiv.appendChild(loginDiv);
+
+    app.appendChild(mainDiv);
+
+    signupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        if (!VerifyData()) {
+            fetch("/api/register", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    username: element["user_name"].value,
+                    age: element["age"].value,
+                    gender: element["gender"].value,
+                    first_name: element["first_name"].value,
+                    last_name: element["last_name"].value,
+                    email: element["email"].value,
+                    password: element["pswd"].value,
+                    confirmPassword: element["confpswd"].value,
+                }),
+            })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((reply) => {
+                    console.log(reply)
+
+                    if (reply.REplyMssg === "Done") {
+                        console.log("Registered successfully");
+                        NavigateTo("login")
+                    }
+                    if (reply.REplyMssg === "email") {
+
+                        errElement["emailErr"].textContent = "Email already exists!"
+                    }
+                    if (reply.REplyMssg === "user") {
+
+                        errElement["user_nameErr"].textContent = "Username already exists!"
+                    }
+                    if (reply.REplyMssg === "passwd") {
+
+                        errElement["pswdErr"].textContent = "Password too long!"
+                    }
+
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    Error(Err, "Failed to register. Please try again later.");
+                });
+        }
     });
+
+    loginForm.addEventListener("submit", (event) => {
+
+        event.preventDefault()
+        console.log(formSignIn)
+        if (!VerifyLogin()) {
+            fetch("/api/login", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify({ emailOrUSername: element["emailOrUSername"].value, password: element["pswdSignIn"].value, })
+            }).then(response => response.json())
+                .then(reply => {
+                    switch (true) {
+                        case (reply.REplyMssg == "Done"):
+                            setIntegrity(true)
+                            NavigateTo("feed")
+                            break
+                        case (reply.REplyMssg == "Account Not found"):
+
+                            errElement["emailOrUSernameErr"].textContent = "email not found!!, create an account"
+                            break
+                        case (reply.REplyMssg == "passwd"):
+                            errElement["pswdSignInErr"].textContent = "incorrect Password!!, Try Again"
+                    }
+                })
+        }
+
+
+    })
 }
-
-
-
-let ErrMessageFistName = null
-let ErrMessageLastName = null
-let ErrMessageName = null
-let ErrMessageEmail = null
-let ErrMessageAge = null
-let ErrMessageEmailSignIn= null
-let ErrMessageGender = null
-let ErrMessagePasswd1st = null
-let ErrMessagePasswd1stSignIn = null
-let ErrMessageConfirmPasswd = null
-let first_name = null
-let last_name = null
-let user_name = null
-let age = null
-let email = null
-let emailOrUSername = null
-let gender = null
-let password = null
-let passwordSignIn= null
-let confirmepassword = null
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    ErrMessageFistName = document.getElementById("firstNameErr")
-    ErrMessageLastName = document.getElementById("lastNameErr")
-    ErrMessageName = document.getElementById("nameErr")
-
-    ErrMessageEmail = document.getElementById("emailErr")
-    ErrMessageEmailSignIn = document.getElementById("emailErrSignIn")
-    ErrMessageAge = document.getElementById("ageErr")
-    ErrMessageGender = document.getElementById('genderErr')
-    ErrMessagePasswd1st = document.getElementById('passwdErr1st')
-    ErrMessagePasswd1stSignIn  = document.getElementById('passwdErr1stSigIn')
-    ErrMessageConfirmPasswd = document.getElementById('confirmPasswdErr')
-    first_name = document.querySelector("input[name='first_name']")
-    last_name = document.querySelector("input[name='last_name']")
-    user_name = document.querySelector("input[name='user_name']")
-    age = document.querySelector("input[name='age']")
-    email = document.querySelector("input[name='email']")
-    emailOrUSername = document.querySelector("input[name='emailOrUSername']")
-    gender = document.querySelector("input[name='gender']")
-    password = document.querySelector("input[name='password']")
-    passwordSignIn = document.querySelector("input[name='passwordSigne']")
-    confirmepassword = document.querySelector("input[name='confirmepassword']")
-})
-
-const Err = document.getElementById("otherErr")
 
 const ExpUserName = /^[a-zA-Z0-9_.]{3,20}$/
 const ExpName = /^[a-zA-Z]{3,20}$/
@@ -167,66 +225,64 @@ const InvalidName = "Invalid Name!!"
 const InvalidPassWord = "Inavli Password!!"
 const NotMatch = "Password Confirmation doesn't match!!"
 const VerifyData = () => {
+
     let exist = false
-    ErrMessageFistName.textContent = ""
-    ErrMessageLastName.textContent = ""
-    ErrMessageName.textContent = ""
-    ErrMessageEmail.textContent = ""
-    ErrMessageAge.textContent = ""
-    ErrMessageGender.textContent = ""
-    ErrMessageConfirmPasswd.textContent = ""
-    ErrMessagePasswd1st.textContent = ""
 
-    if (!ExpName.test(first_name.value)) {
-        ErrMessageFistName.textContent = InvalidFirstName
+    errElement["first_nameErr"].textContent = ""
+    errElement["last_nameErr"].textContent = ""
+    errElement["ageErr"].textContent = ""
+    errElement["user_nameErr"].textContent = ""
+    errElement["emailErr"].textContent = ""
+    errElement["pswdErr"].textContent = ""
+    errElement["confpswdErr"].textContent = ""
+    errElement["genderErr"].textContent = ""
 
-        exist = true
-    }
-
-    if (!ExpName.test(last_name.value)) {
-        ErrMessageLastName.textContent = InvalidLastName
+    if (!ExpName.test(element["first_name"].value)) {
+        errElement["first_nameErr"].textContent = InvalidFirstName
 
         exist = true
     }
 
-    if (gender.value !== "Male" && gender.value !== "Female") {
-        ErrMessageGender.textContent = InvalidGender
+    if (!ExpName.test(element["last_name"].value)) {
+        errElement["last_nameErr"].textContent = InvalidLastName
+
+        exist = true
+    }
+    console.log(element["gender"].value)
+    if (element["gender"].value !== "Male" && element["gender"].value !== "Female") {
+        errElement["genderErr"].textContent = InvalidGender
 
         exist = true
     }
 
-    if (!ExpAge.test(age.value)) {
-        ErrMessageAge.textContent = InvalidAge
+    if (!ExpAge.test(element["age"].value)) {
+        errElement["ageErr"].textContent = InvalidAge
         exist = true
     }
 
 
-    if (!ExpUserName.test(user_name.value)) {
-        ErrMessageName.textContent = InvalidName
-
+    if (!ExpUserName.test(element["user_name"].value)) {
+        errElement["user_nameErr"].textContent = InvalidName
         exist = true
     }
 
 
-    if (!ExpEmail.test(email.value)) {
+    if (!ExpEmail.test(element["email"].value)) {
         console.log("email")
-        ErrMessageEmail.textContent = InvalidEmail
-
+        errElement["emailErr"].textContent = InvalidEmail
         exist = true
     }
 
 
-    if (!ExpPasswd.test(password.value)) {
+    if (!ExpPasswd.test(element["pswd"].value)) {
         console.log("password")
-        ErrMessagePasswd1st.textContent = InvalidPassWord
+        errElement["pswdErr"].textContent = InvalidPassWord
         exist = true
     }
 
 
-    if (password.value !== confirmepassword.value) {
-        console.log("confirm")
-        ErrMessagePasswd1st.textContent = NotMatch
-        //
+    if (element["pswd"].value !== element["confpswd"].value) {
+        errElement["confpswdErr"].textContent = NotMatch
         exist = true
     }
 
@@ -237,109 +293,18 @@ const VerifyData = () => {
 function VerifyLogin() {
 
     let exist = false
-    let emailOrUSernameValue = emailOrUSername.value
-    let passwordValue = passwordSignIn.value
-    ErrMessageEmailSignIn.textContent = ""
-    ErrMessagePasswd1stSignIn.textContent = ""
+    let emailOrUSernameValue = element["emailOrUSername"].value
+    let passwordValue = element["pswdSignIn"].value
+    errElement["emailOrUSernameErr"].textContent = ""
+    errElement["pswdSignInErr"].textContent = ""
     if (emailOrUSernameValue.length === 0) {
-        ErrMessageEmailSignIn.textContent = "Invalid Email Or User Name"
-        console.log("f")
+        errElement["emailOrUSernameErr"].textContent = "Invalid Email Or User Name"
         exist = true
     }
     console.log(passwordValue)
     if (passwordValue.length === 0) {
-        ErrMessagePasswd1stSignIn.textContent = "Invalid PassWord"
+        errElement["pswdSignInErr"].textContent = InvalidPassWord
         exist = true
     }
     return exist
 }
-document.addEventListener("DOMContentLoaded", () => {
-    let form = document.querySelector(".singUpForm");
-    let formSignIn = document.querySelector(".singInForm");
-    if (form) {
-        form.action = "/api/register";
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-
-            if (!VerifyData()) {
-                fetch("/api/register", {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    method: "POST",
-                    body: JSON.stringify({
-                        username: user_name.value,
-                        age: age.value,
-                        gender: gender.value,
-                        first_name: first_name.value,
-                        last_name: last_name.value,
-                        email: email.value,
-                        password: password.value,
-                        confirmPassword: confirmepassword.value,
-                    }),
-                })
-                    .then((response) => {
-                        return response.json();
-                    })
-                    .then((reply) => {
-                        console.log(reply)
-
-                        if (reply.REplyMssg === "Done") {
-                            console.log("Registered successfully");
-                            NavigateTo("feed")
-                        }
-                        if (reply.REplyMssg === "email") {
-
-                            ErrMessageEmail.textContent = "Email already exists!"
-                        }
-                        if (reply.REplyMssg === "user") {
-
-                            ErrMessageName.textContent = "Username already exists!"
-                        }
-                        if (reply.REplyMssg === "passwd") {
-
-                            ErrMessagePasswd1st.textContent = "Password too long!"
-                        }
-
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        Error(Err, "Failed to register. Please try again later.");
-                    });
-            }
-        });
-    } 
-    if (formSignIn) {
-        formSignIn.action = "/api/login"
-        formSignIn.addEventListener("submit", (event) => {
-            console.log(formSignIn)
-            event.preventDefault()
-           
-            if (!VerifyLogin()) {
-                fetch("/api/login", {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ emailOrUSername: emailOrUSername.value, password: passwordSignIn.value, })
-                }).then(response => response.json())
-                    .then(reply => {
-                        switch (true) {
-                            case (reply.REplyMssg == "Done"):
-                                setIntegrity(true)
-                                NavigateTo("feed")
-                                break
-                            case (reply.REplyMssg == "email"):
-
-                                ErrMessageEmail.textContent = "email not found!!, create an account"
-                                break
-                            case (reply.REplyMssg == "passwd"):
-                                ErrMessagePasswd1st.textContent = "incorrect Password!!, Try Again"
-                        }
-                    })
-            }
-
-
-        })
-    }
-});

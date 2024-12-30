@@ -38,12 +38,13 @@ export function feedPage() {
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
+    const categoryListElement = document.querySelector("#category-list");
     formInput.addEventListener('focus', () => {
         formContainer.classList.add('expanded');
         postFormElement.classList.add('active');
     });
 
-    formContainer.addEventListener('focusout', (event) => {
+    formContainer.addEventListener('focusout', () => {
         setTimeout(() => {
             if (!formContainer.contains(document.activeElement)) {
                 formContainer.classList.remove('expanded');
@@ -51,6 +52,7 @@ export function feedPage() {
             }
         }, 100);
     });
+
     postFormElement.addEventListener("submit", (event) => {
         event.preventDefault();
         let isValid = true;
@@ -143,7 +145,7 @@ function populatePosts(posts) {
                 <div class="post-title">${post.Title}</div>
                 <div class="post-categories">Categories: ${post.CategoryName}</div>
                 <div class="post-content">
-                    ${post.Content}
+                    <pre>${post.Content}</pre>
                 </div>
                 <div class="post-footer">
                     <div class="actions">
@@ -216,8 +218,6 @@ window.addEventListener("scrollend", () => {
         feed.appendChild(placeholder);
         window.scrollTo(0, document.body.scrollHeight);
         let posts = document.querySelectorAll(".post");
-
-        console.log("Start waiting...");
 
         setTimeout(() => {
             try {

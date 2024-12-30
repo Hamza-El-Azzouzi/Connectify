@@ -9,6 +9,12 @@ fieldset {
   border: 0;
 }
 
+pre {
+  white-space: pre-line;
+  line-height: 1.5;
+  font-size: 0.89rem;
+}
+
 .control {
   display: inline-flex;
   position: relative;
