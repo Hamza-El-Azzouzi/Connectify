@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 
 	"real-time-forum/internal/models"
 )
@@ -36,13 +35,10 @@ func (repo *UserRepository) FindUser(identifier string, flag string) (*models.Us
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Println(err)
 			return nil, nil
 		}
-		fmt.Println(err)
 		return nil, err
 	}
-	fmt.Println(user)
 	return user, nil
 }
 

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -27,7 +26,6 @@ func OpenHtml(fileName string, w http.ResponseWriter, data any) {
 	basePath := GetPath()
 	temp, err := template.ParseFiles(basePath + "templates/" + fileName)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

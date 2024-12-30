@@ -76,16 +76,6 @@ document.getElementById("navbar").addEventListener("click", async (e) => {
     }
 });
 
-
-// console.log(cookie)
-
-
-
-// const btnfed = document.querySelector(".navFed")
-// btnfed.addEventListener("click",{
-//     na
-// })
-
 // Logout functionality
 // function logout() {
 //     fetch('/api/logout', { method: 'POST', credentials: 'include' })

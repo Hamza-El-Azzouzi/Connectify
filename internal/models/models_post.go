@@ -36,7 +36,6 @@ type PostWithUser struct {
 
 type CommentDetails struct {
 	CommentID           uuid.UUID
-	PostIDcomment       uuid.UUID
 	Content             string
 	CreatedAt           time.Time
 	UserID              uuid.UUID

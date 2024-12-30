@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -35,7 +34,6 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-		fmt.Println(info)
 		if !h.AuthMidlaware.IsValidGender(info.Gender) ||
 			!h.AuthMidlaware.IsValidAge(info.Age) ||
 			!h.AuthMidlaware.IsValidEmail(info.Email) ||
@@ -46,7 +44,6 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = h.AuthService.Register(info)
-		fmt.Println(err)
 		if err != nil {
 			switch true {
 			case strings.Contains(err.Error(), "username"):
@@ -72,13 +69,11 @@ func (h *AuthHandler) LoginHandle(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&info)
 		defer r.Body.Close()
 		if err != nil {
-			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		user, err := h.AuthService.Login(info.EmailOrUserName, info.Passwd)
 		if err != nil || user == nil {
-			fmt.Println(err)
 			switch true {
 			case err.Error() == "in email or username":
 				sendResponse(w, "Account Not found")
@@ -103,7 +98,6 @@ func (h *AuthHandler) LoginHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func sendResponse(w http.ResponseWriter, reply string) {
-	fmt.Println(reply)
 	w.Header().Set("Content-Type", "application/json")
 
 	if reply != "Done" {
@@ -135,7 +129,6 @@ func SetCookies(w http.ResponseWriter, name, value string, expires time.Time) {
 
 func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 	activeUser, _ := h.AuthMidlaware.IsUserLoggedIn(w, r)
-	fmt.Println(activeUser)
 	if !activeUser {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -153,20 +146,19 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 	sendResponse(w, "Done")
 }
 
-func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request){
-	if r.Method == http.MethodGet{
+func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
 		sessionId, err := r.Cookie("sessionId")
 		if err == nil || sessionId.Value != "" {
 			err := h.SessionService.CheckSession(sessionId.Value)
 			if err != nil {
-				sendResponse(w,"No User Found")
+				sendResponse(w, "No User Found")
 				return
-			}else{
-				sendResponse(w,"Done")
+			} else {
+				sendResponse(w, "Done")
 			}
 		}
-	}else{
+	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-
 }

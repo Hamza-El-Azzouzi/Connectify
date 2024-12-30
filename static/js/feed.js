@@ -123,9 +123,9 @@ function getPosts(offset) {
     fetch(`/Posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
-            if (!data.posts){
+            if (!data.posts) {
                 stopLoading = true;
-            }else{
+            } else {
                 stopLoading = false;
                 populatePosts(data.posts);
             }
@@ -134,7 +134,6 @@ function getPosts(offset) {
             console.error("Error fetching data:", error);
         });
 }
-
 function populatePosts(posts) {
     const feed = document.querySelector(".feed");
     if (posts && posts.length > 0) {
@@ -157,15 +156,137 @@ function populatePosts(posts) {
                     <div class="actions">
                         <button>${post.LikeCount} Like</button>
                         <button>${post.DisLikeCount} Dislike</button>
-                        <button>${post.CommentCount} Comment</button>
+                        <button class="toggle-comment" id=${post.PostID}>${post.CommentCount} Comment</button>
                     </div>
                 </div>
-            `;
+                <div class="comment-section" style="display: none;">
+                    <div class="comments"></div>
+                    <button class="loadMore">Load More ...</button>
+                    <div class="comment-form">
+                        <textarea placeholder="Add a comment..."></textarea>
+                        <p id="err"></p>
+                        <button class="submit-comment">Submit</button>
+                    </div>
+                </div>`;
             feed.appendChild(postElement);
-        })
+
+            const toggleCommentButton = postElement.querySelector('.toggle-comment');
+            const commentSection = postElement.querySelector('.comment-section');
+            const loadMoreButton = postElement.querySelector('.loadMore');
+
+            toggleCommentButton.addEventListener('click', () => {
+                if (commentSection.style.display === 'none') {
+                    commentSection.style.display = 'block';
+                    if (!commentSection.dataset.loaded) {
+                        loadComments(post.PostID, commentSection.querySelector('.comments'), 0, loadMoreButton);
+                        commentSection.dataset.loaded = true;
+                    }
+                } else {
+                    commentSection.style.display = 'none';
+                }
+            });
+
+        
+            loadMoreButton.addEventListener('click', () => {
+                const currentOffset = parseInt(loadMoreButton.dataset.offset) || 0;
+                const nextOffset = currentOffset + 5;
+                loadComments(post.PostID, commentSection.querySelector('.comments'), nextOffset, loadMoreButton);
+                loadMoreButton.dataset.offset = nextOffset;
+            });
+
+            const submitCommentButton = postElement.querySelector('.submit-comment');
+            const commentTextarea = postElement.querySelector('.comment-form textarea');
+
+            submitCommentButton.addEventListener('click', () => {
+                const errParagraph = document.getElementById("err");
+                errParagraph.textContent = "";
+                const comment = commentTextarea.value.trim();
+                if (comment) {
+                    submitComment(post.PostID, comment, commentSection.querySelector('.comments'));
+                    commentTextarea.value = '';
+                } else {
+                    errParagraph.textContent = "Invalid Comment";
+                }
+            });
+        });
     }
 }
 
+function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
+    fetch(`/api/comment/${postId}/${offset}`)
+        .then(response => response.json())
+        .then(comments => {
+            if (!comments || comments.length === 0) {
+                if (offset === 0) {
+                    commentsContainer.innerHTML = '<p class="no-comment">No comments yet.</p>';
+                }
+                loadMoreButton.style.display = 'none'; // Hide "Load More" button if no more comments
+            } else {
+                if (offset === 0) {
+                    commentsContainer.innerHTML = comments.map(comment => `
+                        <div class="comment">
+                            <div class="comment-user">${comment.Username}</div>
+                            <div class="comment-content"><pre>${comment.Content}</pre></div>
+                            <div class="comment-timestamp timestamp">${comment.FormattedDate}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    comments.forEach(comment => {
+                        const commentElement = document.createElement('div');
+                        commentElement.className = 'comment';
+                        commentElement.innerHTML = `
+                            <div class="comment-user">${comment.Username}</div>
+                            <div class="comment-content"><pre>${comment.Content}</pre></div>
+                            <div class="comment-timestamp">${comment.FormattedDate}</div>
+                        `;
+                        commentsContainer.appendChild(commentElement);
+                    });
+                }
+                if (comments.length < 5 || comments[0].TotalCount <= offset+5) {
+                    loadMoreButton.style.display = 'none';
+                } else if(comments[0].TotalCount > offset) {
+                    loadMoreButton.style.display = 'block';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading comments:', error);
+        });
+}
+
+function submitComment(postId, comment, commentsContainer) {
+    const commentCountButton = document.getElementById(postId);
+    fetch(`/api/sendcomment`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: comment, postId: postId }),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(newComment => {
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment';
+            commentElement.innerHTML = `
+                <div class="comment-user">${newComment.Username}</div>
+                <div class="comment-content"><pre>${newComment.Content}</pre></div>
+                <div class="comment-timestamp">${newComment.FormattedDate}</div>
+            `;
+            commentsContainer.insertBefore(commentElement, commentsContainer.firstChild); // Add new comment at the top
+            const noComment=  commentsContainer.querySelector('.no-comment');
+            if (noComment)commentsContainer.removeChild(noComment);
+            const totalCount = newComment.TotalCount;
+            commentCountButton.textContent = `${totalCount} Comment${totalCount !== 1 ? 's' : ''}`;
+        })
+        .catch(error => {
+            console.error('Error submitting comment:', error);
+        });
+}
 function getCategories() {
     fetch(`/Posts/1`)
         .then((response) => response.json())

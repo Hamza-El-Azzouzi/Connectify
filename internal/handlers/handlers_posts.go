@@ -179,14 +179,14 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	comment, err := p.CommentService.GetCommentByPost(commentData.PostId, 0)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(comment)
+	json.NewEncoder(w).Encode(comment[0])
 }
 
 func (p *PostHandler) PostFilter(w http.ResponseWriter, r *http.Request) {
@@ -246,9 +246,14 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.Error(w, http.StatusNotFound)
+		return
+	}
 	var err error
-	postID := r.URL.Query().Get("postId")
-	pagination := r.URL.Query().Get("offset")
+	postID := pathParts[3]
+	pagination := pathParts[4]
 	nPagination, err := strconv.Atoi(pagination)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

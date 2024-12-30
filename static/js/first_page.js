@@ -78,8 +78,6 @@ export function loginPage() {
         signupForm.appendChild(input);
         signupForm.appendChild(errParagraph)
     });
-    console.log(errElement)
-    console.log(element)
 
     const signupButton = document.createElement('button');
     signupButton.textContent = 'Sign up';
@@ -151,7 +149,6 @@ export function loginPage() {
                     return response.json();
                 })
                 .then((reply) => {
-                    console.log(reply)
 
                     if (reply.REplyMssg === "Done") {
                         console.log("Registered successfully");
@@ -181,7 +178,6 @@ export function loginPage() {
     loginForm.addEventListener("submit", (event) => {
 
         event.preventDefault()
-        console.log(formSignIn)
         if (!VerifyLogin()) {
             fetch("/api/login", {
                 headers: {
@@ -248,7 +244,6 @@ const VerifyData = () => {
 
         exist = true
     }
-    console.log(element["gender"].value)
     if (element["gender"].value !== "Male" && element["gender"].value !== "Female") {
         errElement["genderErr"].textContent = InvalidGender
 
@@ -268,14 +263,13 @@ const VerifyData = () => {
 
 
     if (!ExpEmail.test(element["email"].value)) {
-        console.log("email")
         errElement["emailErr"].textContent = InvalidEmail
         exist = true
     }
 
 
     if (!ExpPasswd.test(element["pswd"].value)) {
-        console.log("password")
+
         errElement["pswdErr"].textContent = InvalidPassWord
         exist = true
     }
@@ -301,7 +295,6 @@ function VerifyLogin() {
         errElement["emailOrUSernameErr"].textContent = "Invalid Email Or User Name"
         exist = true
     }
-    console.log(passwordValue)
     if (passwordValue.length === 0) {
         errElement["pswdSignInErr"].textContent = InvalidPassWord
         exist = true
