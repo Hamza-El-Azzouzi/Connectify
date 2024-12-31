@@ -33,24 +33,27 @@ func main() {
 
 	defer db.Close()
 
-	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo := internal.InitRepositories(db)
+	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := internal.InitRepositories(db)
 
-	authService, postService, categoryService, commentService, likeService, sessionService := internal.InitServices(userRepo,
+	authService, postService, categoryService, commentService, likeService, sessionService, messageService := internal.InitServices(userRepo,
 		postRepo,
 		categoryRepo,
 		commentRepo,
 		likeRepo,
-		sessionRepo)
+		sessionRepo,
+		messageRepo)
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler := internal.InitHandlers(authService,
+	authHandler, postHandler, likeHandler , MessageHandler := internal.InitHandlers(authService,
 		postService,
 		categoryService,
 		commentService,
 		likeService,
 		sessionService,
-		authMiddleware)
+		authMiddleware,
+		messageService,
+	)
 
 	cleaner := &utils.Cleaner{SessionService: sessionService}
 
@@ -58,9 +61,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware,MessageHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://localhost:8080/")
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }

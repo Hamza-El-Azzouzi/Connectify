@@ -77,3 +77,7 @@ func (a *AuthService) GetUserBySessionID(sessionID string) (*models.User, error)
 	}
 	return user, nil
 }
+
+func (a * AuthService) GetUsers()([]models.User,error){
+	return a.UserRepo.GetUsers()
+}

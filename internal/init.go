@@ -15,13 +15,15 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.CommentRepositorie,
 	*repositories.LikeReposetorie,
 	*repositories.SessionsRepositorie,
+	*repositories.MessageRepository,
 ) {
 	return &repositories.UserRepository{DB: db},
 		&repositories.CategoryRepository{DB: db},
 		&repositories.PostRepository{DB: db},
 		&repositories.CommentRepositorie{DB: db},
 		&repositories.LikeReposetorie{DB: db},
-		&repositories.SessionsRepositorie{DB: db}
+		&repositories.SessionsRepositorie{DB: db},
+		&repositories.MessageRepository{DB: db}
 }
 
 func InitServices(userRepo *repositories.UserRepository,
@@ -29,19 +31,22 @@ func InitServices(userRepo *repositories.UserRepository,
 	categoryRepo *repositories.CategoryRepository,
 	commentRepo *repositories.CommentRepositorie,
 	likeRepo *repositories.LikeReposetorie,
-	sessionRepo *repositories.SessionsRepositorie) (*services.AuthService,
+	sessionRepo *repositories.SessionsRepositorie,
+	messageRepo *repositories.MessageRepository) (*services.AuthService,
 	*services.PostService,
 	*services.CategoryService,
 	*services.CommentService,
 	*services.LikeService,
 	*services.SessionService,
+	*services.MessageService,
 ) {
 	return &services.AuthService{UserRepo: userRepo},
 		&services.PostService{PostRepo: postRepo, CategoryRepo: categoryRepo},
 		&services.CategoryService{CategorieRepo: categoryRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
 		&services.LikeService{LikeRepo: likeRepo, PostRepo: postRepo, CommentRepo: commentRepo},
-		&services.SessionService{SessionRepo: sessionRepo}
+		&services.SessionService{SessionRepo: sessionRepo},
+		&services.MessageService{MessageRepo: messageRepo}
 }
 
 // seesion repo
@@ -51,10 +56,13 @@ func InitHandlers(authService *services.AuthService,
 	commentService *services.CommentService,
 	likeService *services.LikeService,
 	sessionService *services.SessionService,
-	authMiddleware *middleware.AuthMiddleware) (*handlers.AuthHandler,
+	authMiddleware *middleware.AuthMiddleware,
+	messageService *services.MessageService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.LikeHandler,
+	*handlers.MessageHandler,
 ) {
+	MessageHandler := &handlers.MessageHandler{MessageService : messageService}
 	authHandler := &handlers.AuthHandler{
 		AuthService:    authService,
 		AuthMidlaware:  authMiddleware,
@@ -73,5 +81,5 @@ func InitHandlers(authService *services.AuthService,
 		AuthMidlaware: authMiddleware,
 	}
 
-	return authHandler, postHandler, likeHandler
+	return authHandler, postHandler, likeHandler , MessageHandler
 }

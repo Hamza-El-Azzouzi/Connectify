@@ -58,3 +58,25 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 	}
 	return user, nil
 }
+
+func (r *UserRepository) GetUsers() ([]models.User, error) {
+	allUser := []models.User{}
+	query := `SELECT id, username , first_name, last_name FROM users order by username ASC `
+	rows , err := r.DB.Query(query)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil,nil
+		}
+		return nil ,err
+	}
+	for rows.Next(){
+		user := models.User{}
+		
+		err := rows.Scan(&user.ID, &user.Username, &user.FirstName,&user.LastName)
+		if err != nil {
+			return nil, err
+		}
+		allUser = append(allUser , user)
+	}
+	return allUser , nil
+}

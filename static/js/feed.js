@@ -6,9 +6,18 @@ export function feedPage() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
     const app = document.getElementById("main-content");
-    const container = document.createElement('div');
-    container.className = 'container';
-    container.id = 'container';
+
+    // Create a flex container to hold the feed and user section
+    const flexContainer = document.createElement('div');
+    flexContainer.className = 'flex-container';
+    app.appendChild(flexContainer);
+
+    // Create the feed container
+    const feedContainer = document.createElement('div');
+    feedContainer.className = 'feed-container';
+    flexContainer.appendChild(feedContainer);
+
+    // Create the post form and feed
     const postForm = document.createElement('div');
     postForm.className = "form-container";
     postForm.tabIndex = "0";
@@ -28,19 +37,33 @@ export function feedPage() {
             </div>
             <button type="submit" class="post-button">Post</button>
         </form>
-    `
+    `;
     postForm.innerHTML = postFormContent;
     getCategories();
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
     let posts = document.querySelectorAll(".post");
     if (posts.length === 0) {
-        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`
+        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`;
     }
-    container.appendChild(postForm);
-    container.appendChild(postsFeed);
-    app.appendChild(container);
+    feedContainer.appendChild(postForm);
+    feedContainer.appendChild(postsFeed);
 
+    // Create the user section
+    const userSection = document.createElement('div');
+    userSection.className = 'user-section';
+    userSection.innerHTML = `
+        <h2>Registered Users</h2>
+        <div class="user-list">
+            <!-- Users will be dynamically added here -->
+        </div>
+    `;
+    flexContainer.appendChild(userSection);
+
+    // Fetch and display registered users
+    fetchUsers();
+
+    // Existing event listeners and functions...
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
@@ -66,7 +89,6 @@ export function feedPage() {
         document.getElementById('title-error').textContent = '';
         document.getElementById('category-error').textContent = '';
         document.getElementById('textarea-error').textContent = '';
-
 
         const title = document.querySelector('.form-input').value;
         const content = document.getElementById('postContent').value;
@@ -121,9 +143,93 @@ export function feedPage() {
                         feed.innerHTML = "";
                         getPosts(0);
                     }
-                })
+                });
         }
-    })
+    });
+}
+
+
+function createMessagePopup(username) {
+    const popup = document.createElement('div');
+    popup.className = 'message-popup';
+    popup.innerHTML = `
+        <div class="message-popup-content">
+            <div class="message-header">
+                <h3>Message ${username}</h3>
+                <button class="close-popup">&times;</button>
+            </div>
+            <div class="message-body">
+                <div class="message-history">
+                    <!-- Messages will be displayed here -->
+                </div>
+                <div class="message-input">
+                    <textarea placeholder="Type your message..."></textarea>
+                    <button class="send-message">Send</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Close the pop-up when the close button is clicked
+    const closeButton = popup.querySelector('.close-popup');
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(popup);
+    });
+
+    // Handle sending a message
+    const sendButton = popup.querySelector('.send-message');
+    const textarea = popup.querySelector('textarea');
+    const messageHistory = popup.querySelector('.message-history');
+
+    // Function to add a message to the history
+    function addMessage(message, isMyMessage) {
+        const messageElement = document.createElement('div');
+        messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
+        messageElement.textContent = message;
+        messageHistory.appendChild(messageElement); // Append to the bottom
+        messageHistory.scrollTop = messageHistory.scrollHeight; // Scroll to the bottom
+    }
+
+    // Simulate initial messages (for demonstration purposes)
+    const initialMessages = [
+        { text: "This is an older message.", isMyMessage: false },
+        { text: "This is another older message.", isMyMessage: true },
+    ];
+    initialMessages.forEach(msg => addMessage(msg.text, msg.isMyMessage));
+
+    // Handle sending a message
+    sendButton.addEventListener('click', () => {
+        const message = textarea.value.trim();
+        if (message) {
+            addMessage(message, true); // Add your message
+            textarea.value = ''; // Clear the textarea
+
+            // Simulate a response from the other user (for demonstration purposes)
+            setTimeout(() => {
+                addMessage("This is a response from the other user.", false);
+            }, 1000);
+        }
+    });
+
+    // Handle scrolling to the top to load older messages
+    messageHistory.addEventListener('scroll', () => {
+        if (messageHistory.scrollTop === 0) {
+            // Simulate loading older messages (for demonstration purposes)
+            const olderMessages = [
+                { text: "This is an even older message.", isMyMessage: false },
+                { text: "This is another older message.", isMyMessage: true },
+            ];
+            olderMessages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
+                messageElement.textContent = msg.text;
+                messageHistory.insertBefore(messageElement, messageHistory.firstChild); // Insert at the top
+            });
+        }
+    });
+
+    // Add the pop-up to the body
+    document.body.appendChild(popup);
 }
 
 function getPosts(offset) {
@@ -305,6 +411,31 @@ function submitComment(postId, comment, commentsContainer) {
         })
         .catch(error => {
             console.error('Error submitting comment:', error);
+        });
+}
+
+function fetchUsers() {
+    fetch('/api/users') // Replace with your API endpoint
+        .then(response => response.json())
+        .then(users => {
+            const userList = document.querySelector('.user-list');
+            userList.innerHTML = ''; // Clear existing content
+
+            users.forEach(user => {
+                const usernameElement = document.createElement('div');
+                usernameElement.className = 'username';
+                usernameElement.textContent = user.Username;
+
+                // Add click event to open the message pop-up
+                usernameElement.addEventListener('click', () => {
+                    createMessagePopup(user.Username);
+                });
+
+                userList.appendChild(usernameElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
         });
 }
 function getCategories() {
