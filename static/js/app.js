@@ -55,6 +55,7 @@ export function NavigateTo(page) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    
     const isLoggedIn = await checkIntegrity();
     if (isLoggedIn) {
         NavigateTo("feed");

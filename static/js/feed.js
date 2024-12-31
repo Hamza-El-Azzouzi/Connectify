@@ -1,23 +1,24 @@
 let isLoading = false;
 let stopLoading = false;
+let connectionToWS
+let sessionID
+
 
 export function feedPage() {
+    connectionToWS = new WebSocket("ws://localhost:8080/ws")
     getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
     const app = document.getElementById("main-content");
 
-    // Create a flex container to hold the feed and user section
     const flexContainer = document.createElement('div');
     flexContainer.className = 'flex-container';
     app.appendChild(flexContainer);
 
-    // Create the feed container
     const feedContainer = document.createElement('div');
     feedContainer.className = 'feed-container';
     flexContainer.appendChild(feedContainer);
 
-    // Create the post form and feed
     const postForm = document.createElement('div');
     postForm.className = "form-container";
     postForm.tabIndex = "0";
@@ -49,7 +50,6 @@ export function feedPage() {
     feedContainer.appendChild(postForm);
     feedContainer.appendChild(postsFeed);
 
-    // Create the user section
     const userSection = document.createElement('div');
     userSection.className = 'user-section';
     userSection.innerHTML = `
@@ -60,10 +60,8 @@ export function feedPage() {
     `;
     flexContainer.appendChild(userSection);
 
-    // Fetch and display registered users
     fetchUsers();
 
-    // Existing event listeners and functions...
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
@@ -149,7 +147,8 @@ export function feedPage() {
 }
 
 
-function createMessagePopup(username) {
+function createMessagePopup(username, user_ID) {
+    console.log(user_ID)
     const popup = document.createElement('div');
     popup.className = 'message-popup';
     popup.innerHTML = `
@@ -169,8 +168,11 @@ function createMessagePopup(username) {
             </div>
         </div>
     `;
-
-    // Close the pop-up when the close button is clicked
+    const cookie = document.cookie;
+    
+    if (cookie.includes("sessionId")) {
+        sessionID = cookie.split("=")[1]
+    }
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
         document.body.removeChild(popup);
@@ -201,13 +203,10 @@ function createMessagePopup(username) {
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         if (message) {
+            console.log(sessionID)
+            connectionToWS.send(JSON.stringify({ msg: message, session: sessionID, id: user_ID }))
             addMessage(message, true); // Add your message
-            textarea.value = ''; // Clear the textarea
-
-            // Simulate a response from the other user (for demonstration purposes)
-            setTimeout(() => {
-                addMessage("This is a response from the other user.", false);
-            }, 1000);
+            textarea.value = '';
         }
     });
 
@@ -300,7 +299,7 @@ function populatePosts(posts) {
                 }
             });
 
-        
+
             loadMoreButton.addEventListener('click', () => {
                 const currentOffset = parseInt(loadMoreButton.dataset.offset) || 0;
                 const nextOffset = currentOffset + 5;
@@ -364,9 +363,9 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                         commentsContainer.appendChild(commentElement);
                     });
                 }
-                if (comments.length < 5 || comments[0].TotalCount <= offset+5) {
+                if (comments.length < 5 || comments[0].TotalCount <= offset + 5) {
                     loadMoreButton.style.display = 'none';
-                } else if(comments[0].TotalCount > offset) {
+                } else if (comments[0].TotalCount > offset) {
                     loadMoreButton.style.display = 'block';
                 }
             }
@@ -404,8 +403,8 @@ function submitComment(postId, comment, commentsContainer) {
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
             `;
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild); // Add new comment at the top
-            const noComment=  commentsContainer.querySelector('.no-comment');
-            if (noComment)commentsContainer.removeChild(noComment);
+            const noComment = commentsContainer.querySelector('.no-comment');
+            if (noComment) commentsContainer.removeChild(noComment);
             const totalCount = newComment.TotalCount;
             commentCountButton.textContent = `${totalCount} Comment${totalCount !== 1 ? 's' : ''}`;
         })
@@ -415,22 +414,18 @@ function submitComment(postId, comment, commentsContainer) {
 }
 
 function fetchUsers() {
-    fetch('/api/users') // Replace with your API endpoint
+    fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = ''; // Clear existing content
-
+            userList.innerHTML = '';
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
                 usernameElement.className = 'username';
                 usernameElement.textContent = user.Username;
-
-                // Add click event to open the message pop-up
                 usernameElement.addEventListener('click', () => {
-                    createMessagePopup(user.Username);
+                    createMessagePopup(user.Username, user.ID);
                 });
-
                 userList.appendChild(usernameElement);
             });
         })
@@ -438,6 +433,7 @@ function fetchUsers() {
             console.error('Error fetching users:', error);
         });
 }
+
 function getCategories() {
     fetch(`/Posts/1`)
         .then((response) => response.json())
