@@ -33,24 +33,26 @@ func main() {
 
 	defer db.Close()
 
-	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo := internal.InitRepositories(db)
+	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, chatRepo := internal.InitRepositories(db)
 
-	authService, postService, categoryService, commentService, likeService, sessionService := internal.InitServices(userRepo,
+	authService, postService, categoryService, commentService, likeService, sessionService, chatService := internal.InitServices(userRepo,
 		postRepo,
 		categoryRepo,
 		commentRepo,
 		likeRepo,
-		sessionRepo)
+		sessionRepo,
+		chatRepo)
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler := internal.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, chatHandler := internal.InitHandlers(authService,
 		postService,
 		categoryService,
 		commentService,
 		likeService,
 		sessionService,
-		authMiddleware)
+		authMiddleware,
+		chatService)
 
 	cleaner := &utils.Cleaner{SessionService: sessionService}
 
@@ -58,7 +60,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, chatHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://localhost:8080/")
 

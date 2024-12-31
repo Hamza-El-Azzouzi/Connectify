@@ -8,7 +8,7 @@ import (
 	"real-time-forum/internal/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, likeHandler *handlers.LikeHandler, authMiddleware *middleware.AuthMiddleware) {
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, likeHandler *handlers.LikeHandler, authMiddleware *middleware.AuthMiddleware, chatHandler *handlers.ChatHandler) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 
 	mux.HandleFunc("/api/logout", authHandler.LogoutHandle)
@@ -32,8 +32,11 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	// mux.HandleFunc("/likeComment/", likeHandler.LikeComment)
 	// mux.HandleFunc("/dislikeComment/", likeHandler.DisLikeComment)
 	// mux.HandleFunc("/filters", postHandler.PostFilter)
+
+	mux.HandleFunc("/api/messages", chatHandler.HandleConnection)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		utils.OpenHtml("index.html",w,nil)
+		utils.OpenHtml("index.html", w, nil)
 	})
 	mux.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Referer") == "" {
