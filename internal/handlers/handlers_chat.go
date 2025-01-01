@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"real-time-forum/internal/models"
@@ -32,6 +34,17 @@ func (c *ChatHandler) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	for {
-		
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Printf("Reading error: %#v\n", err)
+			break
+		}
+		messageS := models.Message{}
+		err = json.Unmarshal(message, &messageS)
+		if err != nil {
+			log.Printf("Reading error: %#v\n", err)
+			break
+		}
+		fmt.Println(messageS)
 	}
 }

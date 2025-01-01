@@ -15,11 +15,11 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/register", authHandler.RegisterHandle)
 	mux.HandleFunc("/api/login", authHandler.LoginHandle)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
-
+	mux.HandleFunc("/api/users", authHandler.GetUsers)
 	// mux.HandleFunc("/", postHandler.Home)
 
-	mux.HandleFunc("/Posts/", postHandler.Posts)
-
+	mux.HandleFunc("/api/posts/", postHandler.Posts)
+	mux.HandleFunc("/api/categories", postHandler.GetCategories)
 	// mux.HandleFunc("/create", postHandler.PostCreation)
 
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)

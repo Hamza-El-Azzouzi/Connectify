@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -149,7 +150,7 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		sessionId, err := r.Cookie("sessionId")
-		if err == nil || sessionId.Value != "" {
+		if err == nil && sessionId.Value != "" {
 			err := h.SessionService.CheckSession(sessionId.Value)
 			if err != nil {
 				sendResponse(w, "No User Found")
@@ -160,5 +161,37 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		sessionId, err := r.Cookie("sessionId")
+		if err == nil && sessionId.Value != "" {
+			errSessions := h.SessionService.CheckSession(sessionId.Value)
+			fmt.Println("seesion", errSessions)
+			if errSessions == nil {
+				allUser, errUser := h.AuthService.GetUsers()
+				if errUser != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				err := json.NewEncoder(w).Encode(&allUser)
+				if err != nil {
+					w.WriteHeader(http.StatusMethodNotAllowed)
+					return
+				}
+			} else {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+		}else{
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 }

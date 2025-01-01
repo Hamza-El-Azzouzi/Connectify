@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
@@ -14,10 +12,9 @@ type Chat struct {
 }
 
 type Message struct {
-	SnederID   uuid.UUID
-	ReceiverID uuid.UUID
-	TimeStamp  time.Time
-	Content    string
+	SnederID   string `json:"senderID"`
+	ReceiverID string `json:"receiverID"`
+	Content    string `json:"content"`
 }
 
 type Hub struct {

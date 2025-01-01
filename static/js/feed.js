@@ -1,14 +1,22 @@
 let isLoading = false;
 let stopLoading = false;
+let socket;
 
 export function feedPage() {
+    socket = new WebSocket("ws://localhost:8080/api/messages")
     getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
     const app = document.getElementById("main-content");
-    const container = document.createElement('div');
-    container.className = 'container';
-    container.id = 'container';
+
+    const flexContainer = document.createElement('div');
+    flexContainer.className = 'flex-container';
+    app.appendChild(flexContainer);
+
+    const feedContainer = document.createElement('div');
+    feedContainer.className = 'feed-container';
+    flexContainer.appendChild(feedContainer);
+
     const postForm = document.createElement('div');
     postForm.className = "form-container";
     postForm.tabIndex = "0";
@@ -28,18 +36,29 @@ export function feedPage() {
             </div>
             <button type="submit" class="post-button">Post</button>
         </form>
-    `
+    `;
     postForm.innerHTML = postFormContent;
     getCategories();
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
     let posts = document.querySelectorAll(".post");
     if (posts.length === 0) {
-        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`
+        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`;
     }
-    container.appendChild(postForm);
-    container.appendChild(postsFeed);
-    app.appendChild(container);
+    feedContainer.appendChild(postForm);
+    feedContainer.appendChild(postsFeed);
+
+    const userSection = document.createElement('div');
+    userSection.className = 'user-section';
+    userSection.innerHTML = `
+        <h2>Registered Users</h2>
+        <div class="user-list">
+            <!-- Users will be dynamically added here -->
+        </div>
+    `;
+    flexContainer.appendChild(userSection);
+
+    fetchUsers();
 
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
@@ -66,7 +85,6 @@ export function feedPage() {
         document.getElementById('title-error').textContent = '';
         document.getElementById('category-error').textContent = '';
         document.getElementById('textarea-error').textContent = '';
-
 
         const title = document.querySelector('.form-input').value;
         const content = document.getElementById('postContent').value;
@@ -121,20 +139,112 @@ export function feedPage() {
                         feed.innerHTML = "";
                         getPosts(0);
                     }
-                })
+                });
         }
-    })
+    });
+}
+
+
+function createMessagePopup(username, ReceiverID) {
+    const popup = document.createElement('div');
+    popup.className = 'message-popup';
+    popup.innerHTML = `
+        <div class="message-popup-content">
+            <div class="message-header">
+                <h3>Message ${username}</h3>
+                <button class="close-popup">&times;</button>
+            </div>
+            <div class="message-body">
+                <div class="message-history">
+                    <!-- Messages will be displayed here -->
+                </div>
+                <div class="message-input">
+                    <textarea placeholder="Type your message..."></textarea>
+                    <button class="send-message">Send</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const closeButton = popup.querySelector('.close-popup');
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(popup);
+    });
+
+    const sendButton = popup.querySelector('.send-message');
+    const textarea = popup.querySelector('textarea');
+    const messageHistory = popup.querySelector('.message-history');
+
+    function addMessage(message, isMyMessage) {
+        const messageElement = document.createElement('div');
+        messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
+        messageElement.textContent = message;
+        messageHistory.appendChild(messageElement);
+        messageHistory.scrollTop = messageHistory.scrollHeight;
+    }
+
+    const initialMessages = [
+        { text: "This is an older message.", isMyMessage: false },
+        { text: "This is another older message.", isMyMessage: true },
+    ];
+    initialMessages.forEach(msg => addMessage(msg.text, msg.isMyMessage));
+
+    socket.onmessage = (event) => {
+        addMessage(event.data, false);
+    }
+
+    sendButton.addEventListener('click', () => {
+        const message = textarea.value.trim();
+        if (message) {
+            addMessage(message, true);
+            textarea.value = '';
+            let data = {
+                senderID: getCookieByName("sessionId"),
+                receiverID: ReceiverID,
+                content:message,
+            }
+            socket.send(JSON.stringify(data));
+        }
+    });
+
+    messageHistory.addEventListener('scroll', () => {
+        if (messageHistory.scrollTop === 0) {
+            const olderMessages = [
+                { text: "This is an even older message.", isMyMessage: false },
+                { text: "This is another older message.", isMyMessage: true },
+            ];
+            olderMessages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
+                messageElement.textContent = msg.text;
+                messageHistory.insertBefore(messageElement, messageHistory.firstChild); // Insert at the top
+            });
+        }
+    });
+
+    document.body.appendChild(popup);
+}
+
+function getCookieByName(name) {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+            return cookie.substring(name.length + 1);
+        }
+    }
+    return null;
 }
 
 function getPosts(offset) {
-    fetch(`/Posts/${offset}`)
+    fetch(`/api/posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
-            if (!data.posts) {
+            if (!data) {
                 stopLoading = true;
             } else {
                 stopLoading = false;
-                populatePosts(data.posts);
+                populatePosts(data);
             }
         })
         .catch((error) => {
@@ -194,7 +304,7 @@ function populatePosts(posts) {
                 }
             });
 
-        
+
             loadMoreButton.addEventListener('click', () => {
                 const currentOffset = parseInt(loadMoreButton.dataset.offset) || 0;
                 const nextOffset = currentOffset + 5;
@@ -258,9 +368,9 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                         commentsContainer.appendChild(commentElement);
                     });
                 }
-                if (comments.length < 5 || comments[0].TotalCount <= offset+5) {
+                if (comments.length < 5 || comments[0].TotalCount <= offset + 5) {
                     loadMoreButton.style.display = 'none';
-                } else if(comments[0].TotalCount > offset) {
+                } else if (comments[0].TotalCount > offset) {
                     loadMoreButton.style.display = 'block';
                 }
             }
@@ -298,8 +408,8 @@ function submitComment(postId, comment, commentsContainer) {
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
             `;
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild); // Add new comment at the top
-            const noComment=  commentsContainer.querySelector('.no-comment');
-            if (noComment)commentsContainer.removeChild(noComment);
+            const noComment = commentsContainer.querySelector('.no-comment');
+            if (noComment) commentsContainer.removeChild(noComment);
             const totalCount = newComment.TotalCount;
             commentCountButton.textContent = `${totalCount} Comment${totalCount !== 1 ? 's' : ''}`;
         })
@@ -307,11 +417,36 @@ function submitComment(postId, comment, commentsContainer) {
             console.error('Error submitting comment:', error);
         });
 }
+
+function fetchUsers() {
+    fetch('/api/users') // Replace with your API endpoint
+        .then(response => response.json())
+        .then(users => {
+            const userList = document.querySelector('.user-list');
+            userList.innerHTML = ''; // Clear existing content
+
+            users.forEach(user => {
+                const usernameElement = document.createElement('div');
+                usernameElement.className = 'username';
+                usernameElement.textContent = user.Username;
+
+                // Add click event to open the message pop-up
+                usernameElement.addEventListener('click', () => {
+                    createMessagePopup(user.Username, user.ID);
+                });
+
+                userList.appendChild(usernameElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
+}
 function getCategories() {
-    fetch(`/Posts/1`)
+    fetch(`/api/categories`)
         .then((response) => response.json())
         .then((data) => {
-            populateCategories(data.categories);
+            populateCategories(data);
         })
         .catch((error) => {
             console.error("Error fetching data:", error);
