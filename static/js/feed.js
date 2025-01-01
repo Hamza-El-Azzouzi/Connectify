@@ -3,9 +3,9 @@ let stopLoading = false;
 let connectionToWS
 let sessionID
 
-
 export function feedPage() {
-    connectionToWS = new WebSocket("ws://localhost:8080/ws")
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+
     getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
@@ -146,9 +146,7 @@ export function feedPage() {
     });
 }
 
-
 function createMessagePopup(username, user_ID) {
-    console.log(user_ID)
     const popup = document.createElement('div');
     popup.className = 'message-popup';
     popup.innerHTML = `
@@ -168,12 +166,12 @@ function createMessagePopup(username, user_ID) {
             </div>
         </div>
     `;
+
     const cookie = document.cookie;
-    
     if (cookie.includes("sessionId")) {
-        sessionID = cookie.split("=")[1]
-        // console.log(sessionID)
+        sessionID = cookie.split("=")[1];
     }
+
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
         document.body.removeChild(popup);
@@ -185,52 +183,30 @@ function createMessagePopup(username, user_ID) {
     const messageHistory = popup.querySelector('.message-history');
 
     // Function to add a message to the history
-    function addMessage(message, isMyMessage) {
+    function addMessage(messageHistory, message, isMyMessage) {
         const messageElement = document.createElement('div');
         messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
         messageElement.textContent = message;
-        messageHistory.appendChild(messageElement); // Append to the bottom
+        messageHistory.appendChild(messageElement);
         messageHistory.scrollTop = messageHistory.scrollHeight; // Scroll to the bottom
     }
-
-    // Simulate initial messages (for demonstration purposes)
-    const initialMessages = [
-        { text: "This is an older message.", isMyMessage: false },
-        { text: "This is another older message.", isMyMessage: true },
-    ];
-    initialMessages.forEach(msg => addMessage(msg.text, msg.isMyMessage));
-
+    connectionToWS.onmessage = (event)=>{
+        addMessage(messageHistory,event.data, false)
+    }
     // Handle sending a message
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         if (message) {
-            console.log(sessionID)
-            connectionToWS.send(JSON.stringify({ msg: message, session: sessionID, id: user_ID }))
-            addMessage(message, true); // Add your message
+            connectionToWS.send(JSON.stringify({ msg: message, session: sessionID, id: user_ID }));
+            addMessage(messageHistory, message, true); // Add your message
             textarea.value = '';
-        }
-    });
-
-    // Handle scrolling to the top to load older messages
-    messageHistory.addEventListener('scroll', () => {
-        if (messageHistory.scrollTop === 0) {
-            // Simulate loading older messages (for demonstration purposes)
-            const olderMessages = [
-                { text: "This is an even older message.", isMyMessage: false },
-                { text: "This is another older message.", isMyMessage: true },
-            ];
-            olderMessages.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
-                messageElement.textContent = msg.text;
-                messageHistory.insertBefore(messageElement, messageHistory.firstChild); // Insert at the top
-            });
         }
     });
 
     // Add the pop-up to the body
     document.body.appendChild(popup);
 }
+
 
 function getPosts(offset) {
     fetch(`/Posts/${offset}`)

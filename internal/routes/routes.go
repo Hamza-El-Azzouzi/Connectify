@@ -11,7 +11,7 @@ import (
 func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, likeHandler *handlers.LikeHandler, authMiddleware *middleware.AuthMiddleware , messageHnadler *handlers.MessageHandler) {
 	
 	
-	mux.HandleFunc("/ws", messageHnadler.MessageReciever)
+	mux.HandleFunc("/ws", messageHnadler.MessageReceiver)
 	
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 
@@ -20,6 +20,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/login", authHandler.LoginHandle)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/api/users", authHandler.GetUsers)
+	mux.HandleFunc("/api/messages", authHandler.GetUsers)
 	// mux.HandleFunc("/", postHandler.Home)
 
 	mux.HandleFunc("/Posts/", postHandler.Posts)

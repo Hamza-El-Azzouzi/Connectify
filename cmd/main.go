@@ -45,7 +45,7 @@ func main() {
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler , MessageHandler := internal.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, MessageHandler := internal.InitHandlers(authService,
 		postService,
 		categoryService,
 		commentService,
@@ -61,9 +61,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware,MessageHandler)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler)
 
-	fmt.Println("Starting the forum server...\nWelcome http://localhost:8080/")
+	fmt.Println("Starting the forum server...\nWelcome http://localhost:1414/")
 
-	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:1414", nil))
 }
