@@ -183,12 +183,6 @@ function createMessagePopup(username, ReceiverID) {
         messageHistory.scrollTop = messageHistory.scrollHeight;
     }
 
-    const initialMessages = [
-        { text: "This is an older message.", isMyMessage: false },
-        { text: "This is another older message.", isMyMessage: true },
-    ];
-    initialMessages.forEach(msg => addMessage(msg.text, msg.isMyMessage));
-
     socket.onmessage = (event) => {
         addMessage(event.data, false);
     }
@@ -208,18 +202,18 @@ function createMessagePopup(username, ReceiverID) {
     });
 
     messageHistory.addEventListener('scroll', () => {
-        if (messageHistory.scrollTop === 0) {
-            const olderMessages = [
-                { text: "This is an even older message.", isMyMessage: false },
-                { text: "This is another older message.", isMyMessage: true },
-            ];
-            olderMessages.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
-                messageElement.textContent = msg.text;
-                messageHistory.insertBefore(messageElement, messageHistory.firstChild); // Insert at the top
-            });
-        }
+        // if (messageHistory.scrollTop === 0) {
+        //     const olderMessages = [
+        //         { text: "This is an even older message.", isMyMessage: false },
+        //         { text: "This is another older message.", isMyMessage: true },
+        //     ];
+        //     olderMessages.forEach(msg => {
+        //         const messageElement = document.createElement('div');
+        //         messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
+        //         messageElement.textContent = msg.text;
+        //         messageHistory.insertBefore(messageElement, messageHistory.firstChild);
+        //     });
+        // }
     });
 
     document.body.appendChild(popup);

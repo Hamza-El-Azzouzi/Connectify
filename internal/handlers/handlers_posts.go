@@ -23,14 +23,6 @@ type PostHandler struct {
 	AuthHandler     *AuthHandler
 }
 
-// func (p *PostHandler) Home(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodGet {
-// 		utils.Error(w, http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	utils.OpenHtml("index.html", w, nil)
-// }
-
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

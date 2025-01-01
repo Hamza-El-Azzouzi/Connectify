@@ -7,8 +7,7 @@ import (
 
 type Chat struct {
 	ChatId  uuid.UUID
-	Conn    *websocket.Conn
-	Message chan *Message
+	Messages chan *Message
 }
 
 type Message struct {
@@ -18,5 +17,5 @@ type Message struct {
 }
 
 type Hub struct {
-	Chats map[string]*Chat
+	Chats map[*websocket.Conn]*Chat
 }

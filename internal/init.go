@@ -2,11 +2,14 @@ package internal
 
 import (
 	"database/sql"
+	"net/http"
 
 	"real-time-forum/internal/handlers"
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/repositories"
 	"real-time-forum/internal/services"
+
+	"github.com/gorilla/websocket"
 )
 
 func InitRepositories(db *sql.DB) (*repositories.UserRepository,
@@ -46,10 +49,9 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
 		&services.LikeService{LikeRepo: likeRepo, PostRepo: postRepo, CommentRepo: commentRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
-		&services.ChatService{ChatRepo: chatRepo}
+		&services.ChatService{ChatRepo: chatRepo, UserRepo: userRepo}
 }
 
-// seesion repo
 func InitHandlers(authService *services.AuthService,
 	postService *services.PostService,
 	categoryService *services.CategoryService,
@@ -81,6 +83,14 @@ func InitHandlers(authService *services.AuthService,
 	}
 	chatHandler := &handlers.ChatHandler{
 		ChatService: chatService,
+		AuthService:    authService,
+		SessionService: sessionService,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		Clients: map[string]*websocket.Conn{},
 	}
 	return authHandler, postHandler, likeHandler, chatHandler
 }

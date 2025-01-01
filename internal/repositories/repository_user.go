@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"real-time-forum/internal/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type UserRepository struct {
@@ -59,24 +61,24 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 	return user, nil
 }
 
-func (r *UserRepository) GetUsers() ([]models.User, error) {
+func (r *UserRepository) GetUsers(userID uuid.UUID) ([]models.User, error) {
 	allUser := []models.User{}
-	query := `SELECT id, username , first_name, last_name FROM users order by username ASC `
-	rows , err := r.DB.Query(query)
+	query := `SELECT id, username , first_name, last_name FROM users WHERE id !=? order by username ASC`
+	rows, err := r.DB.Query(query, userID)
 	if err != nil {
-		if err == sql.ErrNoRows{
-			return nil,nil
+		if err == sql.ErrNoRows {
+			return nil, nil
 		}
-		return nil ,err
+		return nil, err
 	}
-	for rows.Next(){
+	for rows.Next() {
 		user := models.User{}
-		
-		err := rows.Scan(&user.ID, &user.Username, &user.FirstName,&user.LastName)
+
+		err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
 		if err != nil {
 			return nil, err
 		}
-		allUser = append(allUser , user)
+		allUser = append(allUser, user)
 	}
-	return allUser , nil
+	return allUser, nil
 }
