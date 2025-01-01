@@ -166,6 +166,35 @@ function createMessagePopup(username, ReceiverID) {
         </div>
     `;
 
+    let data = {
+        senderID: getCookieByName("sessionId"),
+        receiverID: ReceiverID,
+        offset: 0,
+    }
+
+    fetch(`/api/getmessages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    }).then((response) => response.json())
+        .then((data) => {
+            console.log(data)
+            if (data) {
+                for ( let i = data.length-1 ; i >=0 ; i--){
+                    if (data[i].ReceiverID !== ReceiverID) {
+                        addMessage(data[i].Content, false);
+                    } else {
+                        addMessage(data[i].Content, true);
+                    }
+                }
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching messages:", error);
+        });
+
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
         document.body.removeChild(popup);
@@ -195,7 +224,7 @@ function createMessagePopup(username, ReceiverID) {
             let data = {
                 senderID: getCookieByName("sessionId"),
                 receiverID: ReceiverID,
-                content:message,
+                content: message,
             }
             socket.send(JSON.stringify(data));
         }
@@ -413,18 +442,17 @@ function submitComment(postId, comment, commentsContainer) {
 }
 
 function fetchUsers() {
-    fetch('/api/users') // Replace with your API endpoint
+    fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = ''; // Clear existing content
+            userList.innerHTML = '';
 
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
                 usernameElement.className = 'username';
                 usernameElement.textContent = user.Username;
 
-                // Add click event to open the message pop-up
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
                 });

@@ -1,21 +1,28 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/websocket"
 )
 
-type Chat struct {
-	ChatId  uuid.UUID
-	Messages chan *Message
+type MessageWithTime struct {
+	MessageID     uuid.UUID
+	SenderID      uuid.UUID
+	ReceiverID    uuid.UUID
+	Content       string
+	CreatedAt     time.Time
+	FormattedDate string
 }
 
 type Message struct {
-	SnederID   string `json:"senderID"`
+	SenderID   string `json:"senderID"`
 	ReceiverID string `json:"receiverID"`
 	Content    string `json:"content"`
 }
 
-type Hub struct {
-	Chats map[*websocket.Conn]*Chat
+type Chat struct {
+	SnederID   string `json:"senderID"`
+	ReceiverID string `json:"receiverID"`
+	Offset     int    `json:"offset"`
 }

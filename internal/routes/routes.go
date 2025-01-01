@@ -34,6 +34,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	// mux.HandleFunc("/filters", postHandler.PostFilter)
 
 	mux.HandleFunc("/api/messages", chatHandler.HandleConnection)
+	mux.HandleFunc("/api/getmessages", chatHandler.GetMessages)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, nil)
