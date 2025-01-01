@@ -83,5 +83,10 @@ func (a * AuthService) GetUsers(sessionID string)([]models.User,error){
 	if err != nil {
 		return nil,err
 	}
-	return a.UserRepo.GetUsers(user.ID)
+	allUser ,errUser := a.UserRepo.GetUsers(user.ID)
+	if errUser != nil {
+		return nil,err
+	}
+	fmt.Println(err)
+	return allUser,nil
 }

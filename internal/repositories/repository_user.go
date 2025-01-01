@@ -21,7 +21,7 @@ func (r *UserRepository) Create(user *models.User) error {
 	return err
 }
 
-func (repo *UserRepository) FindUser(identifier string, flag string) (*models.User, error) {
+func (r *UserRepository) FindUser(identifier string, flag string) (*models.User, error) {
 	user := &models.User{}
 	query := ""
 	switch true {
@@ -33,7 +33,7 @@ func (repo *UserRepository) FindUser(identifier string, flag string) (*models.Us
 		query = `SELECT id, username, email, password_hash FROM users WHERE username= ?`
 	}
 
-	row := repo.DB.QueryRow(query, identifier)
+	row := r.DB.QueryRow(query, identifier)
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {

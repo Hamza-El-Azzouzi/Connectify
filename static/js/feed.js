@@ -3,8 +3,43 @@ let stopLoading = false;
 let connectionToWS
 let sessionID
 
+let heartbeatInterval;
+
+
+
+
+
 export function feedPage() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+
+    // WebSocket event handlers
+    connectionToWS.onopen = () => {
+        console.log("WebSocket connection established.");
+        startHeartbeat(); // Start sending periodic pings
+    };
+
+    connectionToWS.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+    
+        if (data.type === "pong") {
+            console.log("Received pong from server.");
+        } else if (data.type === "userStatus") {
+            // Update the user's online status in the UI
+            updateUserStatus(data.userID, data.online);
+        } else {
+            // Handle other messages (e.g., chat messages)
+            console.log("Received message:", data);
+        }
+    };
+
+    connectionToWS.onclose = () => {
+        console.log("WebSocket connection closed.");
+        clearInterval(heartbeatInterval); // Stop sending pings
+    };
+
+    connectionToWS.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
 
     getPosts(0);
     var link = document.querySelector('link[rel="stylesheet"]');
@@ -142,6 +177,26 @@ export function feedPage() {
                         getPosts(0);
                     }
                 });
+        }
+    });
+}
+
+function startHeartbeat() {
+    heartbeatInterval = setInterval(() => {
+        if (connectionToWS.readyState === WebSocket.OPEN) {
+            // connectionToWS.send(JSON.stringify({ type: "ping" }));
+            console.log("Sent ping to server.");
+        }
+    }, 1000); // Send a ping every 30 seconds
+}
+
+function updateUserStatus(userID, isOnline) {
+    const usernameElements = document.querySelectorAll(`.username[data-user-id="${userID}"]`);
+    usernameElements.forEach(usernameElement => {
+        if (isOnline) {
+            usernameElement.classList.add("online");
+        } else {
+            usernameElement.classList.remove("online");
         }
     });
 }
@@ -389,22 +444,42 @@ function submitComment(postId, comment, commentsContainer) {
             console.error('Error submitting comment:', error);
         });
 }
-
 function fetchUsers() {
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = '';
+            userList.innerHTML = ''; // Clear the existing list
+
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
                 usernameElement.className = 'username';
                 usernameElement.textContent = user.Username;
+                usernameElement.setAttribute("data-user-id", user.ID); // Add data-user-id attribute
+
+                // Initially, all users are marked as offline
+                usernameElement.classList.remove("online");
+
+                // Add a click event to open the message popup
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
                 });
+
+                // Append the user element to the list
                 userList.appendChild(usernameElement);
             });
+
+            // Fetch the initial online status from the server
+            fetch('/api/online-users')
+                .then(response => response.json())
+                .then(onlineUsers => {
+                    onlineUsers.forEach(userID => {
+                        updateUserStatus(userID, true);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching online users:', error);
+                });
         })
         .catch(error => {
             console.error('Error fetching users:', error);

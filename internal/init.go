@@ -6,6 +6,7 @@ import (
 
 	"real-time-forum/internal/handlers"
 	"real-time-forum/internal/middleware"
+	"real-time-forum/internal/models"
 	"real-time-forum/internal/repositories"
 	"real-time-forum/internal/services"
 
@@ -74,9 +75,10 @@ func InitHandlers(authService *services.AuthService,
 				return true // Allow all connections (for development)
 			},
 		},
-		Clients: map[string]*websocket.Conn{},
+		Clients: map[string]*models.Client{},
 	}
 	authHandler := &handlers.AuthHandler{
+		MessageHandler: MessageHandler,
 		AuthService:    authService,
 		AuthMidlaware:  authMiddleware,
 		SessionService: sessionService,

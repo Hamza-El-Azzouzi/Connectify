@@ -18,6 +18,7 @@ type AuthHandler struct {
 	AuthService    *services.AuthService
 	AuthMidlaware  *middleware.AuthMiddleware
 	SessionService *services.SessionService
+	MessageHandler *MessageHandler
 }
 
 func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
@@ -185,6 +186,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {

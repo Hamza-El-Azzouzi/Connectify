@@ -529,7 +529,23 @@ button[style*="background"] {
   flex-direction: column;
   gap: 10px;
 }
+.username {
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+}
 
+.username.online::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: green;
+  border-radius: 50%;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .username {
   font-size: 1rem;
   color: #555;

@@ -14,7 +14,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/ws", messageHnadler.MessageReceiver)
 	
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
-
+	// /api/online-users
+	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.LogoutHandle)
 	mux.HandleFunc("/api/register", authHandler.RegisterHandle)
 	mux.HandleFunc("/api/login", authHandler.LoginHandle)
