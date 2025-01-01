@@ -22,7 +22,6 @@ CREATE TABLE
         FOREIGN KEY (user_id_sender) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
         FOREIGN KEY (user_id_receiver) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
         CHECK (user_id_sender != user_id_receiver)
-
     );
 CREATE TABLE
     posts (
