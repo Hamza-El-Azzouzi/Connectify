@@ -172,6 +172,7 @@ function createMessagePopup(username, user_ID) {
     
     if (cookie.includes("sessionId")) {
         sessionID = cookie.split("=")[1]
+        // console.log(sessionID)
     }
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {

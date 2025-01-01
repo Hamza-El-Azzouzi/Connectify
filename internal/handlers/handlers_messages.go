@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
+	"real-time-forum/internal/models"
 	"real-time-forum/internal/services"
 
 	"github.com/gorilla/websocket"
@@ -32,15 +35,30 @@ func (m *MessageHandler) MessageReciever(w http.ResponseWriter, r *http.Request)
 	defer connection.Close()
 
 	for {
-		mt, message, err := connection.ReadMessage()
+		_, message, err := connection.ReadMessage()
 		if err != nil {
 			log.Printf("Reading error: %#v\n", err)
 			break
 		}
-		log.Printf("recv: message %q", message)
-		if err := connection.WriteMessage(mt, message); err != nil {
-			log.Printf("Writing error: %#v\n", err)
-			break
+		chaat := models.Chat{}
+		errChat := json.Unmarshal(message, &chaat)
+		if errChat != nil {
+			log.Println(errChat)
 		}
+
+		if len(strings.TrimSpace(chaat.Message)) == 0 {
+			log.Println("empty")
+			return
+		}
+		errCreate := m.MessageService.Create(chaat)
+		if errCreate != nil {
+			log.Println(errCreate)
+			return
+			// w.WriteHeader(http.StatusInternalServerError)
+		}
+		// if err := connection.WriteMessage(mt, message); err != nil {
+		// 	log.Printf("Writing error: %#v\n", err)
+		// 	break
+		// }
 	}
 }
