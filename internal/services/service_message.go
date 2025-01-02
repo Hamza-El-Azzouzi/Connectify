@@ -1,7 +1,6 @@
 package services
 
 import (
-	"real-time-forum/internal/models"
 	"real-time-forum/internal/repositories"
 
 	"github.com/gofrs/uuid/v5"
@@ -9,15 +8,15 @@ import (
 
 type MessageService struct {
 	MessageRepo *repositories.MessageRepository
-	UserRepo *repositories.UserRepository
+	UserRepo    *repositories.UserRepository
 }
 
-func (m *MessageService) Create(chat models.Chat) error {
-	user, err := m.UserRepo.GetUserBySessionID(chat.Sender)
+func (m *MessageService) Create(msg, session, id string) error {
+	user, err := m.UserRepo.GetUserBySessionID(session)
 	if err != nil {
 		return err
 	}
 	messageId := uuid.Must(uuid.NewV4())
 
-	return m.MessageRepo.Create(messageId, chat, user.ID)
+	return m.MessageRepo.Create(messageId, msg, session, user.ID)
 }

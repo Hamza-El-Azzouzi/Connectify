@@ -12,32 +12,16 @@ let heartbeatInterval;
 export function feedPage() {
     connectionToWS = new WebSocket("ws://localhost:1414/ws");
 
-    // WebSocket event handlers
-    connectionToWS.onopen = () => {
-        console.log("WebSocket connection established.");
-        startHeartbeat(); // Start sending periodic pings
-    };
-
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
-    
-        if (data.type === "pong") {
-            console.log("Received pong from server.");
-        } else if (data.type === "userStatus") {
-            // Update the user's online status in the UI
+        if (data.hasOwnProperty("type")) {
             updateUserStatus(data.userID, data.online);
-        } else {
-            // Handle other messages (e.g., chat messages)
-            console.log("Received message:", data);
         }
-    };
 
-    connectionToWS.onclose = () => {
-        console.log("WebSocket connection closed.");
-        clearInterval(heartbeatInterval); // Stop sending pings
     };
 
     connectionToWS.onerror = (error) => {
+        //TODO: navigate to error page
         console.error("WebSocket error:", error);
     };
 
@@ -181,14 +165,6 @@ export function feedPage() {
     });
 }
 
-function startHeartbeat() {
-    heartbeatInterval = setInterval(() => {
-        if (connectionToWS.readyState === WebSocket.OPEN) {
-            // connectionToWS.send(JSON.stringify({ type: "ping" }));
-            console.log("Sent ping to server.");
-        }
-    }, 1000); // Send a ping every 30 seconds
-}
 
 function updateUserStatus(userID, isOnline) {
     const usernameElements = document.querySelectorAll(`.username[data-user-id="${userID}"]`);
@@ -232,33 +208,36 @@ function createMessagePopup(username, user_ID) {
         document.body.removeChild(popup);
     });
 
-    // Handle sending a message
+
     const sendButton = popup.querySelector('.send-message');
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
 
-    // Function to add a message to the history
-    function addMessage(messageHistory, message, isMyMessage) {
+   
+    function addMessage(message, isMyMessage) {
         const messageElement = document.createElement('div');
         messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
         messageElement.textContent = message;
         messageHistory.appendChild(messageElement);
-        messageHistory.scrollTop = messageHistory.scrollHeight; // Scroll to the bottom
+        messageHistory.scrollTop = messageHistory.scrollHeight;
     }
-    connectionToWS.onmessage = (event)=>{
-        addMessage(messageHistory,event.data, false)
+    connectionToWS.onmessage = (event) => {
+        const dataMessage = JSON.parse(event.data);
+        console.log(dataMessage)
+        if (dataMessage.hasOwnProperty("msg")) {
+            addMessage(dataMessage["msg"], false)
+        }
     }
-    // Handle sending a message
+
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         if (message) {
             connectionToWS.send(JSON.stringify({ msg: message, session: sessionID, id: user_ID }));
-            addMessage(messageHistory, message, true); // Add your message
+            addMessage(message, true);
             textarea.value = '';
         }
     });
 
-    // Add the pop-up to the body
     document.body.appendChild(popup);
 }
 
@@ -434,7 +413,7 @@ function submitComment(postId, comment, commentsContainer) {
                 </div>
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
             `;
-            commentsContainer.insertBefore(commentElement, commentsContainer.firstChild); // Add new comment at the top
+            commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
             const noComment = commentsContainer.querySelector('.no-comment');
             if (noComment) commentsContainer.removeChild(noComment);
             const totalCount = newComment.TotalCount;
@@ -449,27 +428,27 @@ function fetchUsers() {
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = ''; // Clear the existing list
+            userList.innerHTML = ''; 
 
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
                 usernameElement.className = 'username';
                 usernameElement.textContent = user.Username;
-                usernameElement.setAttribute("data-user-id", user.ID); // Add data-user-id attribute
+                usernameElement.setAttribute("data-user-id", user.ID); 
 
-                // Initially, all users are marked as offline
+                
                 usernameElement.classList.remove("online");
 
-                // Add a click event to open the message popup
+             
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
                 });
 
-                // Append the user element to the list
+               
                 userList.appendChild(usernameElement);
             });
 
-            // Fetch the initial online status from the server
+            
             fetch('/api/online-users')
                 .then(response => response.json())
                 .then(onlineUsers => {
