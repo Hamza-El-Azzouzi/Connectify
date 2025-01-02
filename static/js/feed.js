@@ -214,10 +214,10 @@ function createMessagePopup(username, ReceiverID) {
         messageElement.textContent = message;
         if (append) {
             messageHistory.appendChild(messageElement);
+            messageHistory.scrollTop = messageHistory.scrollHeight;
         } else {
             messageHistory.insertBefore(messageElement, messageHistory.firstChild);
         }
-        messageHistory.scrollTop = messageHistory.scrollHeight;
     }
 
     socket.onmessage = (event) => {
