@@ -170,30 +170,34 @@ function createMessagePopup(username, ReceiverID) {
         senderID: getCookieByName("sessionId"),
         receiverID: ReceiverID,
         offset: 0,
+        append: false,
     }
 
-    fetch(`/api/getmessages`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    }).then((response) => response.json())
-        .then((data) => {
-            console.log(data)
-            if (data) {
-                for ( let i = data.length-1 ; i >=0 ; i--){
-                    if (data[i].ReceiverID !== ReceiverID) {
-                        addMessage(data[i].Content, false);
-                    } else {
-                        addMessage(data[i].Content, true);
+    function getMessages(data) {
+        fetch(`/api/getmessages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        }).then((response) => response.json())
+            .then((messages) => {
+                if (messages) {
+                    for (let i = 0; i < messages.length; i++) {
+                        if (messages[i].ReceiverID !== ReceiverID) {
+                            addMessage(messages[i].Content, false, data.append);
+                        } else {
+                            addMessage(messages[i].Content, true, data.append);
+                        }
                     }
                 }
-            }
-        })
-        .catch((error) => {
-            console.error("Error fetching messages:", error);
-        });
+            })
+            .catch((error) => {
+                console.error("Error fetching messages:", error);
+            });
+    }
+
+    getMessages(data);
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
@@ -204,48 +208,67 @@ function createMessagePopup(username, ReceiverID) {
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
 
-    function addMessage(message, isMyMessage) {
+    function addMessage(message, isMyMessage, append) {
         const messageElement = document.createElement('div');
         messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
         messageElement.textContent = message;
-        messageHistory.appendChild(messageElement);
+        if (append) {
+            messageHistory.appendChild(messageElement);
+        } else {
+            messageHistory.insertBefore(messageElement, messageHistory.firstChild);
+        }
         messageHistory.scrollTop = messageHistory.scrollHeight;
     }
 
     socket.onmessage = (event) => {
-        addMessage(event.data, false);
+        addMessage(event.data, false, true);
     }
 
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
+        data.append = true;
         if (message) {
-            addMessage(message, true);
+            addMessage(message, true, data.append);
             textarea.value = '';
-            let data = {
+            let messageObj = {
                 senderID: getCookieByName("sessionId"),
                 receiverID: ReceiverID,
                 content: message,
             }
-            socket.send(JSON.stringify(data));
+            socket.send(JSON.stringify(messageObj));
         }
     });
 
-    messageHistory.addEventListener('scroll', () => {
-        // if (messageHistory.scrollTop === 0) {
-        //     const olderMessages = [
-        //         { text: "This is an even older message.", isMyMessage: false },
-        //         { text: "This is another older message.", isMyMessage: true },
-        //     ];
-        //     olderMessages.forEach(msg => {
-        //         const messageElement = document.createElement('div');
-        //         messageElement.className = msg.isMyMessage ? 'message my-message' : 'message other-message';
-        //         messageElement.textContent = msg.text;
-        //         messageHistory.insertBefore(messageElement, messageHistory.firstChild);
-        //     });
-        // }
-    });
+    messageHistory.addEventListener('scroll', debounce(() => {
+        if (messageHistory.scrollTop === 0) {
+            const scrollHeightBefore = messageHistory.scrollHeight;
+            const scrollTopBefore = messageHistory.scrollTop;
+            data.offset = document.querySelectorAll(".message").length;
+            data.append = false;
+            const observer = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'childList') {
+                        const scrollHeightAfter = messageHistory.scrollHeight;
+                        messageHistory.scrollTop = scrollTopBefore + (scrollHeightAfter - scrollHeightBefore);
+                        observer.disconnect();
+                        break;
+                    }
+                }
+            });
+            observer.observe(messageHistory, { childList: true });
+            getMessages(data);
+        }
+    }), 300);
 
     document.body.appendChild(popup);
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
 }
 
 function getCookieByName(name) {
@@ -499,39 +522,42 @@ window.addEventListener("scrollend", () => {
         isLoading = true;
 
         const feed = document.querySelector('.feed');
-        const placeholder = document.createElement('div');
-        placeholder.className = 'post-placeholder';
-        placeholder.innerHTML = `
-            <div class="post-header">
-                <div class="user-info">
-                    <h4 style="background: #e0e0e0; height: 20px; width: 100px; border-radius: 4px;"></h4>
-                </div>
-                <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
-            </div>
-            <div class="post-title" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
-            <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
-            <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
-            <div class="post-footer">
-                <div class="actions">
-                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
-                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
-                    <button style="background: #e0e0e0; height: 16px; width: 80px; border-radius: 4px; border: none;"></button>
-                </div>
-            </div>
-        `;
-        feed.appendChild(placeholder);
-        window.scrollTo(0, document.body.scrollHeight);
-        let posts = document.querySelectorAll(".post");
 
-        setTimeout(() => {
-            try {
-                getPosts(posts.length);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                feed.removeChild(placeholder);
-                isLoading = false;
-            }
-        }, 5000);
+        if (feed) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'post-placeholder';
+            placeholder.innerHTML = `
+                <div class="post-header">
+                    <div class="user-info">
+                        <h4 style="background: #e0e0e0; height: 20px; width: 100px; border-radius: 4px;"></h4>
+                    </div>
+                    <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
+                </div>
+                <div class="post-titFan-Out Fan-In Patternle" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
+                <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
+                <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
+                <div class="post-footer">
+                    <div class="actions">
+                        <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                        <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                        <button style="background: #e0e0e0; height: 16px; width: 80px; border-radius: 4px; border: none;"></button>
+                    </div>
+                </div>
+            `;
+            feed.appendChild(placeholder);
+            window.scrollTo(0, document.body.scrollHeight);
+            let posts = document.querySelectorAll(".post");
+
+            setTimeout(() => {
+                try {
+                    getPosts(posts.length);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    feed.removeChild(placeholder);
+                    isLoading = false;
+                }
+            }, 5000);
+        }
     }
 })

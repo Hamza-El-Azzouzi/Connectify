@@ -346,11 +346,12 @@ button[style*="background"] {
   color: #999;
 }
 
-/* .comment-user {
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #333;
-} */
+.message-timestamp {
+  font-size: 0.8em;
+  color: #666;
+  display: block;
+  text-align: right;
+}
 
 .comment-content {
   margin-bottom: 15px;

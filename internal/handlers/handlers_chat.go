@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -34,7 +33,6 @@ func (c *ChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	messages, err := c.ChatService.GetMessages(chat.SnederID, chat.ReceiverID, chat.Offset)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

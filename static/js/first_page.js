@@ -151,7 +151,6 @@ export function loginPage() {
                 .then((reply) => {
 
                     if (reply.REplyMssg === "Done") {
-                        console.log("Registered successfully");
                         NavigateTo("login")
                     }
                     if (reply.REplyMssg === "email") {
