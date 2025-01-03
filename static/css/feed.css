@@ -347,10 +347,10 @@ button[style*="background"] {
 }
 
 .message-timestamp {
-  font-size: 0.8em;
+  font-size: 0.75em;
   color: #666;
-  display: block;
   text-align: right;
+  margin-top: 4px;
 }
 
 .comment-content {
@@ -400,37 +400,36 @@ button[style*="background"] {
 }
 
 .loadMore {
-  background-color: #512da8; /* Consistent with the post button color */
+  background-color: #512da8; 
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 20px; /* Rounded corners */
+  border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
   margin-top: 10px;
   margin-bottom: 5px;
-  display: block; /* Ensure it takes full width */
+  display: block; 
   width: 100%;
   text-align: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .loadMore:hover {
-  background-color: #7450c9; /* Slightly lighter shade on hover */
-  transform: scale(1.02); /* Slight scale effect on hover */
+  background-color: #7450c9; 
+  transform: scale(1.02); 
 }
 
 .loadMore:active {
-  background-color: #3a1d6b; /* Darker shade when clicked */
-  transform: scale(0.98); /* Slight shrink effect when clicked */
+  background-color: #3a1d6b; 
+  transform: scale(0.98); 
 }
 
 .loadMore:focus {
-  outline: none; /* Remove default focus outline */
-  box-shadow: 0 0 0 3px rgba(81, 45, 168, 0.3); /* Add a custom focus shadow */
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(81, 45, 168, 0.3); 
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .loadMore {
     padding: 8px 16px;
@@ -495,7 +494,7 @@ button[style*="background"] {
       height: 60px;
   }
 }
-/* Flex container for feed and user section */
+
 .flex-container {
   display: flex;
   gap: 20px;
@@ -504,14 +503,14 @@ button[style*="background"] {
   padding: 20px;
 }
 
-/* Feed container (left side) */
+
 .feed-container {
-  flex: 3; /* Takes 3 parts of the available space */
+  flex: 3; 
 }
 
-/* User section (right side) */
+
 .user-section {
-  flex: 1; /* Takes 1 part of the available space */
+  flex: 1; 
   background: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -540,17 +539,17 @@ button[style*="background"] {
   border: 1px solid #ccc;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
   .flex-container {
       flex-direction: column;
   }
 
   .user-section {
-      order: -1; /* Move the user section to the top on smaller screens */
+      order: -1; 
   }
 }
-/* Pop-up modal */
+
 .message-popup {
   position: fixed;
   top: 0;
@@ -568,9 +567,9 @@ button[style*="background"] {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 600px; /* Increased width */
+  width: 600px; 
   max-width: 90%;
-  height: 70vh; /* Fixed height for the pop-up */
+  height: 70vh; 
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -597,22 +596,22 @@ button[style*="background"] {
 }
 
 .message-body {
-  flex: 1; /* Take up remaining space */
+  flex: 1; 
   display: flex;
   flex-direction: column;
   padding: 15px;
-  overflow: hidden; /* Prevent overflow */
+  overflow: hidden;
 }
 
 .message-history {
-  flex: 1; /* Take up remaining space */
-  overflow-y: auto; /* Enable vertical scrolling */
+  flex: 1; 
+  overflow-y: auto; 
   margin-bottom: 15px;
   border-bottom: 1px solid #ccc;
   padding-bottom: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
 }
 
 .message {

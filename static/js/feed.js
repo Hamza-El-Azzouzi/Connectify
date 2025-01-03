@@ -183,6 +183,7 @@ function createMessagePopup(username, ReceiverID) {
         }).then((response) => response.json())
             .then((messages) => {
                 if (messages) {
+                    const scrollHeightBefore = messageHistory.scrollHeight;
                     for (let i = 0; i < messages.length; i++) {
                         if (messages[i].ReceiverID !== ReceiverID) {
                             addMessage(messages[i].Content, false, data.append);
@@ -190,6 +191,8 @@ function createMessagePopup(username, ReceiverID) {
                             addMessage(messages[i].Content, true, data.append);
                         }
                     }
+                    const scrollHeightAfter = messageHistory.scrollHeight;
+                    messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
                 }
             })
             .catch((error) => {
@@ -208,27 +211,29 @@ function createMessagePopup(username, ReceiverID) {
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
 
-    function addMessage(message, isMyMessage, append) {
+    function addMessage(message, isMyMessage, append, shouldScrollToBottom) {
         const messageElement = document.createElement('div');
         messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
         messageElement.textContent = message;
         if (append) {
             messageHistory.appendChild(messageElement);
-            messageHistory.scrollTop = messageHistory.scrollHeight;
+            if (shouldScrollToBottom) {
+                messageHistory.scrollTop = messageHistory.scrollHeight;
+            }
         } else {
             messageHistory.insertBefore(messageElement, messageHistory.firstChild);
         }
     }
 
     socket.onmessage = (event) => {
-        addMessage(event.data, false, true);
+        addMessage(event.data, false, true, false);
     }
 
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         data.append = true;
         if (message) {
-            addMessage(message, true, data.append);
+            addMessage(message, true, data.append, true);
             textarea.value = '';
             let messageObj = {
                 senderID: getCookieByName("sessionId"),
@@ -239,26 +244,13 @@ function createMessagePopup(username, ReceiverID) {
         }
     });
 
-    messageHistory.addEventListener('scroll', debounce(() => {
+    messageHistory.addEventListener('scrollend', debounce(() => {
         if (messageHistory.scrollTop === 0) {
-            const scrollHeightBefore = messageHistory.scrollHeight;
-            const scrollTopBefore = messageHistory.scrollTop;
             data.offset = document.querySelectorAll(".message").length;
             data.append = false;
-            const observer = new MutationObserver((mutationsList) => {
-                for (const mutation of mutationsList) {
-                    if (mutation.type === 'childList') {
-                        const scrollHeightAfter = messageHistory.scrollHeight;
-                        messageHistory.scrollTop = scrollTopBefore + (scrollHeightAfter - scrollHeightBefore);
-                        observer.disconnect();
-                        break;
-                    }
-                }
-            });
-            observer.observe(messageHistory, { childList: true });
             getMessages(data);
         }
-    }), 300);
+    }, 300));
 
     document.body.appendChild(popup);
 }
