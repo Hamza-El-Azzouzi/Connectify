@@ -280,10 +280,11 @@ pre {
 
 @keyframes shimmer {
   0% {
-      background-position: -200px 0;
+    background-position: -200px 0;
   }
+
   100% {
-      background-position: 200px 0;
+    background-position: 200px 0;
   }
 }
 
@@ -390,17 +391,19 @@ button[style*="background"] {
   .comment-section {
     padding: 10px;
   }
+
   .comment-form textarea {
     height: 100px;
   }
 }
-#err{
+
+#err {
   color: red;
   font-size: medium;
 }
 
 .loadMore {
-  background-color: #512da8; 
+  background-color: #512da8;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -409,25 +412,25 @@ button[style*="background"] {
   font-size: 14px;
   margin-top: 10px;
   margin-bottom: 5px;
-  display: block; 
+  display: block;
   width: 100%;
   text-align: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .loadMore:hover {
-  background-color: #7450c9; 
-  transform: scale(1.02); 
+  background-color: #7450c9;
+  transform: scale(1.02);
 }
 
 .loadMore:active {
-  background-color: #3a1d6b; 
-  transform: scale(0.98); 
+  background-color: #3a1d6b;
+  transform: scale(0.98);
 }
 
 .loadMore:focus {
-  outline: none; 
-  box-shadow: 0 0 0 3px rgba(81, 45, 168, 0.3); 
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(81, 45, 168, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -486,12 +489,12 @@ button[style*="background"] {
 
 @media (max-width: 768px) {
   .user-list {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 
   .user-card img {
-      width: 60px;
-      height: 60px;
+    width: 60px;
+    height: 60px;
   }
 }
 
@@ -505,12 +508,12 @@ button[style*="background"] {
 
 
 .feed-container {
-  flex: 3; 
+  flex: 3;
 }
 
 
 .user-section {
-  flex: 1; 
+  flex: 1;
   background: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -529,6 +532,7 @@ button[style*="background"] {
   flex-direction: column;
   gap: 10px;
 }
+
 .username {
   padding: 10px;
   cursor: pointer;
@@ -546,6 +550,7 @@ button[style*="background"] {
   top: 50%;
   transform: translateY(-50%);
 }
+
 .username.offline::after {
   content: '';
   width: 10px;
@@ -557,6 +562,17 @@ button[style*="background"] {
   top: 50%;
   transform: translateY(-50%);
 }
+
+.notify-msg {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .username {
   font-size: 1rem;
   color: #555;
@@ -569,11 +585,11 @@ button[style*="background"] {
 
 @media (max-width: 768px) {
   .flex-container {
-      flex-direction: column;
+    flex-direction: column;
   }
 
   .user-section {
-      order: -1; 
+    order: -1;
   }
 }
 
@@ -594,9 +610,9 @@ button[style*="background"] {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 600px; 
+  width: 600px;
   max-width: 90%;
-  height: 70vh; 
+  height: 70vh;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -623,7 +639,7 @@ button[style*="background"] {
 }
 
 .message-body {
-  flex: 1; 
+  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 15px;
@@ -631,8 +647,8 @@ button[style*="background"] {
 }
 
 .message-history {
-  flex: 1; 
-  overflow-y: auto; 
+  flex: 1;
+  overflow-y: auto;
   margin-bottom: 15px;
   border-bottom: 1px solid #ccc;
   padding-bottom: 15px;

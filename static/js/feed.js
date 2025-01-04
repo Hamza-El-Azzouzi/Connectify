@@ -26,10 +26,23 @@ function initializeWebSocket() {
         if (data.hasOwnProperty("type")) {
             updateUserStatus(data.userID, data.online);
         }
+        if (data.hasOwnProperty("msg")) {
+            newMeessage(data["session"])
+        }
     };
     connectionToWS.onerror = (error) => {
         console.error("WebSocket error:", error);
     };
+}
+function newMeessage(receiverID) {
+    console.log("ja msg")
+
+    const usernameElement = document.querySelector(`.username[data-user-id="${receiverID}"]`);
+    const img = document.createElement("img");
+    img.src = "static/image/svgviewer-output.svg";
+    img.alt = "Notification Icon";
+    img.className = "notify-msg"
+    usernameElement.appendChild(img);
 }
 
 function applyStyles() {
@@ -123,11 +136,11 @@ function setupFormInteractions() {
 
     postFormElement.addEventListener("submit", (event) => {
         event.preventDefault();
-        handleFormSubmission(formContainer,postFormElement);
+        handleFormSubmission(formContainer, postFormElement);
     });
 }
 
-function handleFormSubmission(formContainer,postFormElement) {
+function handleFormSubmission(formContainer, postFormElement) {
     let isValid = true;
 
     document.getElementById('title-error').textContent = '';
@@ -197,7 +210,7 @@ function updateUserStatus(userID, isOnline) {
         if (isOnline) {
             usernameElement.classList.remove("offline");
             usernameElement.classList.add("online");
-            
+
         } else {
             usernameElement.classList.remove("online");
             usernameElement.classList.add("offline");
@@ -233,10 +246,13 @@ function createMessagePopup(username, ReceiverID) {
         append: false,
     }
 
-    getMessages(popup,data,ReceiverID);
+    getMessages(popup, data, ReceiverID);
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
+        const usernameElement = document.querySelector(`.username[data-user-id="${ReceiverID}"]`);
+        const img = document.querySelector(`.notify-msg`);
+        if (img) usernameElement.removeChild(img)
         document.body.removeChild(popup);
     });
 
@@ -248,9 +264,13 @@ function createMessagePopup(username, ReceiverID) {
         const message = textarea.value.trim();
         data.append = true;
         if (message) {
-            addMessage(message, true, data.append, true);
+            addMessage(message, true, data.append, true, popup);
             textarea.value = '';
-            connectionToWS.send(JSON.stringify({msg: message,session:getCookieByName("sessionId"),id:ReceiverID}));
+            connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID }));
+            const usernameElement = document.querySelector(`.username[data-user-id="${ReceiverID}"]`);
+            console.log(usernameElement)
+            const img = document.querySelector(`.notify-msg`);
+            if (img) usernameElement.removeChild(img)
         }
     });
 
@@ -258,14 +278,14 @@ function createMessagePopup(username, ReceiverID) {
         if (messageHistory.scrollTop === 0) {
             data.offset = document.querySelectorAll(".message").length;
             data.append = false;
-            getMessages(popup,data,ReceiverID);
+            getMessages(popup, data, ReceiverID);
         }
     }, 300));
 
     document.body.appendChild(popup);
 }
 
-function getMessages(popup,data,ReceiverID) {
+function getMessages(popup, data, ReceiverID) {
     const messageHistory = popup.querySelector('.message-history');
     fetch(`/api/getmessages`, {
         method: 'POST',
@@ -279,9 +299,10 @@ function getMessages(popup,data,ReceiverID) {
                 const scrollHeightBefore = messageHistory.scrollHeight;
                 for (let i = 0; i < messages.length; i++) {
                     if (messages[i].ReceiverID !== ReceiverID) {
-                        addMessage(messages[i].Content, false, data.append,false,messageHistory);
+                        addMessage(messages[i].Content, false, data.append, false, popup);
                     } else {
-                        addMessage(messages[i].Content, true, data.append,false,messageHistory);
+                        addMessage(messages[i].Content, true, data.append, false, popup);
+
                     }
                 }
                 const scrollHeightAfter = messageHistory.scrollHeight;
@@ -293,7 +314,8 @@ function getMessages(popup,data,ReceiverID) {
         });
 }
 
-function addMessage(message, isMyMessage, append, shouldScrollToBottom ,messageHistory) {
+function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup) {
+    const messageHistory = popup.querySelector('.message-history');
     const messageElement = document.createElement('div');
     messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
     messageElement.textContent = message;
@@ -523,6 +545,10 @@ function fetchUsers() {
                 usernameElement.setAttribute("data-user-id", user.ID);
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
+
+                    const usernameElement = document.querySelector(`.username[data-user-id="${user.ID}"]`);
+                    const img = document.querySelector(`.notify-msg`);
+                    if (img) usernameElement.removeChild(img)
                 });
 
                 userList.appendChild(usernameElement);

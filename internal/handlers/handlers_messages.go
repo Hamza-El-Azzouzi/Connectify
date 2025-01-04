@@ -105,15 +105,15 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				log.Println("Empty message received")
 				break
 			}
-			err = m.MessageService.Create(data["msg"], data["session"], data["id"])
-			if err != nil {
+			userSender , err := m.MessageService.Create(data["msg"], data["session"], data["id"])
+			if err != nil || userSender == uuid.Nil {
 				log.Printf("Failed to create message: %#v\n", err)
 				break
 			}
 			m.ClientsMu.Lock()
 			receiverClient, exists := m.Clients[ data["id"]]
 			m.ClientsMu.Unlock()
-
+			data["session"] = userSender.String()
 			if exists {
 				err = receiverClient.Conn.WriteJSON(data)
 				if err != nil {
