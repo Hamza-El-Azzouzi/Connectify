@@ -546,6 +546,17 @@ button[style*="background"] {
   top: 50%;
   transform: translateY(-50%);
 }
+.username.offline::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: rgb(255, 0, 0);
+  border-radius: 50%;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .username {
   font-size: 1rem;
   color: #555;
