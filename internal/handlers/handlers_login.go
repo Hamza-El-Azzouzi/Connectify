@@ -129,7 +129,7 @@ func SetCookies(w http.ResponseWriter, name, value string, expires time.Time) {
 }
 
 func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
-	activeUser, _ := h.AuthMidlaware.IsUserLoggedIn(w, r)
+	activeUser, user := h.AuthMidlaware.IsUserLoggedIn(w, r)
 	if !activeUser {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -142,7 +142,7 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
+	h.MessageHandler.DisconnectClient(user.ID.String())
 	SetCookies(w, "sessionId", "", time.Now().Add(-1*time.Hour))
 	sendResponse(w, "Done")
 }

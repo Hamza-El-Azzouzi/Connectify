@@ -10,7 +10,7 @@ let heartbeatInterval;
 
 
 export function feedPage() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
 
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -223,7 +223,6 @@ function createMessagePopup(username, user_ID) {
     }
     connectionToWS.onmessage = (event) => {
         const dataMessage = JSON.parse(event.data);
-        console.log(dataMessage)
         if (dataMessage.hasOwnProperty("msg")) {
             addMessage(dataMessage["msg"], false)
         }

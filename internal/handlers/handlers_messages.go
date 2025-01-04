@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -129,19 +130,25 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
+	
+	m.DisconnectClient(userID)
+	
+}
+
+func (m *MessageHandler) DisconnectClient(userID string){
 	m.ClientsMu.Lock()
 	delete(m.Clients, userID)
 	m.ClientsMu.Unlock()
-	log.Printf("User %s disconnected\n", userID)
-
 	m.broadcastUserStatus(userID, false)
+	log.Printf("User %s disconnected\n", userID)
 }
-
 func (m *MessageHandler) broadcastUserStatus(userID string, isOnline bool) {
+
 	m.ClientsMu.Lock()
 	defer m.ClientsMu.Unlock()
 
 	for _, client := range m.Clients {
+		fmt.Println("Yup")
 		err := client.Conn.WriteJSON(map[string]any{
 			"type":   "userStatus",
 			"userID": userID,
@@ -157,7 +164,7 @@ func (m *MessageHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) 
 	m.ClientsMu.Lock()
 	defer m.ClientsMu.Unlock()
 
-	onlineUsers := make([]string, 0)
+	onlineUsers := []string{}
 	for userID := range m.Clients {
 		onlineUsers = append(onlineUsers, userID)
 	}
