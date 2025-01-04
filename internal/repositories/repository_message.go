@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"time"
 
 	"real-time-forum/internal/models"
 
@@ -14,13 +13,13 @@ type MessageRepository struct {
 }
 
 // Create(messageId, msg, reciever_id,user.ID)
-func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID) error {
-	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message)VALUES (?,?,?,?)"
+func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID, date string) error {
+	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message,created_at)VALUES (?,?,?,?,?)"
 	preparedQuery, err := m.DB.Prepare(Query)
 	if err != nil {
 		return err
 	}
-	_, err = preparedQuery.Exec(messageId, sender, reciever_id, msg)
+	_, err = preparedQuery.Exec(messageId, sender, reciever_id, msg, date)
 	return err
 }
 
@@ -51,12 +50,7 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 		if scanErr != nil {
 			return nil, scanErr
 		}
-		now := time.Now()
-		if currentMessage.CreatedAt.Year() == now.Year() && currentMessage.CreatedAt.Month() == now.Month() && currentMessage.CreatedAt.Day() == now.Day() {
-			currentMessage.FormattedDate = currentMessage.CreatedAt.Format("15:04")
-		} else {
-			currentMessage.FormattedDate = currentMessage.CreatedAt.Format("2006-01-02 15:04")
-		}
+		currentMessage.FormattedDate = currentMessage.CreatedAt.Format("2006-01-02 15:04")
 		messages = append(messages, currentMessage)
 	}
 	return messages, nil

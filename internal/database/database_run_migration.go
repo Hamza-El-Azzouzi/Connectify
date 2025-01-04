@@ -4,15 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"real-time-forum/internal/utils"
 	"strings"
+
+	"real-time-forum/internal/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
 
 func RunMigrations(db *sql.DB) error {
 	allExist := true
-	tables := []string{"users", "posts", "comments", "categories", "post_categories", "likes", "sessions"}
+	tables := []string{"users", "messages", "posts", "comments", "categories", "post_categories", "likes", "sessions"}
 	for _, table := range tables {
 		if !tableExists(db, table) {
 			allExist = false
@@ -40,9 +41,9 @@ func RunMigrations(db *sql.DB) error {
 
 		_, err = db.Exec(stmt)
 		if err != nil {
-			if strings.Contains(err.Error(),"already exists"){
+			if strings.Contains(err.Error(), "already exists") {
 				continue
-			}else{
+			} else {
 				return err
 			}
 		}
@@ -86,7 +87,7 @@ func InsertDefaultCategories(db *sql.DB) error {
 		}
 
 		if exists == 0 {
-			preparedQuery,err := db.Prepare("INSERT INTO categories (ID , name) VALUES (?,?)")
+			preparedQuery, err := db.Prepare("INSERT INTO categories (ID , name) VALUES (?,?)")
 			if err != nil {
 				return fmt.Errorf("error preparing category %s: %v", category, err)
 			}

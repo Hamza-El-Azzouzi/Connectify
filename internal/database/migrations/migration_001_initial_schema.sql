@@ -18,7 +18,7 @@ CREATE TABLE
         user_id_sender TEXT NOT NULL,
         user_id_receiver TEXT NOT NULL,
         message TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT (DATETIME ('now', 'localtime')),
+        created_at TIMESTAMP NOT NULL,
         FOREIGN KEY (user_id_sender) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
         FOREIGN KEY (user_id_receiver) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
         CHECK (user_id_sender != user_id_receiver)

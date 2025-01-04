@@ -20,7 +20,7 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    connectionToWS = new WebSocket("ws://localhost:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -123,11 +123,11 @@ function setupFormInteractions() {
 
     postFormElement.addEventListener("submit", (event) => {
         event.preventDefault();
-        handleFormSubmission(formContainer,postFormElement);
+        handleFormSubmission(formContainer, postFormElement);
     });
 }
 
-function handleFormSubmission(formContainer,postFormElement) {
+function handleFormSubmission(formContainer, postFormElement) {
     let isValid = true;
 
     document.getElementById('title-error').textContent = '';
@@ -197,7 +197,7 @@ function updateUserStatus(userID, isOnline) {
         if (isOnline) {
             usernameElement.classList.remove("offline");
             usernameElement.classList.add("online");
-            
+
         } else {
             usernameElement.classList.remove("online");
             usernameElement.classList.add("offline");
@@ -233,7 +233,7 @@ function createMessagePopup(username, ReceiverID) {
         append: false,
     }
 
-    getMessages(popup,data,ReceiverID);
+    getMessages(popup, data, ReceiverID);
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
@@ -248,9 +248,10 @@ function createMessagePopup(username, ReceiverID) {
         const message = textarea.value.trim();
         data.append = true;
         if (message) {
-            addMessage(message, true, data.append, true);
+            const timestamp = getFormattedDateTime();
+            addMessage(message, true, data.append, true, popup, timestamp);
             textarea.value = '';
-            connectionToWS.send(JSON.stringify({msg: message,session:getCookieByName("sessionId"),id:ReceiverID}));
+            connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
         }
     });
 
@@ -258,14 +259,14 @@ function createMessagePopup(username, ReceiverID) {
         if (messageHistory.scrollTop === 0) {
             data.offset = document.querySelectorAll(".message").length;
             data.append = false;
-            getMessages(popup,data,ReceiverID);
+            getMessages(popup, data, ReceiverID);
         }
     }, 300));
 
     document.body.appendChild(popup);
 }
 
-function getMessages(popup,data,ReceiverID) {
+function getMessages(popup, data, ReceiverID) {
     const messageHistory = popup.querySelector('.message-history');
     fetch(`/api/getmessages`, {
         method: 'POST',
@@ -279,9 +280,9 @@ function getMessages(popup,data,ReceiverID) {
                 const scrollHeightBefore = messageHistory.scrollHeight;
                 for (let i = 0; i < messages.length; i++) {
                     if (messages[i].ReceiverID !== ReceiverID) {
-                        addMessage(messages[i].Content, false, data.append,false,messageHistory);
+                        addMessage(messages[i].Content, false, data.append, false, popup, messages[i].FormattedDate);
                     } else {
-                        addMessage(messages[i].Content, true, data.append,false,messageHistory);
+                        addMessage(messages[i].Content, true, data.append, false, popup, messages[i].FormattedDate);
                     }
                 }
                 const scrollHeightAfter = messageHistory.scrollHeight;
@@ -293,10 +294,19 @@ function getMessages(popup,data,ReceiverID) {
         });
 }
 
-function addMessage(message, isMyMessage, append, shouldScrollToBottom ,messageHistory) {
+function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {
+    const messageHistory = popup.querySelector('.message-history');
     const messageElement = document.createElement('div');
     messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
-    messageElement.textContent = message;
+    const timestampElement = document.createElement('div');
+    timestampElement.className = 'message-timestamp';
+    const timeString = formatTimestamp(timestamp);
+    timestampElement.textContent = timeString;
+    const contentElement = document.createElement('div');
+    contentElement.className = 'message-content';
+    contentElement.textContent = message;
+    messageElement.appendChild(contentElement);
+    messageElement.appendChild(timestampElement);
     if (append) {
         messageHistory.appendChild(messageElement);
         if (shouldScrollToBottom) {
@@ -304,6 +314,39 @@ function addMessage(message, isMyMessage, append, shouldScrollToBottom ,messageH
         }
     } else {
         messageHistory.insertBefore(messageElement, messageHistory.firstChild);
+    }
+}
+
+function getFormattedDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+function formatTimestamp(timestamp) {
+    const now = new Date();
+    const messageDate = new Date(timestamp); 
+    if (
+        messageDate.getDate() === now.getDate() &&
+        messageDate.getMonth() === now.getMonth() &&
+        messageDate.getFullYear() === now.getFullYear()
+    ) {
+        const hours = String(messageDate.getHours()).padStart(2, '0');
+        const minutes = String(messageDate.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    } else {
+        const year = messageDate.getFullYear();
+        const month = String(messageDate.getMonth() + 1).padStart(2, '0'); 
+        const day = String(messageDate.getDate()).padStart(2, '0');
+        const hours = String(messageDate.getHours()).padStart(2, '0');
+        const minutes = String(messageDate.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
     }
 }
 

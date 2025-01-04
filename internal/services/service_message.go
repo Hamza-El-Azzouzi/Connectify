@@ -14,14 +14,14 @@ type MessageService struct {
 	UserRepo    *repositories.UserRepository
 }
 
-func (m *MessageService) Create(msg, session, id string) error {
+func (m *MessageService) Create(msg, session, id, date string) error {
 	user, err := m.UserRepo.GetUserBySessionID(session)
 	if err != nil {
 		return err
 	}
 	messageId := uuid.Must(uuid.NewV4())
 
-	return m.MessageRepo.Create(messageId, msg,id, user.ID)
+	return m.MessageRepo.Create(messageId, msg, id, user.ID, date)
 }
 
 func (m *MessageService) GetMessages(senderID, receiverID string, pagination int) ([]models.MessageWithTime, error) {

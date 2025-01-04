@@ -105,7 +105,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				log.Println("Empty message received")
 				break
 			}
-			err = m.MessageService.Create(data["msg"], data["session"], data["id"])
+			err = m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
 			if err != nil {
 				log.Printf("Failed to create message: %#v\n", err)
 				break
