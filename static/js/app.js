@@ -49,13 +49,15 @@ export function NavigateTo(page) {
             app.innerHTML = '';
             feedPage();
             break;
+        case "logout":
+            logout()
         default:
             app.innerHTML = '<h2>404 - Page Not Found</h2>';
     }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    
+
     const isLoggedIn = await checkIntegrity();
     if (isLoggedIn) {
         NavigateTo("feed");
@@ -78,10 +80,10 @@ document.getElementById("navbar").addEventListener("click", async (e) => {
 });
 
 // Logout functionality
-// function logout() {
-//     fetch('/api/logout', { method: 'POST', credentials: 'include' })
-//         .then(() => navigateTo('login'))
-//         .catch(console.error);
-// }
+function logout() {
+    fetch('/api/logout',)
+        .then(() => NavigateTo('login'))
+        .catch(console.error);
+}
 
 // Initial load

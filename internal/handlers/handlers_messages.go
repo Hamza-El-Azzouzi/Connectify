@@ -24,20 +24,6 @@ type MessageHandler struct {
 	ClientsMu      sync.Mutex
 }
 
-// func (m *MessageHandler) checkInactiveClients() {
-// 	for {
-// 		time.Sleep(1 * time.Second)
-// 		m.ClientsMu.Lock()
-// 		for userID, client := range m.Clients {
-// 			if time.Since(client.LastPing) > 90*time.Second { // 90-second timeout
-// 				log.Printf("User %s disconnected due to inactivity\n", userID)
-// 				client.Conn.Close()
-// 				delete(m.Clients, userID)
-// 			}
-// 		}
-// 		m.ClientsMu.Unlock()
-// 	}
-// }
 
 func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request) {
 	connection, err := m.Upgrader.Upgrade(w, r, nil)
@@ -123,7 +109,6 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				log.Println("Empty message received")
 				break
 			}
-			// fmt.Println(chat)
 			err = m.MessageService.Create(data["msg"], data["session"], data["id"])
 			if err != nil {
 				log.Printf("Failed to create message: %#v\n", err)
