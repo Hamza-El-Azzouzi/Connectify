@@ -32,6 +32,12 @@ type MessageWithTime struct {
 	SenderID      uuid.UUID
 	ReceiverID    uuid.UUID
 	Content       string
+	Unreaded      bool
 	CreatedAt     time.Time
 	FormattedDate string
+}
+
+type MarkAsRead struct {
+	SenderID   string `json:"senderID"`
+	ReceiverID string `json:"receiverID"`
 }

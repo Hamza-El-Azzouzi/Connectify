@@ -27,16 +27,27 @@ function initializeWebSocket() {
             updateUserStatus(data.userID, data.online);
         }
         if (data.hasOwnProperty("msg")) {
+            const popup = document.querySelector('.message-popup');
+            if (popup) {
+                const messageHistory = popup.querySelector('.message-history');
+                if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
+                    addMessage(data["msg"], false, true, true, popup);
+                } else {
+                    addMessage(data["msg"], false, true, false, popup);
+                }
+            } else {
+                newMeessage(data["session"]);
+            }
             newMeessage(data["session"])
         }
     };
+
+
     connectionToWS.onerror = (error) => {
         console.error("WebSocket error:", error);
     };
 }
 function newMeessage(receiverID) {
-    console.log("ja msg")
-
     const usernameElement = document.querySelector(`.username[data-user-id="${receiverID}"]`);
     const img = document.createElement("img");
     img.src = "static/image/svgviewer-output.svg";
@@ -44,7 +55,19 @@ function newMeessage(receiverID) {
     img.className = "notify-msg"
     usernameElement.appendChild(img);
 }
-
+function CheckUnreadMessage() {
+    let sessionId = getCookieByName("sessionId")
+    fetch("/api/checkUnreadMesg", {
+        method: "POST",
+        body: JSON.stringify({ session: sessionId })
+    }).then(response => response.json())
+        .then(unReadMsgs => {
+            console.log(unReadMsgs)
+            unReadMsgs.forEach(userID => {
+                newMeessage(userID)
+            })
+        })
+}
 function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
@@ -250,9 +273,7 @@ function createMessagePopup(username, ReceiverID) {
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
-        const usernameElement = document.querySelector(`.username[data-user-id="${ReceiverID}"]`);
-        const img = document.querySelector(`.notify-msg`);
-        if (img) usernameElement.removeChild(img)
+        MarkAsRead(ReceiverID)
         document.body.removeChild(popup);
     });
 
@@ -260,6 +281,17 @@ function createMessagePopup(username, ReceiverID) {
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
 
+    // connectionToWS.onmessage = (event) => {
+
+    //     const dataMessage = JSON.parse(event.data);
+    //     if (dataMessage.hasOwnProperty("msg")) {
+    //         if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
+    //             addMessage(dataMessage["msg"], false, true, true, popup);
+    //         } else {
+    //             addMessage(dataMessage["msg"], false, true, false, popup);
+    //         }
+    //     }
+    // }
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         data.append = true;
@@ -267,10 +299,8 @@ function createMessagePopup(username, ReceiverID) {
             addMessage(message, true, data.append, true, popup);
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID }));
-            const usernameElement = document.querySelector(`.username[data-user-id="${ReceiverID}"]`);
-            console.log(usernameElement)
-            const img = document.querySelector(`.notify-msg`);
-            if (img) usernameElement.removeChild(img)
+            MarkAsRead(ReceiverID)
+
         }
     });
 
@@ -529,30 +559,47 @@ function submitComment(postId, comment, commentsContainer) {
             console.error('Error submitting comment:', error);
         });
 }
+function MarkAsRead(senderID) {
+    fetch("/api/markAsRead", {
+        method: "POST",
+        body: JSON.stringify({ receiverID: getCookieByName("sessionId"), senderID: senderID })
+    }).then(() => {
+        const usernameElement = document.querySelector(`.username[data-user-id="${senderID}"]`);
+        const img = document.querySelector(`.notify-msg`);
+        if (img) usernameElement.removeChild(img)
+    }
 
+    ).catch(err => {
+        console.error(err)
+    })
+}
 function fetchUsers() {
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
             userList.innerHTML = '';
+            if (users.length > 0) {
+                users.forEach(user => {
+                    const usernameElement = document.createElement('div');
+                    usernameElement.classList.add('username')
+                    usernameElement.classList.add('offline')
+                    usernameElement.textContent = user.Username;
+                    usernameElement.setAttribute("data-user-id", user.ID);
+                    usernameElement.addEventListener('click', () => {
 
-            users.forEach(user => {
-                const usernameElement = document.createElement('div');
-                usernameElement.classList.add('username')
-                usernameElement.classList.add('offline')
-                usernameElement.textContent = user.Username;
-                usernameElement.setAttribute("data-user-id", user.ID);
-                usernameElement.addEventListener('click', () => {
-                    createMessagePopup(user.Username, user.ID);
+                        createMessagePopup(user.Username, user.ID);
+                        MarkAsRead(user.ID)
+                    });
 
-                    const usernameElement = document.querySelector(`.username[data-user-id="${user.ID}"]`);
-                    const img = document.querySelector(`.notify-msg`);
-                    if (img) usernameElement.removeChild(img)
+                    userList.appendChild(usernameElement);
                 });
-
+            } else {
+                const usernameElement = document.createElement('p');
+                usernameElement.textContent = "You are the only user Invite your Friends ^_^"
                 userList.appendChild(usernameElement);
-            });
+            }
+
 
             fetch('/api/online-users')
                 .then(response => response.json())
@@ -564,10 +611,13 @@ function fetchUsers() {
                 .catch(error => {
                     console.error('Error fetching online users:', error);
                 });
+        }).then(() => {
+            CheckUnreadMessage();
         })
         .catch(error => {
             console.error('Error fetching users:', error);
         });
+
 }
 
 function getCategories() {

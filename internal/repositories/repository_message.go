@@ -28,8 +28,7 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 	querySelect := `
 	SELECT *
 	FROM messages
-	WHERE (user_id_sender = ? AND user_id_receiver = ?)
-		OR (user_id_sender = ? AND user_id_receiver = ?)
+	WHERE (user_id_sender = ? AND user_id_receiver = ?) OR (user_id_sender = ? AND user_id_receiver = ?)
 	ORDER BY created_at DESC
 	LIMIT 10 OFFSET ?;
 	`
@@ -46,6 +45,7 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 			&currentMessage.SenderID,
 			&currentMessage.ReceiverID,
 			&currentMessage.Content,
+			&currentMessage.Unreaded,
 			&currentMessage.CreatedAt,
 		)
 		if scanErr != nil {
@@ -60,4 +60,40 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 		messages = append(messages, currentMessage)
 	}
 	return messages, nil
+}
+
+func (m *MessageRepository) CheckUnReadMsg(userID string) ([]string, error) {
+	querySelect := `
+	SELECT DISTINCT user_id_sender 
+	FROM messages
+	WHERE user_id_receiver = ?  AND un_readed == 0;`
+	rows, queryErr := m.DB.Query(querySelect, userID)
+	if queryErr != nil {
+		return nil, queryErr
+	}
+	defer rows.Close()
+	usersID := []string{}
+	for rows.Next() {
+		var userId string
+		scanErr := rows.Scan(&userId)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+		usersID = append(usersID, userId)
+	}
+	return usersID, nil
+}
+
+func (m *MessageRepository) MarkReadMsg(sender string, receiver uuid.UUID) error {
+	queryUpdate := ` UPDATE messages SET un_readed = 1 WHERE user_id_sender = ? AND user_id_receiver = ?;`
+	preparedQuery, err := m.DB.Prepare(queryUpdate)
+	if err != nil {
+		return err
+	}
+	_, queryErr := preparedQuery.Exec(sender, receiver)
+	if queryErr != nil {
+		return queryErr
+	}
+
+	return nil
 }
