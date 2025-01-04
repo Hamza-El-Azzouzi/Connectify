@@ -99,14 +99,9 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		}
 
 		if _, ok := data["msg"]; ok {
-			var chat models.Chat
-			err = json.Unmarshal(message, &chat)
-			if err != nil {
-				log.Printf("Unmarshal error: %#v\n", err)
-				break
-			}
+			
 
-			if len(strings.TrimSpace(chat.Message)) == 0 {
+			if len(strings.TrimSpace( data["msg"])) == 0 {
 				log.Println("Empty message received")
 				break
 			}
@@ -116,16 +111,16 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				break
 			}
 			m.ClientsMu.Lock()
-			receiverClient, exists := m.Clients[chat.Reciver]
+			receiverClient, exists := m.Clients[ data["id"]]
 			m.ClientsMu.Unlock()
 
 			if exists {
-				err = receiverClient.Conn.WriteJSON(chat)
+				err = receiverClient.Conn.WriteJSON(data)
 				if err != nil {
 					log.Printf("Failed to send message to receiver: %#v\n", err)
 				}
 			} else {
-				log.Printf("Receiver %s not found\n", chat.Reciver)
+				log.Printf("Receiver %s not found\n",  data["id"])
 			}
 		}
 	}
@@ -174,4 +169,21 @@ func (m *MessageHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) 
 		log.Printf("Error encoding online users: %#v\n", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
+}
+
+
+func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
+	chat := models.HistoryChat{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&chat)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	defer r.Body.Close()
+	messages, err := m.MessageService.GetMessages(chat.SnederID, chat.ReceiverID, chat.Offset)
+	if err != nil {
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
 }

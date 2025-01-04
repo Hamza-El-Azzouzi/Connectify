@@ -52,8 +52,7 @@ func main() {
 		likeService,
 		sessionService,
 		authMiddleware,
-		messageService,
-	)
+		messageService)
 
 	cleaner := &utils.Cleaner{SessionService: sessionService}
 

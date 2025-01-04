@@ -24,8 +24,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
 	// mux.HandleFunc("/", postHandler.Home)
 
-	mux.HandleFunc("/Posts/", postHandler.Posts)
-
+	mux.HandleFunc("/api/posts/", postHandler.Posts)
+	mux.HandleFunc("/api/categories", postHandler.GetCategories)
 	// mux.HandleFunc("/create", postHandler.PostCreation)
 
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
@@ -38,8 +38,11 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	// mux.HandleFunc("/likeComment/", likeHandler.LikeComment)
 	// mux.HandleFunc("/dislikeComment/", likeHandler.DisLikeComment)
 	// mux.HandleFunc("/filters", postHandler.PostFilter)
+
+	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		utils.OpenHtml("index.html",w,nil)
+		utils.OpenHtml("index.html", w, nil)
 	})
 	mux.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Referer") == "" {

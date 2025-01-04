@@ -151,7 +151,6 @@ export function loginPage() {
                 .then((reply) => {
 
                     if (reply.REplyMssg === "Done") {
-                        console.log("Registered successfully");
                         NavigateTo("login")
                     }
                     if (reply.REplyMssg === "email") {
@@ -170,7 +169,6 @@ export function loginPage() {
                 })
                 .catch((error) => {
                     console.error("Error:", error);
-                    Error(Err, "Failed to register. Please try again later.");
                 });
         }
     });

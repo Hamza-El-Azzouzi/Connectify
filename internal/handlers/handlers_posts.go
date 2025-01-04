@@ -23,25 +23,17 @@ type PostHandler struct {
 	AuthHandler     *AuthHandler
 }
 
-// func (p *PostHandler) Home(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodGet {
-// 		utils.Error(w, http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	utils.OpenHtml("index.html", w, nil)
-// }
-
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
+	if len(pathParts) != 4 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	pagination := pathParts[2]
+	pagination := pathParts[3]
 	if pagination == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -56,18 +48,18 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
+}
 
+func (p *PostHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	categories, errCat := p.CategoryService.GetAllCategories()
 	if errCat != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	data := map[string]any{
-		"categories": categories,
-		"posts":      posts,
-	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(categories)
 }
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {

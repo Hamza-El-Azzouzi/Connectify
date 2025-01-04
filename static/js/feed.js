@@ -1,13 +1,6 @@
 let isLoading = false;
 let stopLoading = false;
 let connectionToWS
-let sessionID
-
-let heartbeatInterval;
-
-
-
-
 
 export function feedPage() {
     connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
@@ -17,9 +10,7 @@ export function feedPage() {
         if (data.hasOwnProperty("type")) {
             updateUserStatus(data.userID, data.online);
         }
-
     };
-
     connectionToWS.onerror = (error) => {
         //TODO: navigate to error page
         console.error("WebSocket error:", error);
@@ -177,7 +168,7 @@ function updateUserStatus(userID, isOnline) {
     });
 }
 
-function createMessagePopup(username, user_ID) {
+function createMessagePopup(username, ReceiverID) {
     const popup = document.createElement('div');
     popup.className = 'message-popup';
     popup.innerHTML = `
@@ -198,58 +189,122 @@ function createMessagePopup(username, user_ID) {
         </div>
     `;
 
-    const cookie = document.cookie;
-    if (cookie.includes("sessionId")) {
-        sessionID = cookie.split("=")[1];
+    let data = {
+        senderID: getCookieByName("sessionId"),
+        receiverID: ReceiverID,
+        offset: 0,
+        append: false,
     }
+
+    function getMessages(data) {
+        fetch(`/api/getmessages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        }).then((response) => response.json())
+            .then((messages) => {
+                if (messages) {
+                    const scrollHeightBefore = messageHistory.scrollHeight;
+                    for (let i = 0; i < messages.length; i++) {
+                        if (messages[i].ReceiverID !== ReceiverID) {
+                            addMessage(messages[i].Content, false, data.append);
+                        } else {
+                            addMessage(messages[i].Content, true, data.append);
+                        }
+                    }
+                    const scrollHeightAfter = messageHistory.scrollHeight;
+                    messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching messages:", error);
+            });
+    }
+
+    getMessages(data);
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
         document.body.removeChild(popup);
     });
 
-
+    // Handle sending a message
     const sendButton = popup.querySelector('.send-message');
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
 
-   
-    function addMessage(message, isMyMessage) {
+    function addMessage(message, isMyMessage, append, shouldScrollToBottom) {
         const messageElement = document.createElement('div');
         messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
         messageElement.textContent = message;
-        messageHistory.appendChild(messageElement);
-        messageHistory.scrollTop = messageHistory.scrollHeight;
+        if (append) {
+            messageHistory.appendChild(messageElement);
+            if (shouldScrollToBottom) {
+                messageHistory.scrollTop = messageHistory.scrollHeight;
+            }
+        } else {
+            messageHistory.insertBefore(messageElement, messageHistory.firstChild);
+        }
     }
+
     connectionToWS.onmessage = (event) => {
         const dataMessage = JSON.parse(event.data);
         if (dataMessage.hasOwnProperty("msg")) {
-            addMessage(dataMessage["msg"], false)
+            addMessage(dataMessage["msg"], false, true, false)
         }
     }
 
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
+        data.append = true;
         if (message) {
-            connectionToWS.send(JSON.stringify({ msg: message, session: sessionID, id: user_ID }));
-            addMessage(message, true);
+            addMessage(message, true, data.append, true);
             textarea.value = '';
+            connectionToWS.send(JSON.stringify({msg: message,session:getCookieByName("sessionId"),id:ReceiverID}));
         }
     });
+
+    messageHistory.addEventListener('scrollend', debounce(() => {
+        if (messageHistory.scrollTop === 0) {
+            data.offset = document.querySelectorAll(".message").length;
+            data.append = false;
+            getMessages(data);
+        }
+    }, 300));
 
     document.body.appendChild(popup);
 }
 
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+function getCookieByName(name) {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+            return cookie.substring(name.length + 1);
+        }
+    }
+    return null;
+}
 
 function getPosts(offset) {
-    fetch(`/Posts/${offset}`)
+    fetch(`/api/posts/${offset}`)
         .then((response) => response.json())
         .then((data) => {
-            if (!data.posts) {
+            if (!data) {
                 stopLoading = true;
             } else {
                 stopLoading = false;
-                populatePosts(data.posts);
+                populatePosts(data);
             }
         })
         .catch((error) => {
@@ -308,6 +363,7 @@ function populatePosts(posts) {
                     commentSection.style.display = 'none';
                 }
             });
+
 
 
             loadMoreButton.addEventListener('click', () => {
@@ -424,30 +480,27 @@ function submitComment(postId, comment, commentsContainer) {
 }
 function fetchUsers() {
     fetch('/api/users')
+    fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = ''; 
+            userList.innerHTML = '';
 
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
                 usernameElement.className = 'username';
                 usernameElement.textContent = user.Username;
-                usernameElement.setAttribute("data-user-id", user.ID); 
-
-                
+                usernameElement.setAttribute("data-user-id", user.ID);
                 usernameElement.classList.remove("online");
-
-             
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
                 });
 
-               
+
                 userList.appendChild(usernameElement);
             });
 
-            
+
             fetch('/api/online-users')
                 .then(response => response.json())
                 .then(onlineUsers => {
@@ -465,10 +518,10 @@ function fetchUsers() {
 }
 
 function getCategories() {
-    fetch(`/Posts/1`)
+    fetch(`/api/categories`)
         .then((response) => response.json())
         .then((data) => {
-            populateCategories(data.categories);
+            populateCategories(data);
         })
         .catch((error) => {
             console.error("Error fetching data:", error);
@@ -499,39 +552,42 @@ window.addEventListener("scrollend", () => {
         isLoading = true;
 
         const feed = document.querySelector('.feed');
-        const placeholder = document.createElement('div');
-        placeholder.className = 'post-placeholder';
-        placeholder.innerHTML = `
-            <div class="post-header">
-                <div class="user-info">
-                    <h4 style="background: #e0e0e0; height: 20px; width: 100px; border-radius: 4px;"></h4>
-                </div>
-                <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
-            </div>
-            <div class="post-title" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
-            <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
-            <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
-            <div class="post-footer">
-                <div class="actions">
-                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
-                    <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
-                    <button style="background: #e0e0e0; height: 16px; width: 80px; border-radius: 4px; border: none;"></button>
-                </div>
-            </div>
-        `;
-        feed.appendChild(placeholder);
-        window.scrollTo(0, document.body.scrollHeight);
-        let posts = document.querySelectorAll(".post");
 
-        setTimeout(() => {
-            try {
-                getPosts(posts.length);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                feed.removeChild(placeholder);
-                isLoading = false;
-            }
-        }, 5000);
+        if (feed) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'post-placeholder';
+            placeholder.innerHTML = `
+                <div class="post-header">
+                    <div class="user-info">
+                        <h4 style="background: #e0e0e0; height: 20px; width: 100px; border-radius: 4px;"></h4>
+                    </div>
+                    <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
+                </div>
+                <div class="post-titFan-Out Fan-In Patternle" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
+                <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
+                <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
+                <div class="post-footer">
+                    <div class="actions">
+                        <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                        <button style="background: #e0e0e0; height: 16px; width: 60px; border-radius: 4px; border: none; margin-right: 10px;"></button>
+                        <button style="background: #e0e0e0; height: 16px; width: 80px; border-radius: 4px; border: none;"></button>
+                    </div>
+                </div>
+            `;
+            feed.appendChild(placeholder);
+            window.scrollTo(0, document.body.scrollHeight);
+            let posts = document.querySelectorAll(".post");
+
+            setTimeout(() => {
+                try {
+                    getPosts(posts.length);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    feed.removeChild(placeholder);
+                    isLoading = false;
+                }
+            }, 5000);
+        }
     }
 })

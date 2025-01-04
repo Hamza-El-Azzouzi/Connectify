@@ -3,7 +3,6 @@ package internal
 import (
 	"database/sql"
 	"net/http"
-
 	"real-time-forum/internal/handlers"
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/models"
@@ -11,6 +10,7 @@ import (
 	"real-time-forum/internal/services"
 
 	"github.com/gorilla/websocket"
+
 )
 
 func InitRepositories(db *sql.DB) (*repositories.UserRepository,
@@ -53,7 +53,6 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo}
 }
 
-// seesion repo
 func InitHandlers(authService *services.AuthService,
 	postService *services.PostService,
 	categoryService *services.CategoryService,
@@ -72,7 +71,7 @@ func InitHandlers(authService *services.AuthService,
 		SessionService: sessionService,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true // Allow all connections (for development)
+				return true
 			},
 		},
 		Clients: map[string]*models.Client{},

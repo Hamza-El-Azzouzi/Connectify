@@ -9,22 +9,21 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-type MessageRepository struct {
+type ChatRepository struct {
 	DB *sql.DB
 }
 
-// Create(messageId, msg, reciever_id,user.ID)
-func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID) error {
+func (c *ChatRepository) Create(messageId uuid.UUID, message models.Message, sender uuid.UUID) error {
 	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message)VALUES (?,?,?,?)"
-	preparedQuery, err := m.DB.Prepare(Query)
+	preparedQuery, err := c.DB.Prepare(Query)
 	if err != nil {
 		return err
 	}
-	_, err = preparedQuery.Exec(messageId, sender, reciever_id, msg)
+	_, err = preparedQuery.Exec(messageId, sender, message.ReceiverID, message.Content)
 	return err
 }
 
-func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int) ([]models.MessageWithTime, error) {
+func (c *ChatRepository) GetMessages(senderID, receiverID string, offset int) ([]models.MessageWithTime, error) {
 	querySelect := `
 	SELECT *
 	FROM messages
@@ -33,7 +32,7 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 	ORDER BY created_at DESC
 	LIMIT 10 OFFSET ?;
 	`
-	rows, queryErr := m.DB.Query(querySelect, senderID, receiverID, receiverID, senderID, offset)
+	rows, queryErr := c.DB.Query(querySelect, senderID, receiverID, receiverID, senderID, offset)
 	if queryErr != nil {
 		return nil, queryErr
 	}
