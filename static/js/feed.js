@@ -1,10 +1,26 @@
 let isLoading = false;
 let stopLoading = false;
-let connectionToWS
+let connectionToWS;
 
 export function feedPage() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    initializeWebSocket();
+    getPosts(0);
+    applyStyles();
+    const app = initializeAppContainer();
+    const flexContainer = createFlexContainer(app);
+    const feedContainer = createFeedContainer(flexContainer);
+    const postForm = createPostForm();
+    getCategories();
+    const postsFeed = createPostsFeed();
+    feedContainer.appendChild(postForm);
+    feedContainer.appendChild(postsFeed);
+    createUserSection(flexContainer);
+    fetchUsers();
+    setupFormInteractions(postForm);
+}
 
+function initializeWebSocket() {
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -12,23 +28,35 @@ export function feedPage() {
         }
     };
     connectionToWS.onerror = (error) => {
-        //TODO: navigate to error page
         console.error("WebSocket error:", error);
     };
+}
 
-    getPosts(0);
+function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
-    const app = document.getElementById("main-content");
+}
 
+function initializeAppContainer() {
+    const app = document.getElementById("main-content");
+    return app;
+}
+
+function createFlexContainer(app) {
     const flexContainer = document.createElement('div');
     flexContainer.className = 'flex-container';
     app.appendChild(flexContainer);
+    return flexContainer;
+}
 
+function createFeedContainer(flexContainer) {
     const feedContainer = document.createElement('div');
     feedContainer.className = 'feed-container';
     flexContainer.appendChild(feedContainer);
+    return feedContainer;
+}
 
+function createPostForm() {
     const postForm = document.createElement('div');
     postForm.className = "form-container";
     postForm.tabIndex = "0";
@@ -50,28 +78,31 @@ export function feedPage() {
         </form>
     `;
     postForm.innerHTML = postFormContent;
-    getCategories();
+    return postForm;
+}
+
+function createPostsFeed() {
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
     let posts = document.querySelectorAll(".post");
     if (posts.length === 0) {
         postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`;
     }
-    feedContainer.appendChild(postForm);
-    feedContainer.appendChild(postsFeed);
+    return postsFeed;
+}
 
+function createUserSection(flexContainer) {
     const userSection = document.createElement('div');
     userSection.className = 'user-section';
     userSection.innerHTML = `
         <h2>Registered Users</h2>
         <div class="user-list">
-            <!-- Users will be dynamically added here -->
         </div>
     `;
     flexContainer.appendChild(userSection);
+}
 
-    fetchUsers();
-
+function setupFormInteractions() {
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
@@ -92,78 +123,84 @@ export function feedPage() {
 
     postFormElement.addEventListener("submit", (event) => {
         event.preventDefault();
-        let isValid = true;
-
-        document.getElementById('title-error').textContent = '';
-        document.getElementById('category-error').textContent = '';
-        document.getElementById('textarea-error').textContent = '';
-
-        const title = document.querySelector('.form-input').value;
-        const content = document.getElementById('postContent').value;
-        const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]');
-        const selectedCategories = Array.from(checkboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.id);
-
-        if (title.length > 250) {
-            document.getElementById('title-error').textContent = 'Maximum 255 characters.';
-            isValid = false;
-        }
-        if (!title.trim()) {
-            document.getElementById('title-error').textContent = 'Title is required.';
-            isValid = false;
-        }
-
-        if (selectedCategories.length === 0) {
-            document.getElementById('category-error').textContent = 'Please select at least one category.';
-            isValid = false;
-        }
-
-        if (content.length > 10000) {
-            document.getElementById('textarea-error').textContent = "Maximum 10000 characters.";
-            isValid = false;
-        }
-        if (!content.trim()) {
-            document.getElementById('textarea-error').textContent = 'content is required.';
-            isValid = false;
-        }
-        if (isValid) {
-            formContainer.classList.remove('expanded');
-            postFormElement.classList.remove('active');
-            const data = {
-                title,
-                content,
-                categories: selectedCategories
-            };
-            document.querySelector('.form-input').value = "";
-            document.getElementById('postContent').value = "";
-            document.querySelectorAll('#category-list input[type="checkbox"]').forEach(el => el.checked = false);
-            fetch("/api/createpost", {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                method: "POST",
-                body: JSON.stringify(data)
-            }).then(response => response.json())
-                .then(reply => {
-                    if (reply.REplyMssg == "Done") {
-                        const feed = document.querySelector(".feed");
-                        feed.innerHTML = "";
-                        getPosts(0);
-                    }
-                });
-        }
+        handleFormSubmission(formContainer,postFormElement);
     });
 }
 
+function handleFormSubmission(formContainer,postFormElement) {
+    let isValid = true;
+
+    document.getElementById('title-error').textContent = '';
+    document.getElementById('category-error').textContent = '';
+    document.getElementById('textarea-error').textContent = '';
+
+    const title = document.querySelector('.form-input').value;
+    const content = document.getElementById('postContent').value;
+    const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]');
+    const selectedCategories = Array.from(checkboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.id);
+
+    if (title.length > 250) {
+        document.getElementById('title-error').textContent = 'Maximum 255 characters.';
+        isValid = false;
+    }
+    if (!title.trim()) {
+        document.getElementById('title-error').textContent = 'Title is required.';
+        isValid = false;
+    }
+
+    if (selectedCategories.length === 0) {
+        document.getElementById('category-error').textContent = 'Please select at least one category.';
+        isValid = false;
+    }
+
+    if (content.length > 10000) {
+        document.getElementById('textarea-error').textContent = "Maximum 10000 characters.";
+        isValid = false;
+    }
+    if (!content.trim()) {
+        document.getElementById('textarea-error').textContent = 'content is required.';
+        isValid = false;
+    }
+    if (isValid) {
+        formContainer.classList.remove('expanded');
+        postFormElement.classList.remove('active');
+        const data = {
+            title,
+            content,
+            categories: selectedCategories
+        };
+        document.querySelector('.form-input').value = "";
+        document.getElementById('postContent').value = "";
+        document.querySelectorAll('#category-list input[type="checkbox"]').forEach(el => el.checked = false);
+        fetch("/api/createpost", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(reply => {
+                if (reply.REplyMssg == "Done") {
+                    const feed = document.querySelector(".feed");
+                    feed.innerHTML = "";
+                    getPosts(0);
+                }
+            });
+    }
+}
 
 function updateUserStatus(userID, isOnline) {
     const usernameElements = document.querySelectorAll(`.username[data-user-id="${userID}"]`);
     usernameElements.forEach(usernameElement => {
         if (isOnline) {
+            usernameElement.classList.remove("offline");
             usernameElement.classList.add("online");
+            
         } else {
             usernameElement.classList.remove("online");
+            usernameElement.classList.add("offline");
         }
     });
 }
@@ -196,65 +233,16 @@ function createMessagePopup(username, ReceiverID) {
         append: false,
     }
 
-    function getMessages(data) {
-        fetch(`/api/getmessages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        }).then((response) => response.json())
-            .then((messages) => {
-                if (messages) {
-                    const scrollHeightBefore = messageHistory.scrollHeight;
-                    for (let i = 0; i < messages.length; i++) {
-                        if (messages[i].ReceiverID !== ReceiverID) {
-                            addMessage(messages[i].Content, false, data.append);
-                        } else {
-                            addMessage(messages[i].Content, true, data.append);
-                        }
-                    }
-                    const scrollHeightAfter = messageHistory.scrollHeight;
-                    messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
-                }
-            })
-            .catch((error) => {
-                console.error("Error fetching messages:", error);
-            });
-    }
-
-    getMessages(data);
+    getMessages(popup,data,ReceiverID);
 
     const closeButton = popup.querySelector('.close-popup');
     closeButton.addEventListener('click', () => {
         document.body.removeChild(popup);
     });
 
-    // Handle sending a message
     const sendButton = popup.querySelector('.send-message');
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
-
-    function addMessage(message, isMyMessage, append, shouldScrollToBottom) {
-        const messageElement = document.createElement('div');
-        messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
-        messageElement.textContent = message;
-        if (append) {
-            messageHistory.appendChild(messageElement);
-            if (shouldScrollToBottom) {
-                messageHistory.scrollTop = messageHistory.scrollHeight;
-            }
-        } else {
-            messageHistory.insertBefore(messageElement, messageHistory.firstChild);
-        }
-    }
-
-    connectionToWS.onmessage = (event) => {
-        const dataMessage = JSON.parse(event.data);
-        if (dataMessage.hasOwnProperty("msg")) {
-            addMessage(dataMessage["msg"], false, true, false)
-        }
-    }
 
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
@@ -270,11 +258,53 @@ function createMessagePopup(username, ReceiverID) {
         if (messageHistory.scrollTop === 0) {
             data.offset = document.querySelectorAll(".message").length;
             data.append = false;
-            getMessages(data);
+            getMessages(popup,data,ReceiverID);
         }
     }, 300));
 
     document.body.appendChild(popup);
+}
+
+function getMessages(popup,data,ReceiverID) {
+    const messageHistory = popup.querySelector('.message-history');
+    fetch(`/api/getmessages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    }).then((response) => response.json())
+        .then((messages) => {
+            if (messages) {
+                const scrollHeightBefore = messageHistory.scrollHeight;
+                for (let i = 0; i < messages.length; i++) {
+                    if (messages[i].ReceiverID !== ReceiverID) {
+                        addMessage(messages[i].Content, false, data.append,false,messageHistory);
+                    } else {
+                        addMessage(messages[i].Content, true, data.append,false,messageHistory);
+                    }
+                }
+                const scrollHeightAfter = messageHistory.scrollHeight;
+                messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching messages:", error);
+        });
+}
+
+function addMessage(message, isMyMessage, append, shouldScrollToBottom ,messageHistory) {
+    const messageElement = document.createElement('div');
+    messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
+    messageElement.textContent = message;
+    if (append) {
+        messageHistory.appendChild(messageElement);
+        if (shouldScrollToBottom) {
+            messageHistory.scrollTop = messageHistory.scrollHeight;
+        }
+    } else {
+        messageHistory.insertBefore(messageElement, messageHistory.firstChild);
+    }
 }
 
 function debounce(func, wait) {
@@ -311,6 +341,7 @@ function getPosts(offset) {
             console.error("Error fetching data:", error);
         });
 }
+
 function populatePosts(posts) {
     const feed = document.querySelector(".feed");
     feed.innerHTML = "";
@@ -363,8 +394,6 @@ function populatePosts(posts) {
                     commentSection.style.display = 'none';
                 }
             });
-
-
 
             loadMoreButton.addEventListener('click', () => {
                 const currentOffset = parseInt(loadMoreButton.dataset.offset) || 0;
@@ -478,8 +507,8 @@ function submitComment(postId, comment, commentsContainer) {
             console.error('Error submitting comment:', error);
         });
 }
+
 function fetchUsers() {
-    fetch('/api/users')
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
@@ -488,18 +517,16 @@ function fetchUsers() {
 
             users.forEach(user => {
                 const usernameElement = document.createElement('div');
-                usernameElement.className = 'username';
+                usernameElement.classList.add('username')
+                usernameElement.classList.add('offline')
                 usernameElement.textContent = user.Username;
                 usernameElement.setAttribute("data-user-id", user.ID);
-                usernameElement.classList.remove("online");
                 usernameElement.addEventListener('click', () => {
                     createMessagePopup(user.Username, user.ID);
                 });
 
-
                 userList.appendChild(usernameElement);
             });
-
 
             fetch('/api/online-users')
                 .then(response => response.json())
@@ -563,7 +590,7 @@ window.addEventListener("scrollend", () => {
                     </div>
                     <span class="timestamp" style="background: #e0e0e0; height: 16px; width: 120px; border-radius: 4px; display: inline-block;"></span>
                 </div>
-                <div class="post-titFan-Out Fan-In Patternle" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
+                <div class="post-title" style="background: #e0e0e0; height: 18px; width: 70%; margin: 10px 0; border-radius: 4px;"></div>
                 <div class="post-categories" style="background: #e0e0e0; height: 14px; width: 50%; margin: 5px 0; border-radius: 4px;"></div>
                 <div class="post-content" style="background: #e0e0e0; height: 40px; width: 100%; margin: 10px 0; border-radius: 4px;"></div>
                 <div class="post-footer">
@@ -590,4 +617,4 @@ window.addEventListener("scrollend", () => {
             }, 5000);
         }
     }
-})
+});
