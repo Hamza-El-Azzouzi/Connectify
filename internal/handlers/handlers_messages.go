@@ -83,7 +83,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			log.Printf("Unmarshal error: %#v\n", err)
 			continue
 		}
-
+		fmt.Println(data)
 		if data["type"] == "ping" {
 			m.ClientsMu.Lock()
 			m.Clients[userID].LastPing = time.Now()
@@ -105,15 +105,15 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				log.Println("Empty message received")
 				break
 			}
-			err = m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
-			if err != nil {
+			userSender , err := m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
+			if err != nil || userSender == uuid.Nil {
 				log.Printf("Failed to create message: %#v\n", err)
 				break
 			}
 			m.ClientsMu.Lock()
 			receiverClient, exists := m.Clients[ data["id"]]
 			m.ClientsMu.Unlock()
-
+			data["session"] = userSender.String()
 			if exists {
 				err = receiverClient.Conn.WriteJSON(data)
 				if err != nil {
@@ -186,4 +186,39 @@ func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
+}
+type session struct{
+	SessionID string `json:"session"`
+}
+func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request){
+	var session session
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&session)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	defer r.Body.Close()
+
+	usersID, err := m.MessageService.CheckUnReadMsg(session.SessionID)
+	if err != nil {
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(usersID)
+}
+func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request){
+	var data models.MarkAsRead
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	defer r.Body.Close()
+
+	err = m.MessageService.MarkReadMsg(data)
+	if err != nil {
+		return
+	}
 }
