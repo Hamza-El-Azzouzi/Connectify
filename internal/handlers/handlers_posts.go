@@ -10,8 +10,6 @@ import (
 	"real-time-forum/internal/models"
 	"real-time-forum/internal/services"
 	"real-time-forum/internal/utils"
-
-	"github.com/gofrs/uuid/v5"
 )
 
 type PostHandler struct {
@@ -96,49 +94,6 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *PostHandler) DetailsPost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
-		return
-	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
-		utils.Error(w, http.StatusNotFound)
-		return
-	}
-	postID := pathParts[2]
-	if postID == "" {
-		utils.Error(w, http.StatusNotFound)
-		return
-	}
-	posts, err := p.PostService.GetPost(postID)
-	if err != nil || posts.PostID == uuid.Nil {
-		utils.Error(w, http.StatusNotFound)
-		return
-	}
-	comment, err := p.CommentService.GetCommentByPost(postID, 0)
-	if err != nil {
-		utils.Error(w, http.StatusNotFound)
-		return
-	}
-	data := map[string]any{
-		"LoggedIn": false,
-		"posts":    posts,
-		"comment":  comment,
-	}
-
-	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-
-	if isLogged {
-		data["LoggedIn"] = isLogged
-		data["Username"] = usermid.Username
-	} else {
-		data["LoggedIn"] = isLogged
-	}
-
-	utils.OpenHtml("post-deatils.html", w, data)
-}
-
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -178,58 +133,6 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comment[0])
-}
-
-func (p *PostHandler) PostFilter(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed)
-		return
-	}
-
-	filterby := ""
-	var posts []models.PostWithUser
-	var err error
-	categorie := r.URL.Query().Get("categories")
-	pagination := r.URL.Query().Get("pagination")
-	nPagination, err := strconv.Atoi(pagination)
-	if err != nil {
-		utils.Error(w, http.StatusBadRequest)
-		return
-	}
-	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-
-	if usermid != nil {
-		filterby = r.URL.Query().Get("filterby")
-	}
-	if filterby != "" {
-		posts, err = p.PostService.FilterPost(filterby, categorie, usermid.ID, nPagination)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			utils.Error(w, http.StatusInternalServerError)
-			return
-		}
-
-	} else {
-		posts, err = p.PostService.FilterPost(filterby, categorie, uuid.Nil, nPagination)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-	}
-	data := map[string]any{
-		"LoggedIn": false,
-		"posts":    posts,
-	}
-
-	if isLogged {
-		data["LoggedIn"] = isLogged
-	} else {
-		data["LoggedIn"] = isLogged
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
 }
 
 func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
