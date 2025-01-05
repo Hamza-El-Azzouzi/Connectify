@@ -17,7 +17,7 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.CategoryRepository,
 	*repositories.PostRepository,
 	*repositories.CommentRepositorie,
-	*repositories.LikeReposetorie,
+	*repositories.ReactReposetorie,
 	*repositories.SessionsRepositorie,
 	*repositories.MessageRepository,
 ) {
@@ -25,7 +25,7 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 		&repositories.CategoryRepository{DB: db},
 		&repositories.PostRepository{DB: db},
 		&repositories.CommentRepositorie{DB: db},
-		&repositories.LikeReposetorie{DB: db},
+		&repositories.ReactReposetorie{DB: db},
 		&repositories.SessionsRepositorie{DB: db},
 		&repositories.MessageRepository{DB: db}
 }
@@ -34,13 +34,13 @@ func InitServices(userRepo *repositories.UserRepository,
 	postRepo *repositories.PostRepository,
 	categoryRepo *repositories.CategoryRepository,
 	commentRepo *repositories.CommentRepositorie,
-	likeRepo *repositories.LikeReposetorie,
+	reactRepo *repositories.ReactReposetorie,
 	sessionRepo *repositories.SessionsRepositorie,
 	messageRepo *repositories.MessageRepository) (*services.AuthService,
 	*services.PostService,
 	*services.CategoryService,
 	*services.CommentService,
-	*services.LikeService,
+	*services.ReactService,
 	*services.SessionService,
 	*services.MessageService,
 ) {
@@ -48,7 +48,7 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.PostService{PostRepo: postRepo, CategoryRepo: categoryRepo},
 		&services.CategoryService{CategorieRepo: categoryRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
-		&services.LikeService{LikeRepo: likeRepo, PostRepo: postRepo, CommentRepo: commentRepo},
+		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo}
 }
@@ -57,7 +57,7 @@ func InitHandlers(authService *services.AuthService,
 	postService *services.PostService,
 	categoryService *services.CategoryService,
 	commentService *services.CommentService,
-	likeService *services.LikeService,
+	reactService *services.ReactService,
 	sessionService *services.SessionService,
 	authMiddleware *middleware.AuthMiddleware,
 	messageService *services.MessageService) (*handlers.AuthHandler,
@@ -90,10 +90,10 @@ func InitHandlers(authService *services.AuthService,
 		CommentService:  commentService,
 		AuthHandler:     authHandler,
 	}
-	likeHandler := &handlers.ReactHandler{
-		LikeService:   likeService,
+	reactHandler := &handlers.ReactHandler{
+		ReactService:   reactService,
 		AuthMidlaware: authMiddleware,
 	}
 
-	return authHandler, postHandler, likeHandler, MessageHandler
+	return authHandler, postHandler, reactHandler, MessageHandler
 }

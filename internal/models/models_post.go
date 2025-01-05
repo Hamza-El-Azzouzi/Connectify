@@ -35,15 +35,15 @@ type PostWithUser struct {
 }
 
 type CommentDetails struct {
-	CommentID           uuid.UUID
-	Content             string
-	CreatedAt           time.Time
-	UserID              uuid.UUID
-	Username            string
-	FormattedDate       string
-	LikeCountComment    int
-	DisLikeCountComment int
-	TotalCount          int
+	CommentID     uuid.UUID
+	Content       string
+	CreatedAt     time.Time
+	UserID        uuid.UUID
+	Username      string
+	FormattedDate string
+	LikeCount     int
+	DisLikeCount  int
+	TotalCount    int
 }
 
 type CommentData struct {
@@ -52,7 +52,7 @@ type CommentData struct {
 }
 
 type PostData struct {
-	Title string `json:"title"`
-	Content string `json:"content"`
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
 	Categories []string `json:"categories"`
 }

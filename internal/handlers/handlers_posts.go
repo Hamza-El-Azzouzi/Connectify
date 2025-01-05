@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/models"
@@ -70,12 +72,11 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	var postData models.PostData
 
 	err := json.NewDecoder(r.Body).Decode(&postData)
-	defer r.Body.Close()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
+	defer r.Body.Close()
 	if postData.Title == "" || postData.Content == "" || len(postData.Categories) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -86,11 +87,14 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	}
 	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
 	if isLogged {
-		err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			sendResponse(w, "Done")
+		for i := 0; i < 200; i++ {
+			time.Sleep(time.Second)
+			err = p.PostService.PostSave(usermid.ID, postData.Title+fmt.Sprint(i), postData.Content+fmt.Sprint(i), postData.Categories)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+			} else {
+				sendResponse(w, "Done")
+			}
 		}
 	} else {
 		w.WriteHeader(http.StatusForbidden)

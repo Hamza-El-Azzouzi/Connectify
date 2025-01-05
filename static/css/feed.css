@@ -233,18 +233,19 @@ pre {
   color: #555;
 }
 
-.post-footer {
+.post-footer,
+.comment-fotter {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.post-footer .actions {
+.actions {
   display: flex;
   gap: 15px;
 }
 
-.post-footer .actions button {
+.actions button {
   padding: 5px 10px;
   border: none;
   border-radius: 5px;
@@ -708,6 +709,6 @@ button[style*="background"] {
   background: #7450c9;
 }
 
-.messagePre{
+.messagePre {
   margin: 0px;
 }

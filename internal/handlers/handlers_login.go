@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -137,6 +138,7 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := r.Cookie("sessionId")
 	if err == nil || sessionId.Value != "" {
 		err := h.SessionService.DeleteSession(sessionId.Value)
+		fmt.Println(err)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

@@ -1,6 +1,7 @@
 let isLoading = false;
 let stopLoading = false;
 let connectionToWS;
+let totalposts = 0;
 
 export function feedPage() {
     initializeWebSocket();
@@ -31,9 +32,9 @@ function initializeWebSocket() {
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
                 if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
-                    addMessage(data["msg"], false, true, true, popup,data["date"]);
+                    addMessage(data["msg"], false, true, true, popup, data["date"]);
                 } else {
-                    addMessage(data["msg"], false, true, false, popup,data["date"]);
+                    addMessage(data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
                 newMeessage(data["session"]);
@@ -62,7 +63,6 @@ function CheckUnreadMessage() {
         body: JSON.stringify({ session: sessionId })
     }).then(response => response.json())
         .then(unReadMsgs => {
-            console.log(unReadMsgs)
             unReadMsgs.forEach(userID => {
                 newMeessage(userID)
             })
@@ -120,10 +120,6 @@ function createPostForm() {
 function createPostsFeed() {
     const postsFeed = document.createElement('div');
     postsFeed.className = "feed";
-    let posts = document.querySelectorAll(".post");
-    if (posts.length === 0) {
-        postsFeed.innerHTML = `<div class="no-results">No Results Found.</div>`;
-    }
     return postsFeed;
 }
 
@@ -233,7 +229,7 @@ function updateUserStatus(userID, isOnline) {
         if (isOnline) {
             usernameElement.classList.remove("offline");
             usernameElement.classList.add("online");
-            
+
         } else {
             usernameElement.classList.remove("online");
             usernameElement.classList.add("offline");
@@ -287,7 +283,7 @@ function createMessagePopup(username, ReceiverID) {
             const timestamp = getFormattedDateTime();
             addMessage(message, true, data.append, true, popup, timestamp);
             textarea.value = '';
-            connectionToWS.send(JSON.stringify({  msg: message,  session:  getCookieByName("sessionId"),  id:  ReceiverID, date: timestamp  }));
+            connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
 
         }
@@ -371,7 +367,7 @@ function getFormattedDateTime() {
 
 function formatTimestamp(timestamp) {
     const now = new Date();
-    const messageDate = new Date(timestamp); 
+    const messageDate = new Date(timestamp);
     if (
         messageDate.getDate() === now.getDate() &&
         messageDate.getMonth() === now.getMonth() &&
@@ -382,7 +378,7 @@ function formatTimestamp(timestamp) {
         return `${hours}:${minutes}`;
     } else {
         const year = messageDate.getFullYear();
-        const month = String(messageDate.getMonth() + 1).padStart(2, '0'); 
+        const month = String(messageDate.getMonth() + 1).padStart(2, '0');
         const day = String(messageDate.getDate()).padStart(2, '0');
         const hours = String(messageDate.getHours()).padStart(2, '0');
         const minutes = String(messageDate.getMinutes()).padStart(2, '0');
@@ -417,8 +413,13 @@ function getPosts(offset) {
             if (!data) {
                 stopLoading = true;
             } else {
-                stopLoading = false;
+                totalposts = data[0].TotalCount
                 populatePosts(data);
+                if (data.length === 20) {
+                    stopLoading = false;
+                } else {
+                    stopLoading = true;
+                }
             }
         })
         .catch((error) => {
@@ -428,7 +429,7 @@ function getPosts(offset) {
 
 function populatePosts(posts) {
     const feed = document.querySelector(".feed");
-    feed.innerHTML = "";
+    //feed.innerHTML = "";
     if (posts && posts.length > 0) {
         posts.forEach((post) => {
             const postElement = document.createElement("div");
@@ -447,8 +448,8 @@ function populatePosts(posts) {
                 </div>
                 <div class="post-footer">
                     <div class="actions">
-                        <button class="like" data-post-id="${post.PostID}">${post.LikeCount} Like</button>
-                        <button class="dislike" data-post-id="${post.PostID}">${post.DisLikeCount} Dislike</button>
+                        <button class="like" data-id="${post.PostID}">${post.LikeCount} Like</button>
+                        <button class="dislike" data-id="${post.PostID}">${post.DisLikeCount} Dislike</button>
                         <button class="toggle-comment" id=${post.PostID}>${post.CommentCount} Comment</button>
                     </div>
                 </div>
@@ -501,14 +502,9 @@ function populatePosts(posts) {
                 }
             });
         });
-        const likeButtons = document.querySelectorAll('.like');
-        likeButtons.forEach(button => {
-            button.addEventListener('click', handleReact(button.dataset.postId));
-        });
-        // const dislikeButtons = document.querySelectorAll('.dislike');
-        // dislikeButtons.forEach(button => {
-        //     button.addEventListener('click', handleReact(button.dataset.postId));
-        // });
+        setupReactionButtons();
+    } else {
+        feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
     }
 }
 
@@ -531,7 +527,11 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 </div>
                                 <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
                             </div>
-                            <div class="comment-content" data-comment-id="${comment.CommentID}"><pre>${comment.Content}</pre></div>
+                            <div class="comment-content"><pre>${comment.Content}</pre></div>
+                            <div class="actions">
+                                <button class="like" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+                                <button class="dislike" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                            </div>
                         </div>
                     `).join('');
                 } else {
@@ -546,6 +546,10 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
+                            <div class="actions">
+                                <button class="like-comment" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+                                <button class="dislike-comment" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                            </div>
                         `;
                         commentsContainer.appendChild(commentElement);
                     });
@@ -556,6 +560,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                     loadMoreButton.style.display = 'block';
                 }
             }
+            setupCommentReactionButtons();
         })
         .catch(error => {
             console.error('Error loading comments:', error);
@@ -583,11 +588,15 @@ function submitComment(postId, comment, commentsContainer) {
             commentElement.innerHTML = `
                 <div class="comment-header">
                     <div class="user-info">
-                        <h4>${newComment.Username}</h4>
+                        <h4>${comment.Username}</h4>
                     </div>
-                    <span class="timestamp">Commented on: ${newComment.FormattedDate}</span>
+                    <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
                 </div>
-                <div class="comment-content"><pre>${newComment.Content}</pre></div>
+                <div class="comment-content"><pre>${comment.Content}</pre></div>
+                <div class="actions">
+                    <button class="like-comment" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+                    <button class="dislike-comment" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                </div>
             `;
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
             const noComment = commentsContainer.querySelector('.no-comment');
@@ -689,7 +698,7 @@ function populateCategories(categories) {
 }
 
 window.addEventListener("scrollend", () => {
-    if (isLoading) return;
+    if (isLoading || totalposts < 20) return;
 
     if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight && !stopLoading) {
         isLoading = true;
@@ -734,3 +743,66 @@ window.addEventListener("scrollend", () => {
         }
     }
 });
+
+function setupReactionButtons() {
+    const likeButtons = document.querySelectorAll('.like');
+    const dislikeButtons = document.querySelectorAll('.dislike');
+
+    likeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const postId = button.dataset.id;
+            handleReact(postId, 'like', 'post');
+        });
+    });
+
+    dislikeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const postId = button.dataset.id;
+            handleReact(postId, 'dislike', 'post');
+        });
+    });
+}
+
+function setupCommentReactionButtons() {
+    const likeCommentButtons = document.querySelectorAll('.like');
+    const dislikeCommentButtons = document.querySelectorAll('.dislike');
+
+    likeCommentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const commentId = button.dataset.id;
+            handleReact(commentId, 'like', 'comment');
+        });
+    });
+
+    dislikeCommentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const commentId = button.dataset.id;
+            handleReact(commentId, 'dislike', 'comment');
+        });
+    });
+}
+
+function handleReact(targetId, type, targetType) {
+    const data = {
+        targetId: targetId,
+        type: type,
+        targetType: targetType,
+    };
+    fetch(`/api/reacts`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+        .then(response => response.json())
+        .then(data => {
+            const likeButton = document.querySelector(`.like[data-id="${targetId}"]`);
+            const dislikeButton = document.querySelector(`.dislike[data-id="${targetId}"]`);
+            likeButton.textContent = `${data.likeCount} Like`;
+            dislikeButton.textContent = `${data.dislikeCount} Dislike`;
+        })
+        .catch(error => {
+            console.error('Error updating reaction:', error);
+        });
+}

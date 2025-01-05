@@ -80,8 +80,8 @@ func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]
 			&currentComment.CreatedAt,
 			&currentComment.UserID,
 			&currentComment.Username,
-			&currentComment.LikeCountComment,
-			&currentComment.DisLikeCountComment,
+			&currentComment.LikeCount,
+			&currentComment.DisLikeCount,
 			&currentComment.TotalCount,
 		)
 		if scanErr != nil {

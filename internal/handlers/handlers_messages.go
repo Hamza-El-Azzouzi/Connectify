@@ -204,6 +204,7 @@ func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		return
 	}
+	fmt.Println("test")
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(usersID)
 }
