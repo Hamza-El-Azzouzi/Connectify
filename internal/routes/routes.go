@@ -8,13 +8,13 @@ import (
 	"real-time-forum/internal/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, likeHandler *handlers.LikeHandler, authMiddleware *middleware.AuthMiddleware , messageHnadler *handlers.MessageHandler) {
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware , messageHnadler *handlers.MessageHandler) {
 	
 	
 	mux.HandleFunc("/ws", messageHnadler.MessageReceiver)
 	
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
-	// /api/online-users
+
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.LogoutHandle)
 	mux.HandleFunc("/api/register", authHandler.RegisterHandle)
@@ -22,17 +22,16 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/api/users", authHandler.GetUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
-	// mux.HandleFunc("/", postHandler.Home)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/categories", postHandler.GetCategories)
-	// mux.HandleFunc("/create", postHandler.PostCreation)
 
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
 
 	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
-	// mux.HandleFunc("/detailsPost/", postHandler.DetailsPost)
 	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
+
+	mux.HandleFunc("/api/reacts",reactHandler.React)
 	// mux.HandleFunc("/like/", likeHandler.LikePost)
 	// mux.HandleFunc("/dislike/", likeHandler.DisLikePost)
 	// mux.HandleFunc("/likeComment/", likeHandler.LikeComment)

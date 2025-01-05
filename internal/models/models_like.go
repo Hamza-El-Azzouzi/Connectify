@@ -13,3 +13,7 @@ type Like struct {
 	ReactType string
 	CreatedAt time.Time 
 }
+
+type React struct {
+	
+}

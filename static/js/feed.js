@@ -406,8 +406,8 @@ function populatePosts(posts) {
                 </div>
                 <div class="post-footer">
                     <div class="actions">
-                        <button>${post.LikeCount} Like</button>
-                        <button>${post.DisLikeCount} Dislike</button>
+                        <button class="like" data-post-id="${post.PostID}">${post.LikeCount} Like</button>
+                        <button class="dislike" data-post-id="${post.PostID}">${post.DisLikeCount} Dislike</button>
                         <button class="toggle-comment" id=${post.PostID}>${post.CommentCount} Comment</button>
                     </div>
                 </div>
@@ -460,6 +460,14 @@ function populatePosts(posts) {
                 }
             });
         });
+        const likeButtons = document.querySelectorAll('.like');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', handleReact(button.dataset.postId));
+        });
+        // const dislikeButtons = document.querySelectorAll('.dislike');
+        // dislikeButtons.forEach(button => {
+        //     button.addEventListener('click', handleReact(button.dataset.postId));
+        // });
     }
 }
 
@@ -482,7 +490,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 </div>
                                 <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
                             </div>
-                            <div class="comment-content"><pre>${comment.Content}</pre></div>
+                            <div class="comment-content" data-comment-id="${comment.CommentID}"><pre>${comment.Content}</pre></div>
                         </div>
                     `).join('');
                 } else {
@@ -661,3 +669,26 @@ window.addEventListener("scrollend", () => {
         }
     }
 });
+
+function handleReact(postid){
+    console.log(postid)
+    // let data = {
+    //     senderID: getCookieByName("sessionId"),
+    //     id: "",
+    //     on: "",
+    //     type: "",
+    // }
+    // fetch(`/api/reacts`, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(data),
+    // }).then((response) => response.json())
+    //     .then((reacts) => {
+            
+    //     })
+    //     .catch((error) => {
+    //         console.error("Error fetching messages:", error);
+    //     });
+}
