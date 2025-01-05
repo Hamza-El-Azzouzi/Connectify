@@ -22,6 +22,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/api/users", authHandler.GetUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
+	mux.HandleFunc("/api/checkUnreadMesg",messageHnadler.UnReadMessages)
+	mux.HandleFunc("/api/markAsRead",messageHnadler.MarkReadMessages)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/categories", postHandler.GetCategories)
