@@ -93,7 +93,7 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(posts[0])
+		json.NewEncoder(w).Encode(posts[0:1])
 	} else {
 		w.WriteHeader(http.StatusForbidden)
 	}

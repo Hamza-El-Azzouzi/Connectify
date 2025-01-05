@@ -213,8 +213,8 @@ function handleFormSubmission(formContainer, postFormElement) {
             method: "POST",
             body: JSON.stringify(data)
         }).then(response => response.json())
-            .then(reply => {
-                console.log(reply)
+            .then(newPost => {
+                populatePosts(newPost, false)
             });
     }
 }
@@ -410,7 +410,7 @@ function getPosts(offset) {
                 stopLoading = true;
             } else {
                 totalposts = data[0].TotalCount
-                populatePosts(data);
+                populatePosts(data, true);
                 if (data.length === 20) {
                     stopLoading = false;
                 } else {
@@ -423,9 +423,8 @@ function getPosts(offset) {
         });
 }
 
-function populatePosts(posts) {
+function populatePosts(posts, append) {
     const feed = document.querySelector(".feed");
-    //feed.innerHTML = "";
     if (posts && posts.length > 0) {
         posts.forEach((post) => {
             const postElement = document.createElement("div");
@@ -458,7 +457,11 @@ function populatePosts(posts) {
                         <button class="submit-comment">Submit</button>
                     </div>
                 </div>`;
-            feed.appendChild(postElement);
+            if (append) {
+                feed.appendChild(postElement);
+            } else {
+                feed.insertBefore(postElement, feed.firstChild);
+            }
 
             const toggleCommentButton = postElement.querySelector('.toggle-comment');
             const commentSection = postElement.querySelector('.comment-section');
@@ -497,8 +500,23 @@ function populatePosts(posts) {
                     errParagraph.textContent = "Invalid Comment";
                 }
             });
+            if (!append) {
+                const likePostButton = document.querySelector(`.like[data-post-id="${post.PostID}"]`);
+                const dislikePostButton = document.querySelector(`.dislike[data-post-id="${post.PostID}"]`);
+                likePostButton.addEventListener('click', () => {
+                    const postId = likePostButton.dataset.postId;
+                    handleReact(postId, 'like', 'post');
+                });
+
+                dislikePostButton.addEventListener('click', () => {
+                    const postId = dislikePostButton.dataset.postId;
+                    handleReact(postId, 'dislike', 'post');
+                });
+            }
         });
-        setupReactionButtons();
+        if (append) {
+            setupReactionButtons();
+        }
     } else {
         feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
     }
@@ -607,7 +625,7 @@ function submitComment(postId, comment, commentsContainer) {
             });
 
             dislikeCommentButton.addEventListener('click', () => {
-                const commentId = likeCommentButton.dataset.commentId;
+                const commentId = dislikeCommentButton.dataset.commentId;
                 handleReact(commentId, 'dislike', 'comment');
             });
         })
