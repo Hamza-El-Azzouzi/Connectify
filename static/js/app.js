@@ -1,7 +1,7 @@
 // Import modules for dynamic components
 // import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
-import { feedPage } from "./feed.js";
+import { feedPage , getCookieByName } from "./feed.js";
 let hasIntegrity = false;
 
 export function setIntegrity(val) {
@@ -11,8 +11,8 @@ export function setIntegrity(val) {
 const app = document.getElementById("main-content");
 
 async function checkIntegrity() {
-    const cookie = document.cookie;
-    if (cookie.includes("sessionId")) {
+    const cookie = getCookieByName();
+    if (!cookie) {
         try {
             const response = await fetch("/api/integrity", {
                 headers: {

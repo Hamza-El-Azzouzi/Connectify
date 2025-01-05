@@ -64,5 +64,5 @@ func main() {
 
 	fmt.Println("Starting the forum server...\nWelcome http://localhost:1414/")
 
-	log.Fatal(http.ListenAndServe("0.0.0.0:1414", nil))
+	log.Fatal("error hane",http.ListenAndServe("0.0.0.0:1414", nil))
 }

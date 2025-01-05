@@ -38,7 +38,12 @@ function initializeWebSocket() {
             } else {
                 newMeessage(data["session"]);
             }
-            newMeessage(data["session"])
+        }
+        if (data.hasOwnProperty("user")){
+            console.log(data.user)
+            setTimeout(() => {
+                fetchUsers();
+              }, 1000);            
         }
     };
 
@@ -62,7 +67,6 @@ function CheckUnreadMessage() {
         body: JSON.stringify({ session: sessionId })
     }).then(response => response.json())
         .then(unReadMsgs => {
-            console.log(unReadMsgs)
             unReadMsgs.forEach(userID => {
                 newMeessage(userID)
             })
@@ -399,7 +403,7 @@ function debounce(func, wait) {
     };
 }
 
-function getCookieByName(name) {
+export function getCookieByName(name) {
     const cookies = document.cookie.split(";");
     for (let cookie of cookies) {
         cookie = cookie.trim();
@@ -606,12 +610,14 @@ function MarkAsRead(senderID) {
     })
 }
 function fetchUsers() {
+    console.log("rah dkhelt")
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
             userList.innerHTML = '';
             if (users.length > 0) {
+                console.log(users)
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('username')

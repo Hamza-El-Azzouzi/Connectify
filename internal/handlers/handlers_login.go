@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -151,8 +152,8 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		sessionId, err := r.Cookie("sessionId")
 		if err == nil && sessionId.Value != "" {
-			err := h.SessionService.CheckSession(sessionId.Value)
-			if err != nil {
+			exist := h.SessionService.CheckSession(sessionId.Value)
+			if !exist {
 				sendResponse(w, "No User Found")
 				return
 			} else {
@@ -170,19 +171,25 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionId, err := r.Cookie("sessionId")
-	if err != nil || sessionId.Value == "" {
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	fmt.Println(sessionId)
+	if sessionId.Value == "" {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	errSessions := h.SessionService.CheckSession(sessionId.Value)
-	if errSessions != nil {
+	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
 	allUser, errUser := h.AuthService.GetUsers(sessionId.Value)
 	if errUser != nil {
+		fmt.Println("user Error",errUser)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -35,36 +35,40 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 
 	sessionId, err := r.Cookie("sessionId")
 	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
 		log.Printf("session error: %v\n", err)
-		return
 	}
+	
 	if sessionId.Value == "" {
 		log.Printf("session empty: %#v\n", err)
-		return
 	}
-
-	errSessions := m.SessionService.CheckSession(sessionId.Value)
-	if errSessions != nil {
+	existSessions := m.SessionService.CheckSession(sessionId.Value)
+	if !existSessions{
 		log.Printf("session doesn't exist: %#v\n", err)
-		return
 	}
-
-	user, err := m.AuthService.GetUserBySessionID(sessionId.Value)
-	if err != nil || user.ID == uuid.Nil {
-		log.Printf("user error: %#v\n", err)
-		return
+	var user *models.User
+	var errUser error
+	if existSessions{
+		user, errUser = m.AuthService.GetUserBySessionID(sessionId.Value)
+		if errUser != nil || user.ID == uuid.Nil {
+			log.Printf("user error: %#v\n", err)
+		}
 	}
-
-	userID := user.ID.String()
-	m.ClientsMu.Lock()
-	m.Clients[userID] = &models.Client{
-		Conn:     connection,
-		LastPing: time.Now(),
+	
+	var userID string
+	if existSessions{
+		userID = user.ID.String()
+		m.ClientsMu.Lock()
+		m.Clients[userID] = &models.Client{
+			Conn:     connection,
+			LastPing: time.Now(),
+		}
+		m.ClientsMu.Unlock()
+		log.Printf("Client connected: %s\n", userID)
+	
+		m.broadcastUserStatus(userID, true)
 	}
-	m.ClientsMu.Unlock()
-	log.Printf("Client connected: %s\n", userID)
-
-	m.broadcastUserStatus(userID, true)
+	
 
 	// go m.checkInactiveClients()
 
@@ -83,8 +87,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			log.Printf("Unmarshal error: %#v\n", err)
 			continue
 		}
-		fmt.Println(data)
-		if data["type"] == "ping" {
+		if data["type"] == "ping" && existSessions{
 			m.ClientsMu.Lock()
 			m.Clients[userID].LastPing = time.Now()
 			m.ClientsMu.Unlock()
@@ -98,7 +101,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			continue
 		}
 
-		if _, ok := data["msg"]; ok {
+		if _, ok := data["msg"]; ok && existSessions{
 			
 
 			if len(strings.TrimSpace( data["msg"])) == 0 {
@@ -121,6 +124,15 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				}
 			} else {
 				log.Printf("Receiver %s not found\n",  data["id"])
+			}
+		}
+		if _, ok := data["user"]; ok{
+			for _, client := range m.Clients {
+				fmt.Println("Yup")
+				err := client.Conn.WriteJSON(data)
+				if err != nil {
+					log.Printf("Failed to broadcast user status: %#v\n", err)
+				}
 			}
 		}
 	}
