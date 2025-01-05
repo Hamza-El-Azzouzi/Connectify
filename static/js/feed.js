@@ -214,11 +214,7 @@ function handleFormSubmission(formContainer, postFormElement) {
             body: JSON.stringify(data)
         }).then(response => response.json())
             .then(reply => {
-                if (reply.REplyMssg == "Done") {
-                    const feed = document.querySelector(".feed");
-                    feed.innerHTML = "";
-                    getPosts(0);
-                }
+                console.log(reply)
             });
     }
 }
