@@ -90,9 +90,14 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			sendResponse(w, "Done")
 		}
+		posts, err := p.PostService.AllPosts(0)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts[0:1])
 	} else {
 		w.WriteHeader(http.StatusForbidden)
 	}

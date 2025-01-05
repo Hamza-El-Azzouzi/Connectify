@@ -213,12 +213,8 @@ function handleFormSubmission(formContainer, postFormElement) {
             method: "POST",
             body: JSON.stringify(data)
         }).then(response => response.json())
-            .then(reply => {
-                if (reply.REplyMssg == "Done") {
-                    const feed = document.querySelector(".feed");
-                    feed.innerHTML = "";
-                    getPosts(0);
-                }
+            .then(newPost => {
+                populatePosts(newPost, false)
             });
     }
 }
@@ -414,7 +410,7 @@ function getPosts(offset) {
                 stopLoading = true;
             } else {
                 totalposts = data[0].TotalCount
-                populatePosts(data);
+                populatePosts(data, true);
                 if (data.length === 20) {
                     stopLoading = false;
                 } else {
@@ -427,9 +423,8 @@ function getPosts(offset) {
         });
 }
 
-function populatePosts(posts) {
+function populatePosts(posts, append) {
     const feed = document.querySelector(".feed");
-    //feed.innerHTML = "";
     if (posts && posts.length > 0) {
         posts.forEach((post) => {
             const postElement = document.createElement("div");
@@ -448,8 +443,8 @@ function populatePosts(posts) {
                 </div>
                 <div class="post-footer">
                     <div class="actions">
-                        <button class="like" data-id="${post.PostID}">${post.LikeCount} Like</button>
-                        <button class="dislike" data-id="${post.PostID}">${post.DisLikeCount} Dislike</button>
+                        <button class="like" data-post-id="${post.PostID}">${post.LikeCount} Like</button>
+                        <button class="dislike" data-post-id="${post.PostID}">${post.DisLikeCount} Dislike</button>
                         <button class="toggle-comment" id=${post.PostID}>${post.CommentCount} Comment</button>
                     </div>
                 </div>
@@ -462,7 +457,11 @@ function populatePosts(posts) {
                         <button class="submit-comment">Submit</button>
                     </div>
                 </div>`;
-            feed.appendChild(postElement);
+            if (append) {
+                feed.appendChild(postElement);
+            } else {
+                feed.insertBefore(postElement, feed.firstChild);
+            }
 
             const toggleCommentButton = postElement.querySelector('.toggle-comment');
             const commentSection = postElement.querySelector('.comment-section');
@@ -501,8 +500,23 @@ function populatePosts(posts) {
                     errParagraph.textContent = "Invalid Comment";
                 }
             });
+            if (!append) {
+                const likePostButton = document.querySelector(`.like[data-post-id="${post.PostID}"]`);
+                const dislikePostButton = document.querySelector(`.dislike[data-post-id="${post.PostID}"]`);
+                likePostButton.addEventListener('click', () => {
+                    const postId = likePostButton.dataset.postId;
+                    handleReact(postId, 'like', 'post');
+                });
+
+                dislikePostButton.addEventListener('click', () => {
+                    const postId = dislikePostButton.dataset.postId;
+                    handleReact(postId, 'dislike', 'post');
+                });
+            }
         });
-        setupReactionButtons();
+        if (append) {
+            setupReactionButtons();
+        }
     } else {
         feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
     }
@@ -529,8 +543,8 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
-                                <button class="like" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
-                                <button class="dislike" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                                <button class="like" data-comment-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+                                <button class="dislike" data-comment-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
                             </div>
                         </div>
                     `).join('');
@@ -547,8 +561,8 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
-                                <button class="like-comment" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
-                                <button class="dislike-comment" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                                <button class="like-comment" data-comment-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+                                <button class="dislike-comment" data-comment-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
                             </div>
                         `;
                         commentsContainer.appendChild(commentElement);
@@ -588,14 +602,14 @@ function submitComment(postId, comment, commentsContainer) {
             commentElement.innerHTML = `
                 <div class="comment-header">
                     <div class="user-info">
-                        <h4>${comment.Username}</h4>
+                        <h4>${newComment.Username}</h4>
                     </div>
-                    <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                    <span class="timestamp">Commented on: ${newComment.FormattedDate}</span>
                 </div>
-                <div class="comment-content"><pre>${comment.Content}</pre></div>
+                <div class="comment-content"><pre>${newComment.Content}</pre></div>
                 <div class="actions">
-                    <button class="like-comment" data-id="${comment.CommentID}">${comment.LikeCount} Like</button>
-                    <button class="dislike-comment" data-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+                    <button class="like" data-comment-id="${newComment.CommentID}">${newComment.LikeCount} Like</button>
+                    <button class="dislike" data-comment-id="${newComment.CommentID}">${newComment.DisLikeCount} Dislike</button>
                 </div>
             `;
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
@@ -603,6 +617,17 @@ function submitComment(postId, comment, commentsContainer) {
             if (noComment) commentsContainer.removeChild(noComment);
             const totalCount = newComment.TotalCount;
             commentCountButton.textContent = `${totalCount} Comment${totalCount !== 1 ? 's' : ''}`;
+            const likeCommentButton = document.querySelector(`.like[data-comment-id="${newComment.CommentID}"]`);
+            const dislikeCommentButton = document.querySelector(`.dislike[data-comment-id="${newComment.CommentID}"]`);
+            likeCommentButton.addEventListener('click', () => {
+                const commentId = likeCommentButton.dataset.commentId;
+                handleReact(commentId, 'like', 'comment');
+            });
+
+            dislikeCommentButton.addEventListener('click', () => {
+                const commentId = dislikeCommentButton.dataset.commentId;
+                handleReact(commentId, 'dislike', 'comment');
+            });
         })
         .catch(error => {
             console.error('Error submitting comment:', error);
@@ -745,38 +770,39 @@ window.addEventListener("scrollend", () => {
 });
 
 function setupReactionButtons() {
-    const likeButtons = document.querySelectorAll('.like');
-    const dislikeButtons = document.querySelectorAll('.dislike');
+    const likeButtons = document.querySelectorAll('.like[data-post-id]');
+    const dislikeButtons = document.querySelectorAll('.dislike[data-post-id]');
 
     likeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const postId = button.dataset.id;
+            const postId = button.dataset.postId;
             handleReact(postId, 'like', 'post');
         });
     });
 
     dislikeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const postId = button.dataset.id;
+            const postId = button.dataset.postId;
             handleReact(postId, 'dislike', 'post');
         });
     });
 }
 
 function setupCommentReactionButtons() {
-    const likeCommentButtons = document.querySelectorAll('.like');
-    const dislikeCommentButtons = document.querySelectorAll('.dislike');
+    const likeCommentButtons = document.querySelectorAll('.like[data-comment-id]');
+    const dislikeCommentButtons = document.querySelectorAll('.dislike[data-comment-id]');
 
     likeCommentButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const commentId = button.dataset.id;
+            console.log("here")
+            const commentId = button.dataset.commentId;
             handleReact(commentId, 'like', 'comment');
         });
     });
 
     dislikeCommentButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const commentId = button.dataset.id;
+            const commentId = button.dataset.commentId;
             handleReact(commentId, 'dislike', 'comment');
         });
     });
@@ -797,10 +823,17 @@ function handleReact(targetId, type, targetType) {
     })
         .then(response => response.json())
         .then(data => {
-            const likeButton = document.querySelector(`.like[data-id="${targetId}"]`);
-            const dislikeButton = document.querySelector(`.dislike[data-id="${targetId}"]`);
-            likeButton.textContent = `${data.likeCount} Like`;
-            dislikeButton.textContent = `${data.dislikeCount} Dislike`;
+            if (targetType === 'post') {
+                const likeButton = document.querySelector(`.like[data-post-id="${targetId}"]`);
+                const dislikeButton = document.querySelector(`.dislike[data-post-id="${targetId}"]`);
+                likeButton.textContent = `${data.likeCount} Like`;
+                dislikeButton.textContent = `${data.dislikeCount} Dislike`;
+            } else if (targetType === 'comment') {
+                const likeButton = document.querySelector(`.like[data-comment-id="${targetId}"]`);
+                const dislikeButton = document.querySelector(`.dislike[data-comment-id="${targetId}"]`);
+                likeButton.textContent = `${data.likeCount} Like`;
+                dislikeButton.textContent = `${data.dislikeCount} Dislike`;
+            }
         })
         .catch(error => {
             console.error('Error updating reaction:', error);
