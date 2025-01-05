@@ -34,11 +34,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
 
 	mux.HandleFunc("/api/reacts",reactHandler.React)
-	// mux.HandleFunc("/like/", likeHandler.LikePost)
-	// mux.HandleFunc("/dislike/", likeHandler.DisLikePost)
-	// mux.HandleFunc("/likeComment/", likeHandler.LikeComment)
-	// mux.HandleFunc("/dislikeComment/", likeHandler.DisLikeComment)
-	// mux.HandleFunc("/filters", postHandler.PostFilter)
+
 
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
 

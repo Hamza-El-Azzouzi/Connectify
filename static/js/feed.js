@@ -21,7 +21,7 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
