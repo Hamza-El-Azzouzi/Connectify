@@ -9,6 +9,7 @@ export function feedPage() {
     initializeWebSocket();
     getPosts(0);
     applyStyles();
+    initializeNavBar();
     const app = initializeAppContainer();
     const flexContainer = createFlexContainer(app);
     const feedContainer = createFeedContainer(flexContainer);
@@ -56,6 +57,7 @@ function initializeWebSocket() {
         console.error("WebSocket error:", error);
     };
 }
+
 function newMeessage(receiverID) {
     const usernameElement = document.querySelector(`.username[data-user-id="${receiverID}"]`);
     const img = document.createElement("img");
@@ -64,6 +66,7 @@ function newMeessage(receiverID) {
     img.className = "notify-msg"
     usernameElement.appendChild(img);
 }
+
 function CheckUnreadMessage() {
     let sessionId = getCookieByName("sessionId")
     fetch("/api/checkUnreadMesg", {
@@ -76,9 +79,32 @@ function CheckUnreadMessage() {
             })
         })
 }
+
 function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
+}
+
+function initializeNavBar(){
+    const app = document.getElementById('app');
+    const header = document.createElement('header');
+    header.className = "header";
+    const headerContent = document.createElement('div');
+    headerContent.className = "header-content";
+    const logo = document.createElement('div');
+    logo.className = "logo";
+    logo.textContent = "RTF";
+    const logoutButton = document.createElement('button');
+    logoutButton.className = "btn btn-logout";
+    logoutButton.textContent = "Logout";
+    headerContent.append(logo);
+    headerContent.append(logoutButton);
+    header.append(headerContent);
+    app.insertBefore(header, app.firstChild);
+    logoutButton.addEventListener('click',()=>{
+        header.remove();
+        logout();
+    })
 }
 
 function initializeAppContainer() {
@@ -445,7 +471,7 @@ function populatePosts(posts, append) {
                     <div class="user-info">
                         <h4>${post.Username}</h4>
                     </div>
-                    <span class="timestamp">Posted on: ${post.FormattedDate}</span>
+                    <span class="timestamp">${post.FormattedDate}</span>
                 </div>
                 <div class="post-title">${post.Title}</div>
                 <div class="post-categories">Categories: ${post.CategoryName}</div>
@@ -550,7 +576,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 <div class="user-info">
                                     <h4>${comment.Username}</h4>
                                 </div>
-                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                                <span class="timestamp">${comment.FormattedDate}</span>
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
@@ -568,7 +594,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 <div class="user-info">
                                     <h4>${comment.Username}</h4>
                                 </div>
-                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                                <span class="timestamp">${comment.FormattedDate}</span>
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
@@ -616,7 +642,7 @@ function submitComment(postId, comment, commentsContainer) {
                     <div class="user-info">
                         <h4>${newComment.Username}</h4>
                     </div>
-                    <span class="timestamp">Commented on: ${newComment.FormattedDate}</span>
+                    <span class="timestamp">${newComment.FormattedDate}</span>
                 </div>
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
                 <div class="actions">
@@ -855,4 +881,10 @@ function handleReact(targetId, type, targetType) {
             NavigateTo("error")
             console.error('Error updating reaction:', error);
         });
+}
+
+function logout() {
+    fetch('/api/logout',)
+        .then(() => NavigateTo('login'))
+        .catch(console.error);
 }
