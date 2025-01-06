@@ -1,3 +1,5 @@
+import { NavigateTo } from "./app.js";
+
 let isLoading = false;
 let stopLoading = false;
 let connectionToWS;
@@ -7,6 +9,7 @@ export function feedPage() {
     initializeWebSocket();
     getPosts(0);
     applyStyles();
+    initializeNavBar();
     const app = initializeAppContainer();
     const flexContainer = createFlexContainer(app);
     const feedContainer = createFeedContainer(flexContainer);
@@ -53,6 +56,7 @@ function initializeWebSocket() {
         console.error("WebSocket error:", error);
     };
 }
+
 function newMeessage(receiverID) {
     const usernameElement = document.querySelector(`.username[data-user-id="${receiverID}"]`);
     const img = document.createElement("img");
@@ -61,6 +65,7 @@ function newMeessage(receiverID) {
     img.className = "notify-msg"
     usernameElement.appendChild(img);
 }
+
 function CheckUnreadMessage() {
     let sessionId = getCookieByName("sessionId")
     fetch("/api/checkUnreadMesg", {
@@ -73,9 +78,32 @@ function CheckUnreadMessage() {
             })
         })
 }
+
 function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
+}
+
+function initializeNavBar(){
+    const app = document.getElementById('app');
+    const header = document.createElement('header');
+    header.className = "header";
+    const headerContent = document.createElement('div');
+    headerContent.className = "header-content";
+    const logo = document.createElement('div');
+    logo.className = "logo";
+    logo.textContent = "RTF";
+    const logoutButton = document.createElement('button');
+    logoutButton.className = "btn btn-logout";
+    logoutButton.textContent = "Logout";
+    headerContent.append(logo);
+    headerContent.append(logoutButton);
+    header.append(headerContent);
+    app.insertBefore(header, app.firstChild);
+    logoutButton.addEventListener('click',()=>{
+        header.remove();
+        logout();
+    })
 }
 
 function initializeAppContainer() {
@@ -844,4 +872,10 @@ function handleReact(targetId, type, targetType) {
         .catch(error => {
             console.error('Error updating reaction:', error);
         });
+}
+
+function logout() {
+    fetch('/api/logout',)
+        .then(() => NavigateTo('login'))
+        .catch(console.error);
 }

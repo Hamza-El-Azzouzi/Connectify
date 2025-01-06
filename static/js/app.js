@@ -1,5 +1,3 @@
-// Import modules for dynamic components
-// import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
 import { feedPage , getCookieByName } from "./feed.js";
 let hasIntegrity = false;
@@ -50,8 +48,6 @@ export function NavigateTo(page) {
             app.innerHTML = '';
             feedPage();
             break;
-        case "logout":
-            logout()
         default:
             app.innerHTML = '<h2>404 - Page Not Found</h2>';
     }
@@ -67,24 +63,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-document.getElementById("navbar").addEventListener("click", async (e) => {
-    const button = e.target;
-    const page = button.dataset.page;
-    if (page) {
-        const isLoggedIn = hasIntegrity || (await checkIntegrity());
-        if (page === "feed" && !isLoggedIn) {
-            NavigateTo("login");
-        } else {
-            NavigateTo(page);
-        }
-    }
-});
-
-// Logout functionality
 function logout() {
     fetch('/api/logout',)
         .then(() => NavigateTo('login'))
         .catch(console.error);
 }
 
-// Initial load
