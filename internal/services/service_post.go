@@ -61,9 +61,3 @@ func (p *PostService) GetPost(PostID string) (models.PostWithUser, error) {
 	return posts, nil
 }
 
-func (p *PostService) FilterPost(filterby, categorie string, userID uuid.UUID , pagination int) ([]models.PostWithUser, error) {
-	if !p.CategoryRepo.CheckCategorie(categorie) && categorie != ""{
-		return nil,fmt.Errorf("categorie Not Found")
-	}
-	return p.PostRepo.FilterPost(filterby, categorie, userID, pagination)
-}
