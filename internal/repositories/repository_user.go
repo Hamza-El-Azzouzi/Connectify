@@ -6,7 +6,6 @@ import (
 	"real-time-forum/internal/models"
 
 	"github.com/gofrs/uuid/v5"
-
 )
 
 type UserRepository struct {
@@ -62,24 +61,65 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 	return user, nil
 }
 
-func (r *UserRepository) GetUsers(userId uuid.UUID) ([]models.User, error) {
+func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool) ([]models.User, error) {
 	allUser := []models.User{}
-	query := `SELECT id, username , first_name, last_name FROM users where id != ? order by username ASC `
-	rows, err := r.DB.Query(query, userId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-	for rows.Next() {
-		user := models.User{}
-
-		err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+	if isNew {
+		query := `SELECT id, username , first_name, last_name FROM users WHERE id != ? ORDER BY LOWER(username) ASC `
+		rows, err := r.DB.Query(query, userId)
 		if err != nil {
+
+			if err == sql.ErrNoRows {
+				return nil, nil
+			}
 			return nil, err
 		}
-		allUser = append(allUser, user)
+		for rows.Next() {
+			user := models.User{}
+
+			err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+			if err != nil {
+				return nil, err
+			}
+			allUser = append(allUser, user)
+		}
+	} else if !isNew {
+		query := `
+		SELECT 
+			u.id AS user_id,
+			u.username,
+			u.first_name,
+			u.last_name
+		FROM 
+			users u
+		LEFT JOIN 
+			messages m ON (m.user_id_sender = u.id OR m.user_id_receiver = u.id)
+			AND (m.user_id_sender = ? OR m.user_id_receiver = ?)
+		WHERE 
+			u.id != ?
+		GROUP BY 
+			u.id
+		ORDER BY  
+    		MAX(m.created_at) DESC NULLS LAST, 
+    		MAX(CASE WHEN m.un_readed = 1 THEN 1 ELSE 0 END) DESC,
+			u.username ASC;`
+		rows, err := r.DB.Query(query, userId, userId, userId)
+		if err != nil {
+
+			if err == sql.ErrNoRows {
+				return nil, nil
+			}
+			return nil, err
+		}
+		for rows.Next() {
+			user := models.User{}
+
+			err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+			if err != nil {
+				return nil, err
+			}
+			allUser = append(allUser, user)
+		}
+
 	}
 	return allUser, nil
 }

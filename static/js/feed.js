@@ -36,11 +36,11 @@ function initializeWebSocket() {
                     addMessage(data["msg"], false, true, false, popup,data["date"]);
                 }
             } else {
+                fetchUsers()
                 newMeessage(data["session"]);
             }
         }
         if (data.hasOwnProperty("user")){
-            console.log(data.user)
             setTimeout(() => {
                 fetchUsers();
               }, 1000);            
@@ -293,6 +293,7 @@ function createMessagePopup(username, ReceiverID) {
             textarea.value = '';
             connectionToWS.send(JSON.stringify({  msg: message,  session:  getCookieByName("sessionId"),  id:  ReceiverID, date: timestamp  }));
             MarkAsRead(ReceiverID)
+            fetchUsers()
 
         }
     });
@@ -610,14 +611,12 @@ function MarkAsRead(senderID) {
     })
 }
 function fetchUsers() {
-    console.log("rah dkhelt")
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
             userList.innerHTML = '';
             if (users.length > 0) {
-                console.log(users)
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('username')

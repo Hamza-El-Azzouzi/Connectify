@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -175,7 +174,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	fmt.Println(sessionId)
+
 	if sessionId.Value == "" {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -189,11 +188,10 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	allUser, errUser := h.AuthService.GetUsers(sessionId.Value)
 	if errUser != nil {
-		fmt.Println("user Error",errUser)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {

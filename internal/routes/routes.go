@@ -25,7 +25,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	mux.HandleFunc("/api/posts/", utils.RateLimitMiddleware(postHandler.Posts))
 	mux.HandleFunc("/api/categories", utils.RateLimitMiddleware(postHandler.GetCategories))
-	// mux.HandleFunc("/create", postHandler.PostCreation)
 
 	mux.HandleFunc("/api/createpost", utils.RateLimitMiddleware(postHandler.PostSaver))
 
