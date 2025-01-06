@@ -6,18 +6,19 @@ export function loginPage() {
     link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
 
-    // Create the main container
+    const notification = document.createElement('div');
+    notification.className = "notification-container";
+    app.append(notification);
+
     const mainDiv = document.createElement('div');
     mainDiv.className = 'main';
 
-    // Checkbox input for toggling
     const checkboxInput = document.createElement('input');
     checkboxInput.type = 'checkbox';
     checkboxInput.id = 'chk';
     checkboxInput.setAttribute('aria-hidden', 'true');
     mainDiv.appendChild(checkboxInput);
 
-    // Signup container
     const signupDiv = document.createElement('div');
     signupDiv.className = 'signup';
 
@@ -86,7 +87,6 @@ export function loginPage() {
     signupDiv.appendChild(signupForm);
     mainDiv.appendChild(signupDiv);
 
-    // Login container
     const loginDiv = document.createElement('div');
     loginDiv.className = 'login';
 
@@ -149,9 +149,9 @@ export function loginPage() {
                     return response.json();
                 })
                 .then((reply) => {
-
                     if (reply.REplyMssg === "Done") {
-                        NavigateTo("login")
+                        createNotification("Registered successfully");
+                        document.querySelector("#formSignIn > label").click();
                     }
                     if (reply.REplyMssg === "email") {
 
@@ -298,4 +298,35 @@ function VerifyLogin() {
         exist = true
     }
     return exist
+}
+
+function createNotification(title) {
+    const container = document.querySelector('.notification-container');
+
+    const notification = document.createElement('div');
+    notification.className = 'notification hidden'; 
+    notification.innerHTML = `
+        <div class="innernoti">
+            <div class="text-content">
+                <div class="notification-header">
+                    <span class="notification-title">${title}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.prepend(notification);
+
+    setTimeout(() => {
+        notification.classList.remove('hidden');
+    }, 100);
+
+    setTimeout(() => {
+        notification.classList.add('hidden');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 3000);
 }
