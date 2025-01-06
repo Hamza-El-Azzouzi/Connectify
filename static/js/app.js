@@ -1,11 +1,13 @@
-// Import modules for dynamic components
-// import { renderLogin, renderFeed, renderCreatePost, renderMessages } from './components.js';
 import { loginPage } from "./first_page.js";
+import { errorPage } from "./error_page.js";
 import { feedPage , getCookieByName } from "./feed.js";
 let hasIntegrity = false;
 
 export function setIntegrity(val) {
     hasIntegrity = val;
+}
+if(window.location.pathname !== "/") {
+    NavigateTo("error")
 }
 
 const app = document.getElementById("main-content");
@@ -52,8 +54,13 @@ export function NavigateTo(page) {
             break;
         case "logout":
             logout()
+        case "error":
+            app.innerHTML =  ""
+            errorPage();
+            break;
         default:
-            app.innerHTML = '<h2>404 - Page Not Found</h2>';
+            app.innerHTML = ""
+            errorPage()
     }
 }
 

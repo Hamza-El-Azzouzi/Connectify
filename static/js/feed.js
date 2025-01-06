@@ -1,4 +1,6 @@
+import { NavigateTo } from "./app.js";
 let isLoading = false;
+
 let stopLoading = false;
 let connectionToWS;
 let totalposts = 0;
@@ -21,7 +23,7 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -50,6 +52,7 @@ function initializeWebSocket() {
 
 
     connectionToWS.onerror = (error) => {
+        NavigateTo("error")
         console.error("WebSocket error:", error);
     };
 }
@@ -326,6 +329,7 @@ function getMessages(popup, data, ReceiverID) {
             }
         })
         .catch((error) => {
+            NavigateTo("error")
             console.error("Error fetching messages:", error);
         });
 }
@@ -425,6 +429,7 @@ function getPosts(offset) {
             }
         })
         .catch((error) => {
+            NavigateTo("error")
             console.error("Error fetching data:", error);
         });
 }
@@ -583,6 +588,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
             setupCommentReactionButtons();
         })
         .catch(error => {
+            NavigateTo("error")
             console.error('Error loading comments:', error);
         });
 }
@@ -636,6 +642,7 @@ function submitComment(postId, comment, commentsContainer) {
             });
         })
         .catch(error => {
+            NavigateTo("error")
             console.error('Error submitting comment:', error);
         });
 }
@@ -650,6 +657,7 @@ function MarkAsRead(senderID) {
     }
 
     ).catch(err => {
+        NavigateTo("error")
         console.error(err)
     })
 }
@@ -707,6 +715,7 @@ function getCategories() {
             populateCategories(data);
         })
         .catch((error) => {
+            NavigateTo("error")
             console.error("Error fetching data:", error);
         });
 }
@@ -765,6 +774,7 @@ window.addEventListener("scrollend", () => {
                 try {
                     getPosts(posts.length);
                 } catch (error) {
+                    NavigateTo("error")
                     console.error('Error fetching data:', error);
                 } finally {
                     feed.removeChild(placeholder);
@@ -842,6 +852,7 @@ function handleReact(targetId, type, targetType) {
             }
         })
         .catch(error => {
+            NavigateTo("error")
             console.error('Error updating reaction:', error);
         });
 }
