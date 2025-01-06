@@ -11,8 +11,9 @@ export function setIntegrity(val) {
 const app = document.getElementById("main-content");
 
 async function checkIntegrity() {
-    const cookie = getCookieByName();
-    if (!cookie) {
+    const cookie = getCookieByName("sessionId");
+
+    if (cookie) {
         try {
             const response = await fetch("/api/integrity", {
                 headers: {

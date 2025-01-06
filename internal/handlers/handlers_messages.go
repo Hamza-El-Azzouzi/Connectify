@@ -27,6 +27,7 @@ type MessageHandler struct {
 
 
 func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request) {
+	existSessions := false
 	connection, err := m.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("Upgrading error: %#v\n", err)
@@ -35,14 +36,12 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 
 	sessionId, err := r.Cookie("sessionId")
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
 		log.Printf("session error: %v\n", err)
 	}
-	
 	if sessionId.Value == "" {
 		log.Printf("session empty: %#v\n", err)
 	}
-	existSessions := m.SessionService.CheckSession(sessionId.Value)
+	existSessions = m.SessionService.CheckSession(sessionId.Value)
 	if !existSessions{
 		log.Printf("session doesn't exist: %#v\n", err)
 	}
