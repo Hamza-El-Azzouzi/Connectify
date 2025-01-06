@@ -399,6 +399,7 @@ button[style*="background"] {
 .feed-container {
   width: 98%;
   flex: 3;
+  max-width: 1000px;
 }
 
 
