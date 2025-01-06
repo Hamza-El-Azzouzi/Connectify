@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -25,8 +24,8 @@ type MessageHandler struct {
 	ClientsMu      sync.Mutex
 }
 
-
 func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request) {
+	existSessions := false
 	connection, err := m.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("Upgrading error: %#v\n", err)
@@ -34,37 +33,35 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 	}
 
 	sessionId, err := r.Cookie("sessionId")
-	if err != nil {
-		log.Printf("session error: %v\n", err)
-		return
-	}
-	if sessionId.Value == "" {
-		log.Printf("session empty: %#v\n", err)
-		return
-	}
 
-	errSessions := m.SessionService.CheckSession(sessionId.Value)
-	if errSessions != nil {
+	if err == nil && sessionId.Value != "" {
+		existSessions = m.SessionService.CheckSession(sessionId.Value)
+	}
+	if !existSessions {
 		log.Printf("session doesn't exist: %#v\n", err)
-		return
+	}
+	var user *models.User
+	var errUser error
+	if existSessions {
+		user, errUser = m.AuthService.GetUserBySessionID(sessionId.Value)
+		if errUser != nil || user.ID == uuid.Nil {
+			log.Printf("user error: %#v\n", err)
+		}
 	}
 
-	user, err := m.AuthService.GetUserBySessionID(sessionId.Value)
-	if err != nil || user.ID == uuid.Nil {
-		log.Printf("user error: %#v\n", err)
-		return
-	}
+	var userID string
+	if existSessions {
+		userID = user.ID.String()
+		m.ClientsMu.Lock()
+		m.Clients[userID] = &models.Client{
+			Conn:     connection,
+			LastPing: time.Now(),
+		}
+		m.ClientsMu.Unlock()
+		log.Printf("Client connected: %s\n", userID)
 
-	userID := user.ID.String()
-	m.ClientsMu.Lock()
-	m.Clients[userID] = &models.Client{
-		Conn:     connection,
-		LastPing: time.Now(),
+		m.broadcastUserStatus(userID, true)
 	}
-	m.ClientsMu.Unlock()
-	log.Printf("Client connected: %s\n", userID)
-
-	m.broadcastUserStatus(userID, true)
 
 	// go m.checkInactiveClients()
 
@@ -83,8 +80,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			log.Printf("Unmarshal error: %#v\n", err)
 			continue
 		}
-		fmt.Println(data)
-		if data["type"] == "ping" {
+		if data["type"] == "ping" && existSessions {
 			m.ClientsMu.Lock()
 			m.Clients[userID].LastPing = time.Now()
 			m.ClientsMu.Unlock()
@@ -98,20 +94,19 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			continue
 		}
 
-		if _, ok := data["msg"]; ok {
-			
+		if _, ok := data["msg"]; ok && existSessions {
 
-			if len(strings.TrimSpace( data["msg"])) == 0 {
+			if len(strings.TrimSpace(data["msg"])) == 0 {
 				log.Println("Empty message received")
 				break
 			}
-			userSender , err := m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
+			userSender, err := m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
 			if err != nil || userSender == uuid.Nil {
 				log.Printf("Failed to create message: %#v\n", err)
 				break
 			}
 			m.ClientsMu.Lock()
-			receiverClient, exists := m.Clients[ data["id"]]
+			receiverClient, exists := m.Clients[data["id"]]
 			m.ClientsMu.Unlock()
 			data["session"] = userSender.String()
 			if exists {
@@ -120,30 +115,35 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 					log.Printf("Failed to send message to receiver: %#v\n", err)
 				}
 			} else {
-				log.Printf("Receiver %s not found\n",  data["id"])
+				log.Printf("Receiver %s not found\n", data["id"])
+			}
+		}
+		if _, ok := data["user"]; ok {
+			for _, client := range m.Clients {
+				err := client.Conn.WriteJSON(data)
+				if err != nil {
+					log.Printf("Failed to broadcast user status: %#v\n", err)
+				}
 			}
 		}
 	}
 
-	
 	m.DisconnectClient(userID)
-	
 }
 
-func (m *MessageHandler) DisconnectClient(userID string){
+func (m *MessageHandler) DisconnectClient(userID string) {
 	m.ClientsMu.Lock()
 	delete(m.Clients, userID)
 	m.ClientsMu.Unlock()
 	m.broadcastUserStatus(userID, false)
 	log.Printf("User %s disconnected\n", userID)
 }
-func (m *MessageHandler) broadcastUserStatus(userID string, isOnline bool) {
 
+func (m *MessageHandler) broadcastUserStatus(userID string, isOnline bool) {
 	m.ClientsMu.Lock()
 	defer m.ClientsMu.Unlock()
 
 	for _, client := range m.Clients {
-		fmt.Println("Yup")
 		err := client.Conn.WriteJSON(map[string]any{
 			"type":   "userStatus",
 			"userID": userID,
@@ -171,7 +171,6 @@ func (m *MessageHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-
 func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	chat := models.HistoryChat{}
 	decoder := json.NewDecoder(r.Body)
@@ -187,15 +186,16 @@ func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 }
-type session struct{
+
+type session struct {
 	SessionID string `json:"session"`
 }
-func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request){
+
+func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request) {
 	var session session
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&session)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 	defer r.Body.Close()
@@ -204,16 +204,15 @@ func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		return
 	}
-	fmt.Println("test")
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(usersID)
 }
-func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request){
+
+func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request) {
 	var data models.MarkAsRead
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&data)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 	defer r.Body.Close()

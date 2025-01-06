@@ -44,7 +44,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.SessionService,
 	*services.MessageService,
 ) {
-	return &services.AuthService{UserRepo: userRepo},
+	return &services.AuthService{UserRepo: userRepo,MessageRepo:messageRepo},
 		&services.PostService{PostRepo: postRepo, CategoryRepo: categoryRepo},
 		&services.CategoryService{CategorieRepo: categoryRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},

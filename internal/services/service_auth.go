@@ -14,6 +14,7 @@ import (
 
 type AuthService struct {
 	UserRepo *repositories.UserRepository
+	MessageRepo *repositories.MessageRepository
 }
 
 func HashPassword(psswd string) (string, error) {
@@ -83,10 +84,11 @@ func (a * AuthService) GetUsers(sessionID string)([]models.User,error){
 	if err != nil {
 		return nil,err
 	}
-	allUser ,errUser := a.UserRepo.GetUsers(user.ID)
-	if errUser != nil {
-		return nil,err
-	}
-	fmt.Println(err)
-	return allUser,nil
+	isNew := a.MessageRepo.IsNewUser(user.ID)
+	allUser ,errUser := a.UserRepo.GetUsers(user.ID,isNew)
+		if errUser != nil {
+			return nil,err
+		}
+		return allUser,nil
+
 }

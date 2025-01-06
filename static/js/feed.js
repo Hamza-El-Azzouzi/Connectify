@@ -37,9 +37,14 @@ function initializeWebSocket() {
                     addMessage(data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
+                fetchUsers()
                 newMeessage(data["session"]);
             }
-            newMeessage(data["session"])
+        }
+        if (data.hasOwnProperty("user")){
+            setTimeout(() => {
+                fetchUsers();
+              }, 1000);            
         }
     };
 
@@ -281,6 +286,7 @@ function createMessagePopup(username, ReceiverID) {
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
+            fetchUsers()
 
         }
     });
@@ -391,7 +397,7 @@ function debounce(func, wait) {
     };
 }
 
-function getCookieByName(name) {
+export function getCookieByName(name) {
     const cookies = document.cookie.split(";");
     for (let cookie of cookies) {
         cookie = cookie.trim();

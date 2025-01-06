@@ -20,6 +20,23 @@
 # Go workspace file
 go.work
 go.work.sum
+# Ignore database files
+*.db
+cmd/server_forum.db
 
-# env file
+# Ignore node_modules (for Node.js projects)
+node_modules/
+
+# Ignore Python virtual environments
+venv/
 .env
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore log files
+*.log
+
+# Ignore system files
+.DS_Store

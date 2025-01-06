@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 
 	"real-time-forum/internal/models"
 
@@ -90,4 +91,16 @@ func (m *MessageRepository) MarkReadMsg(sender string, receiver uuid.UUID) error
 	}
 
 	return nil
+}
+
+func (r *MessageRepository) IsNewUser(userId uuid.UUID) bool {
+	exist := 0
+	query := `SELECT Count(*) From messages WHERE user_id_sender = ? OR user_id_receiver = ?`
+	err := r.DB.QueryRow(query, userId,userId).Scan(&exist)
+	fmt.Println(exist)
+	if err != nil {
+		return err == sql.ErrNoRows
+	}
+	
+	return exist <= 0
 }

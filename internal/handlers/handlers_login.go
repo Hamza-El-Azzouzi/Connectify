@@ -153,8 +153,8 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		sessionId, err := r.Cookie("sessionId")
 		if err == nil && sessionId.Value != "" {
-			err := h.SessionService.CheckSession(sessionId.Value)
-			if err != nil {
+			exist := h.SessionService.CheckSession(sessionId.Value)
+			if !exist {
 				sendResponse(w, "No User Found")
 				return
 			} else {
@@ -172,13 +172,18 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionId, err := r.Cookie("sessionId")
-	if err != nil || sessionId.Value == "" {
+	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	errSessions := h.SessionService.CheckSession(sessionId.Value)
-	if errSessions != nil {
+	if sessionId.Value == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -188,7 +193,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {
