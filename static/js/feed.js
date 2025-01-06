@@ -440,7 +440,7 @@ function populatePosts(posts, append) {
                     <div class="user-info">
                         <h4>${post.Username}</h4>
                     </div>
-                    <span class="timestamp">Posted on: ${post.FormattedDate}</span>
+                    <span class="timestamp">${post.FormattedDate}</span>
                 </div>
                 <div class="post-title">${post.Title}</div>
                 <div class="post-categories">Categories: ${post.CategoryName}</div>
@@ -545,7 +545,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 <div class="user-info">
                                     <h4>${comment.Username}</h4>
                                 </div>
-                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                                <span class="timestamp">${comment.FormattedDate}</span>
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
@@ -563,7 +563,7 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                                 <div class="user-info">
                                     <h4>${comment.Username}</h4>
                                 </div>
-                                <span class="timestamp">Commented on: ${comment.FormattedDate}</span>
+                                <span class="timestamp">${comment.FormattedDate}</span>
                             </div>
                             <div class="comment-content"><pre>${comment.Content}</pre></div>
                             <div class="actions">
@@ -610,7 +610,7 @@ function submitComment(postId, comment, commentsContainer) {
                     <div class="user-info">
                         <h4>${newComment.Username}</h4>
                     </div>
-                    <span class="timestamp">Commented on: ${newComment.FormattedDate}</span>
+                    <span class="timestamp">${newComment.FormattedDate}</span>
                 </div>
                 <div class="comment-content"><pre>${newComment.Content}</pre></div>
                 <div class="actions">
