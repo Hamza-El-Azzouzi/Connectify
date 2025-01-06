@@ -53,7 +53,7 @@ export function NavigateTo(page) {
             feedPage();
             break;
         case "error":
-            app.innerHTML =  ""
+            app.innerHTML = ''
             errorPage();
             break;
         default:

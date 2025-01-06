@@ -1,5 +1,5 @@
 export function errorPage() {
-    const app = document.getElementById("main-content");
+  const app = document.getElementById("main-content");
     applyStyles()
       const errorContainer = document.createElement('div');
       errorContainer.classList.add('error-container');
@@ -29,6 +29,7 @@ export function errorPage() {
       paragraph.textContent = "Oops! An Error Occured Here.";
 
       const homeButton = document.createElement('a');
+      homeButton.href = "/"
       homeButton.classList.add('home-button');
       homeButton.textContent = 'Go Back to Feed';
       homeButton.setAttribute('data-page', 'feed'); 
@@ -37,10 +38,10 @@ export function errorPage() {
       errorContent.appendChild(heading);
       errorContent.appendChild(paragraph);
       errorContent.appendChild(homeButton);
-    console.log(errorContent)
       errorContainer.appendChild(errorContent);
-        console.log(app)
-      app.appendChild(errorContainer) ;
+      app.appendChild(errorContainer)
+      // return errorContainer
+       
 }
 function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
