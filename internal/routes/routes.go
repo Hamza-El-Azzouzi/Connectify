@@ -8,13 +8,11 @@ import (
 	"real-time-forum/internal/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware , messageHnadler *handlers.MessageHandler) {
-	
-	
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler) {
 	mux.HandleFunc("/ws", utils.RateLimitMiddleware(messageHnadler.MessageReceiver))
 
 	mux.HandleFunc("/static/", utils.RateLimitMiddleware(utils.SetupStaticFilesHandlers))
-	// /api/online-users
+	
 	mux.HandleFunc("/api/online-users", utils.RateLimitMiddleware(messageHnadler.GetOnlineUsers))
 	mux.HandleFunc("/api/logout", utils.RateLimitMiddleware(authHandler.LogoutHandle))
 	mux.HandleFunc("/api/register", utils.RateLimitMiddleware(authHandler.RegisterHandle))
@@ -33,8 +31,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/sendcomment", utils.RateLimitMiddleware(postHandler.CommentSaver))
 	mux.HandleFunc("/api/comment/", utils.RateLimitMiddleware(postHandler.CommentGetter))
 
-	mux.HandleFunc("/api/reacts",utils.RateLimitMiddleware(reactHandler.React))
-
+	mux.HandleFunc("/api/reacts", utils.RateLimitMiddleware(reactHandler.React))
 
 	mux.HandleFunc("/api/getmessages", utils.RateLimitMiddleware(messageHnadler.GetMessages))
 

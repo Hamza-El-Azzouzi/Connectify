@@ -63,8 +63,6 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		m.broadcastUserStatus(userID, true)
 	}
 
-	// go m.checkInactiveClients()
-
 	defer connection.Close()
 
 	for {
@@ -119,6 +117,14 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			}
 		}
 		if _, ok := data["user"]; ok {
+			for _, client := range m.Clients {
+				err := client.Conn.WriteJSON(data)
+				if err != nil {
+					log.Printf("Failed to broadcast user status: %#v\n", err)
+				}
+			}
+		}
+		if _, ok := data["post"]; ok {
 			for _, client := range m.Clients {
 				err := client.Conn.WriteJSON(data)
 				if err != nil {

@@ -41,10 +41,28 @@ function initializeWebSocket() {
                 newMeessage(data["session"]);
             }
         }
-        if (data.hasOwnProperty("user")){
+        if (data.hasOwnProperty("user")) {
             setTimeout(() => {
                 fetchUsers();
-              }, 1000);            
+            }, 1000);
+        }
+        if (data.hasOwnProperty("post")) {
+            const container = document.createElement('div');
+            container.className = "notification-container";
+
+            const notification = document.createElement('div');
+            notification.className = 'notification hidden';
+            notification.innerHTML = `
+                <div class="innernoti">
+                    <div class="text-content">
+                        <div class="notification-header">
+                            <span class="notification-title">new post created</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.prepend(notification);
         }
     };
 
@@ -219,7 +237,11 @@ function handleFormSubmission(formContainer, postFormElement) {
             body: JSON.stringify(data)
         }).then(response => response.json())
             .then(newPost => {
+                connectionToWS.send(JSON.stringify({ post: "New-post-published" }));
                 populatePosts(newPost, false)
+            })
+            .catch((error) => {
+                console.error("Error creating post:", error);
             });
     }
 }

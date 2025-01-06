@@ -139,7 +139,6 @@ button:hover {
 	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 	background-color: #fff;
 	margin-bottom: 15px;
-	/* Space between notifications */
 	transform: translateX(100%);
 	transition: transform 0.5s ease-out, opacity 0.5s ease-out;
 	display: flex;

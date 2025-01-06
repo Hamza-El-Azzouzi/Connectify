@@ -129,7 +129,7 @@ export function loginPage() {
 
     signupForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        connectionToWS.send(JSON.stringify({user:"New-User-joined-us"}));
+        
         if (!VerifyData()) {
             fetch("/api/register", {
                 headers: {
@@ -152,6 +152,7 @@ export function loginPage() {
                 })
                 .then((reply) => {
                     if (reply.REplyMssg === "Done") {
+                        connectionToWS.send(JSON.stringify({user:"New-User-joined-us"}));
                         createNotification("Registered successfully");
                         document.querySelector("#formSignIn > label").click();
                     }
