@@ -18,7 +18,11 @@
     </div>
    <script type="module">
     import {errorPage} from "/static/js/error_page.js"
-    errorPage()
+    document.addEventListener("DOMContentLoaded", (event) => {
+        if (location.href !== "http://localhost:1414/"){
+            errorPage()
+        }
+    });
    </script>
     <script type="module" src="/static/js/app.js">
     </script>
