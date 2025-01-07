@@ -3,7 +3,7 @@ let element = new Map()
 let errElement = new Map()
 let connectionToWS;
 export function loginPage() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    connectionToWS = new WebSocket("ws://localhost:1414/ws");
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
@@ -132,7 +132,7 @@ export function loginPage() {
 
     signupForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        connectionToWS.send(JSON.stringify({user:"New-User-joined-us"}));
+       
         if (!VerifyData()) {
             fetch("/api/register", {
                 headers: {
@@ -155,6 +155,7 @@ export function loginPage() {
                 })
                 .then((reply) => {
                     if (reply.REplyMssg === "Done") {
+                        connectionToWS.send(JSON.stringify({user:"New-User-joined-us"}));
                         createNotification("Registered successfully");
                         document.querySelector("#formSignIn > label").click();
                     }

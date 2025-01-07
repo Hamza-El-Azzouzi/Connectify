@@ -21,7 +21,7 @@ export function feedPage() {
     feedContainer.appendChild(postForm);
     feedContainer.appendChild(postsFeed);
     createUserSection(flexContainer);
-    fetchUsers(0);
+    fetchUsers(0, true);
     setupFormInteractions(postForm);
 }
 
@@ -42,13 +42,13 @@ function initializeWebSocket() {
                     addMessage(data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
-                fetchUsers(0,false);
+                fetchUsers(0, false);
                 newMeessage(data["session"]);
             }
         }
         if (data.hasOwnProperty("user")) {
             setTimeout(() => {
-                fetchUsers(0,false);
+                fetchUsers(0, false);
             }, 1000);
         }
     };
@@ -187,19 +187,19 @@ function setupFormInteractions() {
     });
 
     userList.addEventListener("scroll", debounce(() => {
-        if (userList.scrollTop + userList.clientHeight >= userList.scrollHeight - 10){
+        if (userList.scrollTop + userList.clientHeight >= userList.scrollHeight - 10) {
             const users = document.querySelectorAll(".username");
-            fetchUsers(users.length)
+            fetchUsers(users.length, true)
         }
-    }),300);
+    }), 300);
 
     searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase();
-        if (searchTerm.length === 0){
-            fetchUsers(0,false)
-        }else{
+        if (searchTerm.length === 0) {
+            fetchUsers(0, false)
+        } else {
             getUsers(searchTerm);
-            
+
         }
     });
 }
@@ -326,7 +326,7 @@ function createMessagePopup(username, ReceiverID) {
     const messageHistory = popup.querySelector('.message-history');
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
-        if (message.length > 5000){
+        if (message.length > 5000) {
             document.getElementById('message-error').textContent = "Maximum 5000 characters.";
             return
         }
@@ -337,7 +337,7 @@ function createMessagePopup(username, ReceiverID) {
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
-            fetchUsers(0,false)
+            fetchUsers(0, false)
         }
     });
 
@@ -580,7 +580,7 @@ function populatePosts(posts, append) {
             setupReactionButtons();
         }
     } else {
-        if (feed){
+        if (feed) {
             feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
         }
     }
@@ -712,11 +712,9 @@ function MarkAsRead(senderID) {
         if (img) usernameElement.removeChild(img)
     }
 
-    ).catch(() => {
-        errorPage(500);
-    })
+    )
 }
-function fetchUsers(offset,append = true) {
+function fetchUsers(offset, append = true) {
     fetch(`/api/users/${offset}`)
         .then(response => {
             if (!response.ok) {
@@ -728,7 +726,7 @@ function fetchUsers(offset,append = true) {
         .then(users => {
             const userList = document.querySelector('.user-list');
             if (users.length > 0) {
-                if (!append){
+                if (!append) {
                     userList.innerHTML = ""
                 }
                 users.forEach(user => {
@@ -778,7 +776,7 @@ function getUsers(searchTerm) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({search: searchTerm}),
+        body: JSON.stringify({ search: searchTerm }),
     })
         .then(response => response.json())
         .then(users => {
@@ -902,7 +900,7 @@ window.addEventListener("scroll", debounce(() => {
             }, 1000);
         }
     }
-}),300);
+}), 300);
 
 function setupReactionButtons() {
     const likeButtons = document.querySelectorAll('.like[data-post-id]');
