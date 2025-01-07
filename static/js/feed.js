@@ -209,7 +209,12 @@ function setupFormInteractions() {
 
     searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase();
-        getUsers(searchTerm);
+        if (searchTerm.length === 0){
+            fetchUsers(0)
+        }else{
+            getUsers(searchTerm);
+            
+        }
     });
 }
 
@@ -713,6 +718,7 @@ function fetchUsers(offset) {
         .then(users => {
             const userList = document.querySelector('.user-list');
             if (users.length > 0) {
+                userList.innerHTML = ""
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('username')
@@ -728,6 +734,7 @@ function fetchUsers(offset) {
                     userList.appendChild(usernameElement);
                 });
             } else {
+                userList.innerHTML = ""
                 const usernameElement = document.createElement('p');
                 usernameElement.textContent = "You are the only user Invite your Friends ^_^"
                 userList.appendChild(usernameElement);
@@ -765,6 +772,7 @@ function getUsers(searchTerm) {
         .then(users => {
             const userList = document.querySelector('.user-list');
             if (users.length > 0) {
+                userList.innerHTML = ""
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('username')
@@ -780,6 +788,7 @@ function getUsers(searchTerm) {
                     userList.appendChild(usernameElement);
                 });
             } else {
+                userList.innerHTML = ""
                 const usernameElement = document.createElement('p');
                 usernameElement.textContent = "User not found"
                 userList.appendChild(usernameElement);

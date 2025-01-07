@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -210,7 +209,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -228,5 +227,31 @@ func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	fmt.Println(data["search"])
+	sessionId, err := r.Cookie("sessionId")
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	if sessionId.Value == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	if !existSessions {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	users, errUsers := h.AuthService.GetUserByUserName(data["search"], sessionId.Value)
+	if errUsers != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&users)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

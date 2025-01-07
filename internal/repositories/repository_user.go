@@ -125,3 +125,25 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	}
 	return allUser, nil
 }
+
+func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) ([]models.User, error) {
+	users := []models.User{}
+	query := "SELECT id, username , first_name, last_name FROM users WHERE username LIKE ? AND id != ?"
+
+	rows, err := r.DB.Query(query, "%"+userName+"%", user_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	for rows.Next() {
+		user := models.User{}
+		err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
