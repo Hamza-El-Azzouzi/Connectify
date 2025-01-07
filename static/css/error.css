@@ -126,6 +126,15 @@
     font-weight: 700;
     color: #512da8;
   }
+  .noscript-error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 20px;
+    border: 1px solid #c62828;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
 
 /* Responsive Design */
 @media (max-width: 600px) {

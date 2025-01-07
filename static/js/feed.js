@@ -186,12 +186,12 @@ function setupFormInteractions() {
         handleFormSubmission(formContainer, postFormElement);
     });
 
-    userList.addEventListener("scrollend", () => {
+    userList.addEventListener("scroll", debounce(() => {
         if (userList.scrollTop + userList.clientHeight >= userList.scrollHeight - 10){
             const users = document.querySelectorAll(".username");
             fetchUsers(users.length)
         }
-    });
+    }),300);
 
     searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase();
@@ -337,7 +337,7 @@ function createMessagePopup(username, ReceiverID) {
         }
     });
 
-    messageHistory.addEventListener('scrollend', debounce(() => {
+    messageHistory.addEventListener('scroll', debounce(() => {
         if (messageHistory.scrollTop === 0) {
             data.offset = document.querySelectorAll(".message").length;
             data.append = false;
@@ -852,7 +852,7 @@ function populateCategories(categories) {
         .join("");
 }
 
-window.addEventListener("scrollend", () => {
+window.addEventListener("scroll", debounce(() => {
     if (isLoading || totalposts < 20) return;
 
     if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight && !stopLoading) {
@@ -895,10 +895,10 @@ window.addEventListener("scrollend", () => {
                     feed.removeChild(placeholder);
                     isLoading = false;
                 }
-            }, 5000);
+            }, 1000);
         }
     }
-});
+}),300);
 
 function setupReactionButtons() {
     const likeButtons = document.querySelectorAll('.like[data-post-id]');
