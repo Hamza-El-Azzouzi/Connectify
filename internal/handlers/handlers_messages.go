@@ -100,6 +100,10 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				log.Println("Empty message received")
 				break
 			}
+			if len(data["msg"]) > 5000 {
+				log.Println("message too long")
+				break
+			}
 			userSender, err := m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
 			if err != nil || userSender == uuid.Nil {
 				log.Printf("Failed to create message: %#v\n", err)
