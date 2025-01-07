@@ -6,11 +6,12 @@ let hasIntegrity = false;
 export function setIntegrity(val) {
     hasIntegrity = val;
 }
+
+const app = document.getElementById("main-content");
+
 if(window.location.pathname !== "/") {
     NavigateTo("error")
 }
-
-const app = document.getElementById("main-content");
 
 async function checkIntegrity() {
     const cookie = getCookieByName("sessionId");
@@ -63,13 +64,31 @@ export function NavigateTo(page) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-
     const isLoggedIn = await checkIntegrity();
+    if (location.pathname !== "/"){
+        if (isLoggedIn) {
+            const navBar = document.querySelector("#app > header")
+            navBar.style.display = "block";
+        }
+        NavigateTo("error")
+        return
+    }
     if (isLoggedIn) {
         NavigateTo("feed");
     } else {
         NavigateTo("login");
     }
+    
 });
 
+document.querySelector(".btn-logout").addEventListener("click", ()=>{
+    const navBar = document.querySelector("#app > header")
+    navBar.style.display = "none";
+    logout();
+})
 
+function logout() {
+    fetch('/api/logout',)
+        .then(() => NavigateTo('login'))
+        .catch(console.error);
+}

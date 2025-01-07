@@ -8,6 +8,9 @@ export function loginPage() {
     link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
 
+    const navBar = document.querySelector("#app > header")
+    navBar.style.display = "none";
+
     const notification = document.createElement('div');
     notification.className = "notification-container";
     app.append(notification);
