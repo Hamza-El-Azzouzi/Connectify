@@ -26,7 +26,7 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    connectionToWS = new WebSocket("ws://localhost:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -196,7 +196,7 @@ function setupFormInteractions() {
     searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase();
         if (searchTerm.length === 0){
-            fetchUsers(0)
+            fetchUsers(0,false)
         }else{
             getUsers(searchTerm);
             
@@ -232,8 +232,8 @@ function handleFormSubmission(formContainer, postFormElement) {
         isValid = false;
     }
 
-    if (content.length > 10000) {
-        document.getElementById('textarea-error').textContent = "Maximum 10000 characters.";
+    if (content.length > 5000) {
+        document.getElementById('textarea-error').textContent = "Maximum 5000 characters.";
         isValid = false;
     }
     if (!content.trim()) {
@@ -645,6 +645,10 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
 }
 
 function submitComment(postId, comment, commentsContainer) {
+    if (comment.length > 5000) {
+        document.getElementById('err').textContent = "Maximum 5000 characters.";
+        return
+    }
     const commentCountButton = document.getElementById(postId);
     fetch(`/api/sendcomment`, {
         method: 'POST',
@@ -708,7 +712,7 @@ function MarkAsRead(senderID) {
         errorPage(500);
     })
 }
-function fetchUsers(offset) {
+function fetchUsers(offset,append = true) {
     fetch(`/api/users/${offset}`)
         .then(response => {
             if (!response.ok) {
@@ -720,7 +724,9 @@ function fetchUsers(offset) {
         .then(users => {
             const userList = document.querySelector('.user-list');
             if (users.length > 0) {
-                userList.innerHTML = ""
+                if (!append){
+                    userList.innerHTML = ""
+                }
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('username')

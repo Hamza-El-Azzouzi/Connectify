@@ -81,7 +81,7 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if len(postData.Title) > 250 || len(postData.Content) > 10000 {
+	if len(postData.Title) > 250 || len(postData.Content) > 5000 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -125,7 +125,7 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	commentData.Comment = strings.TrimSpace(commentData.Comment)
-	if commentData.Comment == "" || len(commentData.Comment) > 10000 {
+	if commentData.Comment == "" || len(commentData.Comment) > 5000 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
