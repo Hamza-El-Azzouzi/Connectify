@@ -61,11 +61,11 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 	return user, nil
 }
 
-func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool) ([]models.User, error) {
+func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int) ([]models.User, error) {
 	allUser := []models.User{}
 	if isNew {
-		query := `SELECT id, username , first_name, last_name FROM users WHERE id != ? ORDER BY LOWER(username) ASC `
-		rows, err := r.DB.Query(query, userId)
+		query := `SELECT id, username , first_name, last_name FROM users WHERE id != ? ORDER BY LOWER(username) ASC LIMIT 20 OFFSET ?`
+		rows, err := r.DB.Query(query, userId, nPagination)
 		if err != nil {
 
 			if err == sql.ErrNoRows {
@@ -101,8 +101,10 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool) ([]models.User, 
 		ORDER BY  
     		MAX(m.created_at) DESC NULLS LAST, 
     		MAX(CASE WHEN m.un_readed = 1 THEN 1 ELSE 0 END) DESC,
-			u.username ASC;`
-		rows, err := r.DB.Query(query, userId, userId, userId)
+			u.username ASC
+		LIMIT 20 OFFSET ?;
+		`
+		rows, err := r.DB.Query(query, userId, userId, userId, nPagination)
 		if err != nil {
 
 			if err == sql.ErrNoRows {

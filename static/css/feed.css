@@ -381,12 +381,6 @@ button[style*="background"] {
   box-shadow: 0 0 0 3px rgba(81, 45, 168, 0.3);
 }
 
-.user-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-}
-
 .flex-container {
   display: flex;
   gap: 20px;
@@ -397,7 +391,7 @@ button[style*="background"] {
 
 
 .feed-container {
-  width: 98%;
+  width: 70%;
   flex: 3;
   max-width: 1000px;
 }
@@ -422,6 +416,8 @@ button[style*="background"] {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 675px;
+  overflow-y: scroll;
 }
 
 .username {
@@ -433,6 +429,7 @@ button[style*="background"] {
   border: 1px solid #ccc;
   cursor: pointer;
   position: relative;
+  margin-right: 5px;
 }
 
 .username.online::after {
@@ -457,6 +454,15 @@ button[style*="background"] {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.search-input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
 .notify-msg {

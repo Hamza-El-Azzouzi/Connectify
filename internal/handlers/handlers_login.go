@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -138,7 +139,6 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := r.Cookie("sessionId")
 	if err == nil || sessionId.Value != "" {
 		err := h.SessionService.DeleteSession(sessionId.Value)
-		fmt.Println(err)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -171,6 +171,21 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	pagination := pathParts[3]
+	if pagination == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	nPagination, err := strconv.Atoi(pagination)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	sessionId, err := r.Cookie("sessionId")
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
@@ -187,17 +202,31 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-
-	allUser, errUser := h.AuthService.GetUsers(sessionId.Value)
+	allUser, errUser := h.AuthService.GetUsers(sessionId.Value, nPagination)
 	if errUser != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+}
+
+func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var data map[string]string
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+	fmt.Println(data["search"])
 }

@@ -19,12 +19,12 @@ export function feedPage() {
     feedContainer.appendChild(postForm);
     feedContainer.appendChild(postsFeed);
     createUserSection(flexContainer);
-    fetchUsers();
+    fetchUsers(0);
     setupFormInteractions(postForm);
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
+    connectionToWS = new WebSocket("ws://localhost:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -40,13 +40,13 @@ function initializeWebSocket() {
                     addMessage(data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
-                fetchUsers()
+                fetchUsers(0);
                 newMeessage(data["session"]);
             }
         }
         if (data.hasOwnProperty("user")){
             setTimeout(() => {
-                fetchUsers();
+                fetchUsers(0);
               }, 1000);            
         }
     };
@@ -162,6 +162,12 @@ function createUserSection(flexContainer) {
     userSection.className = 'user-section';
     userSection.innerHTML = `
         <h2>Registered Users</h2>
+        <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search users..."
+        />
         <div class="user-list">
         </div>
     `;
@@ -172,6 +178,8 @@ function setupFormInteractions() {
     const formContainer = document.querySelector('.form-container');
     const formInput = document.querySelector('.form-input');
     const postFormElement = document.getElementById('postForm');
+    const userList = document.querySelector(".user-list");
+    const searchInput = document.getElementById('searchInput');
 
     formInput.addEventListener('focus', () => {
         formContainer.classList.add('expanded');
@@ -190,6 +198,18 @@ function setupFormInteractions() {
     postFormElement.addEventListener("submit", (event) => {
         event.preventDefault();
         handleFormSubmission(formContainer, postFormElement);
+    });
+
+    userList.addEventListener("scrollend", () => {
+        if (userList.scrollTop + userList.clientHeight >= userList.scrollHeight - 10){
+            const users = document.querySelectorAll(".username");
+            fetchUsers(users.length)
+        }
+    });
+
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        getUsers(searchTerm);
     });
 }
 
@@ -315,7 +335,7 @@ function createMessagePopup(username, ReceiverID) {
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
-            fetchUsers()
+            fetchUsers(0)
 
         }
     });
@@ -687,12 +707,11 @@ function MarkAsRead(senderID) {
         console.error(err)
     })
 }
-function fetchUsers() {
-    fetch('/api/users')
+function fetchUsers(offset) {
+    fetch(`/api/users/${offset}`)
         .then(response => response.json())
         .then(users => {
             const userList = document.querySelector('.user-list');
-            userList.innerHTML = '';
             if (users.length > 0) {
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
@@ -711,6 +730,58 @@ function fetchUsers() {
             } else {
                 const usernameElement = document.createElement('p');
                 usernameElement.textContent = "You are the only user Invite your Friends ^_^"
+                userList.appendChild(usernameElement);
+            }
+
+
+            fetch('/api/online-users')
+                .then(response => response.json())
+                .then(onlineUsers => {
+                    onlineUsers.forEach(userID => {
+                        updateUserStatus(userID, true);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching online users:', error);
+                });
+        }).then(() => {
+            CheckUnreadMessage();
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
+
+}
+
+function getUsers(searchTerm) {
+    fetch(`/api/searchedusers`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({search: searchTerm}),
+    })
+        .then(response => response.json())
+        .then(users => {
+            const userList = document.querySelector('.user-list');
+            if (users.length > 0) {
+                users.forEach(user => {
+                    const usernameElement = document.createElement('div');
+                    usernameElement.classList.add('username')
+                    usernameElement.classList.add('offline')
+                    usernameElement.textContent = user.Username;
+                    usernameElement.setAttribute("data-user-id", user.ID);
+                    usernameElement.addEventListener('click', () => {
+
+                        createMessagePopup(user.Username, user.ID);
+                        MarkAsRead(user.ID)
+                    });
+
+                    userList.appendChild(usernameElement);
+                });
+            } else {
+                const usernameElement = document.createElement('p');
+                usernameElement.textContent = "User not found"
                 userList.appendChild(usernameElement);
             }
 

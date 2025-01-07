@@ -13,7 +13,7 @@ import (
 )
 
 type AuthService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo    *repositories.UserRepository
 	MessageRepo *repositories.MessageRepository
 }
 
@@ -79,16 +79,15 @@ func (a *AuthService) GetUserBySessionID(sessionID string) (*models.User, error)
 	return user, nil
 }
 
-func (a * AuthService) GetUsers(sessionID string)([]models.User,error){
-	user , err := a.GetUserBySessionID(sessionID)
+func (a *AuthService) GetUsers(sessionID string, nPagination int) ([]models.User, error) {
+	user, err := a.GetUserBySessionID(sessionID)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	isNew := a.MessageRepo.IsNewUser(user.ID)
-	allUser ,errUser := a.UserRepo.GetUsers(user.ID,isNew)
-		if errUser != nil {
-			return nil,err
-		}
-		return allUser,nil
-
+	allUser, errUser := a.UserRepo.GetUsers(user.ID, isNew, nPagination)
+	if errUser != nil {
+		return nil, err
+	}
+	return allUser, nil
 }
