@@ -19,7 +19,7 @@
    <script type="module">
     import {errorPage} from "/static/js/error_page.js"
     document.addEventListener("DOMContentLoaded", (event) => {
-        if (location.href !== "http://localhost:1414/"){
+        if (location.pathname !== "/"){
             errorPage()
         }
     });

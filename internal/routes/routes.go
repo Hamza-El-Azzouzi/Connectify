@@ -53,7 +53,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 		handler, pattern := mux.Handler(r)
 		if pattern == "" || pattern == "/" && r.URL.Path != "/" {
 			utils.OpenHtml("index.html", w, nil)
-			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		handler.ServeHTTP(w, r)

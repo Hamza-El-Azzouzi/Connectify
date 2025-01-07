@@ -1,4 +1,4 @@
-import { NavigateTo, setIntegrity } from "./app.js";
+import { NavigateTo,setIntegrity } from "./app.js";
 let element = new Map()
 let errElement = new Map()
 let connectionToWS;
