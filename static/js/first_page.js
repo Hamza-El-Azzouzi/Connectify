@@ -3,10 +3,13 @@ let element = new Map()
 let errElement = new Map()
 let connectionToWS;
 export function loginPage() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/style.css';
     const app = document.getElementById("main-content");
+
+    const navBar = document.querySelector("#app > header")
+    navBar.style.display = "none";
 
     const notification = document.createElement('div');
     notification.className = "notification-container";

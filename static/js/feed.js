@@ -1,4 +1,5 @@
 import { NavigateTo } from "./app.js";
+import { errorPage } from "./error_page.js";
 let isLoading = false;
 
 let stopLoading = false;
@@ -6,10 +7,11 @@ let connectionToWS;
 let totalposts = 0;
 
 export function feedPage() {
+    const navBar = document.querySelector("#app > header")
+    navBar.style.display = "block";
     initializeWebSocket();
     getPosts(0);
     applyStyles();
-    initializeNavBar();
     const app = initializeAppContainer();
     const flexContainer = createFlexContainer(app);
     const feedContainer = createFeedContainer(flexContainer);
@@ -24,7 +26,7 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://10.1.6.1:1414/ws");
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.hasOwnProperty("type")) {
@@ -44,10 +46,10 @@ function initializeWebSocket() {
                 newMeessage(data["session"]);
             }
         }
-        if (data.hasOwnProperty("user")){
+        if (data.hasOwnProperty("user")) {
             setTimeout(() => {
                 fetchUsers(0);
-              }, 1000);            
+            }, 1000);
         }
     };
 
@@ -72,7 +74,13 @@ function CheckUnreadMessage() {
     fetch("/api/checkUnreadMesg", {
         method: "POST",
         body: JSON.stringify({ session: sessionId })
-    }).then(response => response.json())
+    }).then(response => {
+        if (!response.ok) {
+            errorPage(response.status)
+            return
+        }
+        return response.json()
+    })
         .then(unReadMsgs => {
             unReadMsgs.forEach(userID => {
                 newMeessage(userID)
@@ -83,28 +91,6 @@ function CheckUnreadMessage() {
 function applyStyles() {
     var link = document.querySelector('link[rel="stylesheet"]');
     link.href = '/static/css/feed.css';
-}
-
-function initializeNavBar(){
-    const app = document.getElementById('app');
-    const header = document.createElement('header');
-    header.className = "header";
-    const headerContent = document.createElement('div');
-    headerContent.className = "header-content";
-    const logo = document.createElement('div');
-    logo.className = "logo";
-    logo.textContent = "RTF";
-    const logoutButton = document.createElement('button');
-    logoutButton.className = "btn btn-logout";
-    logoutButton.textContent = "Logout";
-    headerContent.append(logo);
-    headerContent.append(logoutButton);
-    header.append(headerContent);
-    app.insertBefore(header, app.firstChild);
-    logoutButton.addEventListener('click',()=>{
-        header.remove();
-        logout();
-    })
 }
 
 function initializeAppContainer() {
@@ -271,7 +257,13 @@ function handleFormSubmission(formContainer, postFormElement) {
             },
             method: "POST",
             body: JSON.stringify(data)
-        }).then(response => response.json())
+        }).then(response => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
             .then(newPost => {
                 populatePosts(newPost, false)
             });
@@ -364,7 +356,13 @@ function getMessages(popup, data, ReceiverID) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-    }).then((response) => response.json())
+    }).then((response) => {
+        if (!response.ok) {
+            errorPage(response.status)
+            return
+        }
+        return response.json()
+    })
         .then((messages) => {
             if (messages) {
                 const scrollHeightBefore = messageHistory.scrollHeight;
@@ -379,10 +377,6 @@ function getMessages(popup, data, ReceiverID) {
                 messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
             }
         })
-        .catch((error) => {
-            NavigateTo("error")
-            console.error("Error fetching messages:", error);
-        });
 }
 
 function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {
@@ -465,7 +459,13 @@ export function getCookieByName(name) {
 
 function getPosts(offset) {
     fetch(`/api/posts/${offset}`)
-        .then((response) => response.json())
+        .then((response) => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
         .then((data) => {
             if (!data) {
                 stopLoading = true;
@@ -479,10 +479,6 @@ function getPosts(offset) {
                 }
             }
         })
-        .catch((error) => {
-            NavigateTo("error")
-            console.error("Error fetching data:", error);
-        });
 }
 
 function populatePosts(posts, append) {
@@ -580,13 +576,21 @@ function populatePosts(posts, append) {
             setupReactionButtons();
         }
     } else {
-        feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
+        if (feed){
+            feed.innerHTML = `<div class="no-results">No Posts Found.</div>`;
+        }
     }
 }
 
 function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
     fetch(`/api/comment/${postId}/${offset}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
         .then(comments => {
             if (!comments || comments.length === 0) {
                 if (offset === 0) {
@@ -638,10 +642,6 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
             }
             setupCommentReactionButtons();
         })
-        .catch(error => {
-            NavigateTo("error")
-            console.error('Error loading comments:', error);
-        });
 }
 
 function submitComment(postId, comment, commentsContainer) {
@@ -655,9 +655,10 @@ function submitComment(postId, comment, commentsContainer) {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
+                errorPage(response.status)
+                return
             }
-            return response.json();
+            return response.json()
         })
         .then(newComment => {
             const commentElement = document.createElement('div');
@@ -692,10 +693,6 @@ function submitComment(postId, comment, commentsContainer) {
                 handleReact(commentId, 'dislike', 'comment');
             });
         })
-        .catch(error => {
-            NavigateTo("error")
-            console.error('Error submitting comment:', error);
-        });
 }
 function MarkAsRead(senderID) {
     fetch("/api/markAsRead", {
@@ -707,14 +704,19 @@ function MarkAsRead(senderID) {
         if (img) usernameElement.removeChild(img)
     }
 
-    ).catch(err => {
-        NavigateTo("error")
-        console.error(err)
+    ).catch(() => {
+        errorPage(500);
     })
 }
 function fetchUsers(offset) {
     fetch(`/api/users/${offset}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
         .then(users => {
             const userList = document.querySelector('.user-list');
             if (users.length > 0) {
@@ -796,34 +798,35 @@ function getUsers(searchTerm) {
 
 
             fetch('/api/online-users')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        errorPage(response.status)
+                        return
+                    }
+                    return response.json()
+                })
                 .then(onlineUsers => {
                     onlineUsers.forEach(userID => {
                         updateUserStatus(userID, true);
                     });
                 })
-                .catch(error => {
-                    console.error('Error fetching online users:', error);
-                });
         }).then(() => {
             CheckUnreadMessage();
         })
-        .catch(error => {
-            console.error('Error fetching users:', error);
-        });
-
 }
 
 function getCategories() {
     fetch(`/api/categories`)
-        .then((response) => response.json())
+        .then((response) => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
         .then((data) => {
             populateCategories(data);
         })
-        .catch((error) => {
-            NavigateTo("error")
-            console.error("Error fetching data:", error);
-        });
 }
 
 function populateCategories(categories) {
@@ -943,7 +946,13 @@ function handleReact(targetId, type, targetType) {
         },
         body: JSON.stringify(data),
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                errorPage(response.status)
+                return
+            }
+            return response.json()
+        })
         .then(data => {
             if (targetType === 'post') {
                 const likeButton = document.querySelector(`.like[data-post-id="${targetId}"]`);
@@ -957,14 +966,4 @@ function handleReact(targetId, type, targetType) {
                 dislikeButton.textContent = `${data.dislikeCount} Dislike`;
             }
         })
-        .catch(error => {
-            NavigateTo("error")
-            console.error('Error updating reaction:', error);
-        });
-}
-
-function logout() {
-    fetch('/api/logout',)
-        .then(() => NavigateTo('login'))
-        .catch(console.error);
 }
