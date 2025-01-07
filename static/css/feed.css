@@ -642,6 +642,11 @@ button[style*="background"] {
   font-family: Arial, sans-serif;
   margin: 20px;
 }
+.err-message{
+  color: red;
+  margin: 10px 0 0 0;
+}
+
 @media (max-width: 768px) {
   .comment-section {
     padding: 10px;

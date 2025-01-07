@@ -42,13 +42,13 @@ function initializeWebSocket() {
                     addMessage(data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
-                fetchUsers(0);
+                fetchUsers(0,false);
                 newMeessage(data["session"]);
             }
         }
         if (data.hasOwnProperty("user")) {
             setTimeout(() => {
-                fetchUsers(0);
+                fetchUsers(0,false);
             }, 1000);
         }
     };
@@ -301,6 +301,7 @@ function createMessagePopup(username, ReceiverID) {
                     <textarea placeholder="Type your message..."></textarea>
                     <button class="send-message">Send</button>
                 </div>
+                <span class="err-message" id="message-error"></span>
             </div>
         </div>
     `;
@@ -325,6 +326,10 @@ function createMessagePopup(username, ReceiverID) {
     const messageHistory = popup.querySelector('.message-history');
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
+        if (message.length > 5000){
+            document.getElementById('message-error').textContent = "Maximum 5000 characters.";
+            return
+        }
         data.append = true;
         if (message) {
             const timestamp = getFormattedDateTime();
@@ -332,8 +337,7 @@ function createMessagePopup(username, ReceiverID) {
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
-            fetchUsers(0)
-
+            fetchUsers(0,false)
         }
     });
 
