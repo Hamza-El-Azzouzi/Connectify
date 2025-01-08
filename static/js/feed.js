@@ -291,7 +291,7 @@ function createMessagePopup(username, ReceiverID) {
     popup.innerHTML = `
         <div class="message-popup-content">
             <div class="message-header">
-                <h3>Message ${username}</h3>
+                <h3>${username}</h3>
                 <button class="close-popup">&times;</button>
             </div>
             <div class="message-body">
@@ -299,7 +299,7 @@ function createMessagePopup(username, ReceiverID) {
                     <!-- Messages will be displayed here -->
                 </div>
                 <div class="message-input">
-                    <textarea placeholder="Type your message..."></textarea>
+                    <textarea name="message-texterea" placeholder="Type your message..."></textarea>
                     <button class="send-message">Send</button>
                 </div>
                 <span class="err-message" id="message-error"></span>
@@ -671,7 +671,7 @@ function MarkAsRead(senderID) {
         body: JSON.stringify({ receiverID: getCookieByName("sessionId"), senderID: senderID })
     }).then(() => {
         const usernameElement = document.querySelector(`.username[data-user-id="${senderID}"]`);
-        const img = document.querySelector(`.notify-msg`);
+        const img = usernameElement.querySelector(`.notify-msg`);
         if (img) usernameElement.removeChild(img)
     }
 

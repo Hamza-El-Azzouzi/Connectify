@@ -645,7 +645,9 @@ button[style*="background"] {
   color: red;
   margin: 10px 0 0 0;
 }
-
+#logoLink{
+  text-decoration: none;
+}
 @media (max-width: 768px) {
   .comment-section {
     padding: 10px;

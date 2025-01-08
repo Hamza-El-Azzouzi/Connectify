@@ -136,6 +136,9 @@
     margin: 20px;
 }
 
+#logoLink{
+    text-decoration: none;
+}
 /* Responsive Design */
 @media (max-width: 600px) {
     .error-content {
