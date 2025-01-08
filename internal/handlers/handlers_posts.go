@@ -9,7 +9,6 @@ import (
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/models"
 	"real-time-forum/internal/services"
-	"real-time-forum/internal/utils"
 )
 
 type PostHandler struct {
@@ -51,7 +50,7 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *PostHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet{
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -151,7 +150,7 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) != 5 {
-		utils.Error(w, http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	var err error

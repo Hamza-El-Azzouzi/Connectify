@@ -8,7 +8,6 @@ import (
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/models"
 	"real-time-forum/internal/services"
-	"real-time-forum/internal/utils"
 )
 
 type ReactHandler struct {
@@ -50,13 +49,13 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 		}
 		data, err := rh.ReactService.GetReacts(react.ID, react.Target)
 		if err != nil {
-			utils.Error(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(data)
 		if err != nil {
-			utils.Error(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	} else {

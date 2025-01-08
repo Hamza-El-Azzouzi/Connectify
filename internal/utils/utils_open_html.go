@@ -48,7 +48,7 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := recover()
 		if err != nil {
-			Error(w, http.StatusNotFound)
+			w.WriteHeader(http.StatusNotFound)
 		}
 	}()
 
@@ -56,6 +56,6 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
 		http.FileServer(http.Dir(basePath)).ServeHTTP(w, r)
 	} else {
-		Error(w, http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 	}
 }

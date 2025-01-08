@@ -12,7 +12,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/ws", utils.RateLimitMiddleware(messageHnadler.MessageReceiver))
 
 	mux.HandleFunc("/static/", utils.RateLimitMiddleware(utils.SetupStaticFilesHandlers))
-	// /api/online-users
 	mux.HandleFunc("/api/online-users", utils.RateLimitMiddleware(messageHnadler.GetOnlineUsers))
 	mux.HandleFunc("/api/logout", utils.RateLimitMiddleware(authHandler.LogoutHandle))
 	mux.HandleFunc("/api/register", utils.RateLimitMiddleware(authHandler.RegisterHandle))
@@ -39,19 +38,11 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, nil)
 	})
-	mux.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Referer") == "" {
-			utils.Error(w, http.StatusNotFound)
-			return
-		}
-		utils.Error(w, 1)
-	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handler, pattern := mux.Handler(r)
 		if pattern == "" || pattern == "/" && r.URL.Path != "/" {
 			utils.OpenHtml("index.html", w, nil)
-			// w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		handler.ServeHTTP(w, r)

@@ -63,7 +63,6 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		m.broadcastUserStatus(userID, true)
 	}
 
-	// go m.checkInactiveClients()
 
 	defer connection.Close()
 

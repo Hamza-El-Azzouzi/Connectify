@@ -12,7 +12,7 @@ type MessageRepository struct {
 	DB *sql.DB
 }
 
-// Create(messageId, msg, reciever_id,user.ID)
+
 func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID, date string) error {
 	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message,created_at)VALUES (?,?,?,?,?)"
 	preparedQuery, err := m.DB.Prepare(Query)

@@ -37,9 +37,9 @@ export function loginPage() {
     signupForm.appendChild(signupLabel);
 
     const signupInputs = [
-        { type: 'text', name: 'first_name', placeholder: 'First Name', required: false },
+        { type: 'text', name: 'first_name', placeholder: 'First Name', required: false, autocomplete: true },
         { type: 'text', name: 'last_name', placeholder: 'Last Name', required: false },
-        { type: 'text', name: 'email', placeholder: 'Email', required: false },
+        { type: 'text', name: 'email', placeholder: 'Email', required: false , autocomplete: true },
         { type: 'text', name: 'user_name', placeholder: 'User name', required: false },
         { type: 'text', name: 'age', placeholder: 'age', required: false },
         { type: 'password', name: 'pswd', placeholder: 'Password', required: false },
@@ -105,7 +105,7 @@ export function loginPage() {
     loginForm.appendChild(loginLabel);
 
     const loginInputs = [
-        { type: 'text', name: 'emailOrUSername', placeholder: 'Email Or Username', required: false },
+        { type: 'text', name: 'emailOrUSername', placeholder: 'Email Or Username', required: false ,autocomplete: true },
         { type: 'password', name: 'pswdSignIn', placeholder: 'Password', required: false },
     ];
 

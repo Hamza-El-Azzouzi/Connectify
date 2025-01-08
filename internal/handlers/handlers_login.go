@@ -10,7 +10,6 @@ import (
 	"real-time-forum/internal/middleware"
 	"real-time-forum/internal/models"
 	"real-time-forum/internal/services"
-	"real-time-forum/internal/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -90,7 +89,7 @@ func (h *AuthHandler) LoginHandle(w http.ResponseWriter, r *http.Request) {
 		sessionId := uuid.Must(uuid.NewV4()).String()
 		userSession := h.SessionService.CreateSession(sessionId, sessionExpires, user.ID)
 		if userSession != nil {
-			utils.Error(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		SetCookies(w, "sessionId", sessionId, sessionExpires)

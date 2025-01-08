@@ -114,9 +114,8 @@ pre {
   display: flex;
 }
 
-.form-group input,
 .form-group textarea {
-  width: 100%;
+  width: 95%;
   padding: 10px;
   border: none;
   border-bottom: 1px solid #ddd;

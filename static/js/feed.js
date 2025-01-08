@@ -33,7 +33,7 @@ function initializeWebSocket() {
             updateUserStatus(data.userID, data.online);
         }
         if (data.hasOwnProperty("msg")) {
-            console.log(data)
+
             const popup = document.querySelector('.message-popup');
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
@@ -397,11 +397,7 @@ function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, t
     preElement.className = "messagePre"
     contentElement.className = 'message-content';
     preElement.textContent = message
-    // const userNameElement = document.createElement('div');
-    // userNameElement.className = 'message-userName';
-    // userNameElement.textContent = userName
     contentElement.appendChild(preElement)
-    // messageElement.appendChild(userNameElement);
     messageElement.appendChild(contentElement);
     messageElement.appendChild(timestampElement);
     if (append) {
@@ -519,7 +515,7 @@ function populatePosts(posts, append) {
                     <div class="comments"></div>
                     <button class="loadMore">Load More ...</button>
                     <div class="comment-form">
-                        <textarea placeholder="Add a comment..."></textarea>
+                        <textarea placeholder="Add a comment..." id="comment-texterea"></textarea>
                         <p id="err"></p>
                         <button class="submit-comment">Submit</button>
                     </div>
@@ -608,38 +604,14 @@ function loadComments(postId, commentsContainer, offset = 0, loadMoreButton) {
                 loadMoreButton.style.display = 'none';
             } else {
                 if (offset === 0) {
-                    commentsContainer.innerHTML = comments.map(comment => `
-                        <div class="comment">
-                            <div class="comment-header">
-                                <div class="user-info">
-                                    <h4>${comment.Username}</h4>
-                                </div>
-                                <span class="timestamp">${comment.FormattedDate}</span>
-                            </div>
-                            <div class="comment-content"><pre>${comment.Content}</pre></div>
-                            <div class="actions">
-                                <button class="like" data-comment-id="${comment.CommentID}">${comment.LikeCount} Like</button>
-                                <button class="dislike" data-comment-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
-                            </div>
-                        </div>
-                    `).join('');
+                    commentsContainer.innerHTML = '';
+                    comments.forEach(comment => {
+                        const commentElement = commentCompenent(comment);
+                        commentsContainer.appendChild(commentElement);
+                    });
                 } else {
                     comments.forEach(comment => {
-                        const commentElement = document.createElement('div');
-                        commentElement.className = 'comment';
-                        commentElement.innerHTML = `
-                            <div class="comment-header">
-                                <div class="user-info">
-                                    <h4>${comment.Username}</h4>
-                                </div>
-                                <span class="timestamp">${comment.FormattedDate}</span>
-                            </div>
-                            <div class="comment-content"><pre>${comment.Content}</pre></div>
-                            <div class="actions">
-                                <button class="like-comment" data-comment-id="${comment.CommentID}">${comment.LikeCount} Like</button>
-                                <button class="dislike-comment" data-comment-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
-                            </div>
-                        `;
+                        const commentElement = commentCompenent(comment)
                         commentsContainer.appendChild(commentElement);
                     });
                 }
@@ -674,21 +646,7 @@ function submitComment(postId, comment, commentsContainer) {
             return response.json()
         })
         .then(newComment => {
-            const commentElement = document.createElement('div');
-            commentElement.className = 'comment';
-            commentElement.innerHTML = `
-                <div class="comment-header">
-                    <div class="user-info">
-                        <h4>${newComment.Username}</h4>
-                    </div>
-                    <span class="timestamp">${newComment.FormattedDate}</span>
-                </div>
-                <div class="comment-content"><pre>${newComment.Content}</pre></div>
-                <div class="actions">
-                    <button class="like" data-comment-id="${newComment.CommentID}">${newComment.LikeCount} Like</button>
-                    <button class="dislike" data-comment-id="${newComment.CommentID}">${newComment.DisLikeCount} Dislike</button>
-                </div>
-            `;
+            const commentElement =commentCompenent(newComment);
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
             const noComment = commentsContainer.querySelector('.no-comment');
             if (noComment) commentsContainer.removeChild(noComment);
@@ -749,7 +707,7 @@ function fetchUsers(offset, append = true) {
 
                     userList.appendChild(usernameElement);
                 });
-            } else if (userCount === 0){
+            } else if (userCount === 0) {
                 userList.innerHTML = ""
                 const usernameElement = document.createElement('p');
                 usernameElement.textContent = "You are the only user Invite your Friends ^_^"
@@ -933,7 +891,6 @@ function setupCommentReactionButtons() {
 
     likeCommentButtons.forEach(button => {
         button.addEventListener('click', () => {
-            console.log("here")
             const commentId = button.dataset.commentId;
             handleReact(commentId, 'like', 'comment');
         });
@@ -980,4 +937,22 @@ function handleReact(targetId, type, targetType) {
                 dislikeButton.textContent = `${data.dislikeCount} Dislike`;
             }
         })
+}
+function commentCompenent(comment) {
+    const commentElement = document.createElement('div');
+    commentElement.className = 'comment';
+    commentElement.innerHTML = `
+        <div class="comment-header">
+            <div class="user-info">
+                <h4>${comment.Username}</h4>
+            </div>
+            <span class="timestamp">${comment.FormattedDate}</span>
+        </div>
+        <div class="comment-content"><pre>${comment.Content}</pre></div>
+        <div class="actions">
+            <button class="like" data-comment-id="${comment.CommentID}">${comment.LikeCount} Like</button>
+            <button class="dislike" data-comment-id="${comment.CommentID}">${comment.DisLikeCount} Dislike</button>
+        </div>
+    `;
+    return commentElement;
 }
