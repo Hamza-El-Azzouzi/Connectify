@@ -22,14 +22,17 @@ func GetPath() string {
 	return basePath
 }
 
-func OpenHtml(fileName string, w http.ResponseWriter, data any) {
+func OpenHtml(fileName string, w http.ResponseWriter, data string) {
 	basePath := GetPath()
 	temp, err := template.ParseFiles(basePath + "templates/" + fileName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = temp.Execute(w, data)
+	if data == "404"{
+		w.WriteHeader(http.StatusNotFound)
+	}
+	err = temp.Execute(w, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -48,7 +51,7 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := recover()
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
+			OpenHtml("index.html",w,"404")
 		}
 	}()
 
@@ -56,6 +59,6 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
 		http.FileServer(http.Dir(basePath)).ServeHTTP(w, r)
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		OpenHtml("index.html",w,"404")
 	}
 }

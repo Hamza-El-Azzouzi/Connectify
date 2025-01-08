@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 
 	"real-time-forum/internal/handlers"
@@ -36,13 +37,15 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/getmessages", utils.RateLimitMiddleware(messageHnadler.GetMessages))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		utils.OpenHtml("index.html", w, nil)
+		utils.OpenHtml("index.html", w, "")
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handler, pattern := mux.Handler(r)
-		if pattern == "" || pattern == "/" && r.URL.Path != "/" {
-			utils.OpenHtml("index.html", w, nil)
+		fmt.Println(pattern)
+		if pattern == "/" && r.URL.Path != "/" {
+			utils.OpenHtml("index.html", w, "404")
+
 			return
 		}
 		handler.ServeHTTP(w, r)

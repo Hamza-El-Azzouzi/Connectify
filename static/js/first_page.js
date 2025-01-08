@@ -40,7 +40,7 @@ export function loginPage() {
         { type: 'text', name: 'first_name', placeholder: 'First Name', required: false, autocomplete: true },
         { type: 'text', name: 'last_name', placeholder: 'Last Name', required: false },
         { type: 'text', name: 'email', placeholder: 'Email', required: false , autocomplete: true },
-        { type: 'text', name: 'user_name', placeholder: 'User name', required: false },
+        { type: 'text', name: 'user_name', placeholder: 'Username', required: false },
         { type: 'text', name: 'age', placeholder: 'age', required: false },
         { type: 'password', name: 'pswd', placeholder: 'Password', required: false },
         { type: 'password', name: 'confpswd', placeholder: 'Confirme Password', required: false },
