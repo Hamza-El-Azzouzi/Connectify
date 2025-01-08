@@ -416,7 +416,7 @@ button[style*="background"] {
   flex-direction: column;
   gap: 10px;
   max-height: 620px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .username {
@@ -646,7 +646,7 @@ button[style*="background"] {
   margin: 10px 0 0 0;
 }
 #logoLink{
-  text-decoration: none;
+    text-decoration: none;
 }
 @media (max-width: 768px) {
   .comment-section {
