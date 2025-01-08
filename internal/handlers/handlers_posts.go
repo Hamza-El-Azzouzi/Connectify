@@ -85,21 +85,22 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-	if isLogged {
-		err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-		posts, err := p.PostService.AllPosts(0)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(posts[0:1])
-	} else {
+	if !isLogged {
 		w.WriteHeader(http.StatusForbidden)
+		return
 	}
+	err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	posts, err := p.PostService.AllPosts(0)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts[0])
 }
 
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
@@ -112,12 +113,12 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&commentData)
 
-	defer r.Body.Close()
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	defer r.Body.Close()
 	isLogged, userId := p.AuthMidlaware.IsUserLoggedIn(w, r)
 	if !isLogged {
 		w.WriteHeader(http.StatusForbidden)

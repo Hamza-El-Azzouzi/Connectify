@@ -159,6 +159,9 @@ export function loginPage() {
                         createNotification("Registered successfully");
                         document.querySelector("#formSignIn > label").click();
                     }
+                    if (reply.REplyMssg === "session") {
+                        createNotification("You are already logged-in");
+                    }
                     if (reply.REplyMssg === "email") {
 
                         errElement["emailErr"].textContent = "Email already exists!"

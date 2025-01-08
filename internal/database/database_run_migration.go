@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"real-time-forum/internal/utils"
-
 	"github.com/gofrs/uuid/v5"
 )
 
@@ -25,8 +23,7 @@ func RunMigrations(db *sql.DB) error {
 		return nil
 	}
 
-	basePath := utils.GetPath()
-	migrationSQL, err := os.ReadFile(basePath + "internal/database/migrations/migration_001_initial_schema.sql")
+	migrationSQL, err := os.ReadFile("../internal/database/migrations/migration_001_initial_schema.sql")
 	if err != nil {
 		return err
 	}

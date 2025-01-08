@@ -45,10 +45,7 @@ func (h *AuthMiddleware) IsValidEmail(email string) bool {
 }
 
 func (h *AuthMiddleware) IsValidGender(gender string) bool {
-	if gender == "Male" || gender == "Female" {
-		return true
-	}
-	return false
+	return  gender == "Male" || gender == "Female"
 }
 
 func (h *AuthMiddleware) IsValidAge(age string) bool {

@@ -190,21 +190,19 @@ func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(messages)
 }
 
-type session struct {
-	SessionID string `json:"session"`
-}
-
 func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request) {
-	var session session
+	var session models.Session
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&session)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	defer r.Body.Close()
 
 	usersID, err := m.MessageService.CheckUnReadMsg(session.SessionID)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -217,11 +215,12 @@ func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request
 	err := decoder.Decode(&data)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	defer r.Body.Close()
 
 	err = m.MessageService.MarkReadMsg(data)
 	if err != nil {
-		return
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

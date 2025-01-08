@@ -41,3 +41,7 @@ type MarkAsRead struct {
 	SenderID   string `json:"senderID"`
 	ReceiverID string `json:"receiverID"`
 }
+
+type Session struct {
+	SessionID string `json:"session"`
+}

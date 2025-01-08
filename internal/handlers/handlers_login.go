@@ -56,6 +56,7 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 				return
 			default:
 				sendResponse(w, "passwd")
+				return
 			}
 		}
 		sendResponse(w, "Done")
@@ -113,7 +114,6 @@ func sendResponse(w http.ResponseWriter, reply string) {
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -149,19 +149,20 @@ func (h *AuthHandler) LogoutHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		sessionId, err := r.Cookie("sessionId")
-		if err == nil && sessionId.Value != "" {
-			exist := h.SessionService.CheckSession(sessionId.Value)
-			if !exist {
-				sendResponse(w, "No User Found")
-				return
-			} else {
-				sendResponse(w, "Done")
-			}
-		}
-	} else {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	sessionId, err := r.Cookie("sessionId")
+	if err != nil && sessionId.Value == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	exist := h.SessionService.CheckSession(sessionId.Value)
+	if !exist {
+		sendResponse(w, "No User Found")
+	} else {
+		sendResponse(w, "Done")
 	}
 }
 
@@ -210,7 +211,6 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(&allUser)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -252,6 +252,5 @@ func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(&users)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 }

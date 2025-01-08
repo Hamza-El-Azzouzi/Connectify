@@ -33,33 +33,32 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	logeddUser, user := rh.AuthMidlaware.IsUserLoggedIn(w, r)
-	if logeddUser {
-		if react.Target == "post" {
-			err := rh.ReactService.Create(user.ID, react.ID, "", react.Type, react.Target)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-		} else {
-			err := rh.ReactService.Create(user.ID, "", react.ID, react.Type, react.Target)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-		}
-		data, err := rh.ReactService.GetReacts(react.ID, react.Target)
+	if !logeddUser {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	if react.Target == "post" {
+		err := rh.ReactService.Create(user.ID, react.ID, "", react.Type, react.Target)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(data)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
-		w.WriteHeader(http.StatusForbidden)
+		err := rh.ReactService.Create(user.ID, "", react.ID, react.Type, react.Target)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+	data, err := rh.ReactService.GetReacts(react.ID, react.Target)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	rh.mutex.Unlock()
 }

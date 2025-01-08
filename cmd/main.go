@@ -62,7 +62,7 @@ func main() {
 
 	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler)
 
-	fmt.Println("Starting the forum server...\nWelcome http://localhost:1414/")
+	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 
-	log.Fatal(http.ListenAndServe("0.0.0.0:1414", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:1414", nil))
 }

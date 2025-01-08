@@ -96,6 +96,10 @@ CREATE TABLE
         FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE CHECK (expires_at > created_at)
     );
 
+CREATE INDEX idx_messages_user_id_sender ON messages (user_id_sender);
+
+CREATE INDEX idx_messages_user_id_receiver ON messages (user_id_receiver);
+
 CREATE INDEX idx_post_categories_post_id ON post_categories (post_id);
 
 CREATE INDEX idx_comments_post_id ON comments (post_id);

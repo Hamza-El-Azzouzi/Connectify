@@ -27,11 +27,11 @@ func (r *CategoryRepository) GetAllCategories() ([]models.Category, error) {
 		}
 		categories = append(categories, cat)
 	}
+	
 	err = rows.Err()
 	if err != nil {
 		return nil, fmt.Errorf("error iterating categories: %v", err)
 	}
-
 	return categories, nil
 }
 func (r *CategoryRepository) CheckCategorie(categorie string) bool{
