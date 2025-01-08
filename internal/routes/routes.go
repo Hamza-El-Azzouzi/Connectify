@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 
 	"real-time-forum/internal/handlers"
@@ -42,10 +41,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handler, pattern := mux.Handler(r)
-		fmt.Println(pattern)
 		if pattern == "/" && r.URL.Path != "/" {
 			utils.OpenHtml("index.html", w, "404")
-
 			return
 		}
 		handler.ServeHTTP(w, r)

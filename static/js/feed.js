@@ -515,7 +515,7 @@ function populatePosts(posts, append) {
                     <div class="comments"></div>
                     <button class="loadMore">Load More ...</button>
                     <div class="comment-form">
-                        <textarea placeholder="Add a comment..." id="comment-texterea"></textarea>
+                        <textarea placeholder="Add a comment..." name="comment-texterea"></textarea>
                         <p id="err"></p>
                         <button class="submit-comment">Submit</button>
                     </div>
