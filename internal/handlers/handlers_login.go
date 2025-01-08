@@ -35,6 +35,7 @@ func (h *AuthHandler) RegisterHandle(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		if !h.AuthMidlaware.IsValidGender(info.Gender) ||
 			!h.AuthMidlaware.IsValidAge(info.Age) ||

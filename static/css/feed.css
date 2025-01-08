@@ -416,7 +416,7 @@ button[style*="background"] {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 675px;
+  max-height: 620px;
   overflow-y: scroll;
 }
 

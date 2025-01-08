@@ -33,6 +33,7 @@ function initializeWebSocket() {
             updateUserStatus(data.userID, data.online);
         }
         if (data.hasOwnProperty("msg")) {
+            console.log(data)
             const popup = document.querySelector('.message-popup');
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
@@ -396,7 +397,11 @@ function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, t
     preElement.className = "messagePre"
     contentElement.className = 'message-content';
     preElement.textContent = message
+    // const userNameElement = document.createElement('div');
+    // userNameElement.className = 'message-userName';
+    // userNameElement.textContent = userName
     contentElement.appendChild(preElement)
+    // messageElement.appendChild(userNameElement);
     messageElement.appendChild(contentElement);
     messageElement.appendChild(timestampElement);
     if (append) {
@@ -725,6 +730,7 @@ function fetchUsers(offset, append = true) {
         })
         .then(users => {
             const userList = document.querySelector('.user-list');
+            const userCount = document.querySelectorAll(".username").length
             if (users.length > 0) {
                 if (!append) {
                     userList.innerHTML = ""
@@ -743,7 +749,7 @@ function fetchUsers(offset, append = true) {
 
                     userList.appendChild(usernameElement);
                 });
-            } else {
+            } else if (userCount === 0){
                 userList.innerHTML = ""
                 const usernameElement = document.createElement('p');
                 usernameElement.textContent = "You are the only user Invite your Friends ^_^"
