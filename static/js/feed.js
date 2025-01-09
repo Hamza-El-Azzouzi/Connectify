@@ -277,7 +277,7 @@ function handleFormSubmission(formContainer, postFormElement) {
             return response.json()
         })
             .then(newPost => {
-                populatePosts(newPost, false)
+                populatePosts([newPost], false)
             });
     }
 }
