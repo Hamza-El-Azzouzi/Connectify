@@ -50,7 +50,7 @@ func (h *AuthMiddleware) IsValidGender(gender string) bool {
 
 func (h *AuthMiddleware) IsValidAge(age string) bool {
 	nAge, err := strconv.Atoi(age)
-	if err != nil || nAge <= 16 || nAge > 120 {
+	if err != nil || nAge < 16 || nAge > 120 {
 		return false
 	}
 	return true

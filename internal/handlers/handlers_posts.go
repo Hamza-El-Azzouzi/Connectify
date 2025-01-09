@@ -46,7 +46,10 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	err = json.NewEncoder(w).Encode(posts)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (p *PostHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +63,10 @@ func (p *PostHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categories)
+	err := json.NewEncoder(w).Encode(categories)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +106,10 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts[0])
+	err = json.NewEncoder(w).Encode(posts[0])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
@@ -112,7 +121,6 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&commentData)
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -141,7 +149,10 @@ func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(comment[0])
+	err = json.NewEncoder(w).Encode(comment[0])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
@@ -169,5 +180,8 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(comment)
+	err = json.NewEncoder(w).Encode(comment)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }

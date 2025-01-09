@@ -405,7 +405,7 @@ function addMessage(userNameSender, userNameReceiver, message, isMyMessage, appe
     timestampElement.textContent = timeString;
     const contentElement = document.createElement('div');
     const usernameElement = document.createElement('div');
-    usernameElement.className = 'message-timestamp';
+    usernameElement.className = 'message-username';
     usernameElement.textContent = !isMyMessage ? userNameSender : userNameReceiver;
     const preElement = document.createElement('pre');
     preElement.className = "messagePre"

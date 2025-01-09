@@ -225,7 +225,7 @@ const InvalidEmail = "Invalid Email!!"
 const InvalidAge = "Invalid Age!!"
 const InvalidGender = "Invalid Gender!!"
 const InvalidName = "Invalid Name!!"
-const InvalidPassWord = "Inavli Password!!"
+const InvalidPassWord = "Inavlid Password!!"
 const NotMatch = "Password Confirmation doesn't match!!"
 const VerifyData = () => {
 

@@ -57,19 +57,17 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			Conn:     connection,
 			LastPing: time.Now(),
 		}
-		
+
 		m.ClientsMu.Unlock()
 		log.Printf("Client connected: %s\n", userID)
-		
+
 		m.broadcastUserStatus(userID, true)
 	}
 
-	
 	defer connection.Close()
-	
-		
+
 	for {
-		
+
 		_, message, err := connection.ReadMessage()
 		if err != nil {
 			log.Printf("Reading error: %#v\n", err)
@@ -82,12 +80,12 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			log.Printf("Unmarshal error: %#v\n", err)
 			continue
 		}
-		if data["Ask"] == "Who Are You" && existSessions{
-				m.ClientsMu.Lock()
-				m.Clients[userID].Conn.WriteJSON(map[string]string{
-					"username": user.Username,
-				})
-				m.ClientsMu.Unlock()
+		if data["Ask"] == "Who Are You" && existSessions {
+			m.ClientsMu.Lock()
+			m.Clients[userID].Conn.WriteJSON(map[string]string{
+				"username": user.Username,
+			})
+			m.ClientsMu.Unlock()
 		}
 		if data["type"] == "ping" && existSessions {
 			m.ClientsMu.Lock()
@@ -179,9 +177,9 @@ func (m *MessageHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(onlineUsers); err != nil {
-		log.Printf("Error encoding online users: %#v\n", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	err := json.NewEncoder(w).Encode(onlineUsers)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
@@ -198,7 +196,10 @@ func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(messages)
+	err = json.NewEncoder(w).Encode(messages)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +218,10 @@ func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(usersID)
+	err = json.NewEncoder(w).Encode(usersID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request) {
