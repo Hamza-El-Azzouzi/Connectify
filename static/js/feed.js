@@ -30,7 +30,7 @@ function initializeWebSocket() {
     connectionToWS.addEventListener("open", () => {
         connectionToWS.send(JSON.stringify({ Ask: "Who Are You" }))
     });
-
+    
 
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -41,9 +41,7 @@ function initializeWebSocket() {
             updateUserStatus(data.userID, data.online);
         }
         if (data.hasOwnProperty("msg")) {
-          
             const popup = document.querySelector('.message-popup');
-         
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
 
@@ -55,6 +53,15 @@ function initializeWebSocket() {
             } else {
                 fetchUsers(0, false);
                 newMeessage(data["session"]);
+            }
+        }
+        if (data.hasOwnProperty("simp")){
+            const popup = document.querySelector('.message-popup');
+            console.log("got it")
+            console.log(popup)
+            if (popup) {
+                console.log("popUp")
+                typingInProgress(popup,data["username"])
             }
         }
         if (data.hasOwnProperty("user")) {
@@ -336,6 +343,11 @@ function createMessagePopup(username, ReceiverID) {
     const sendButton = popup.querySelector('.send-message');
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
+    textarea.addEventListener(
+        'input',()=>{
+            console.log("typing...")
+        connectionToWS.send(JSON.stringify({ simp : "Typing In Progress",id: ReceiverID,session: getCookieByName("sessionId") }));
+    })
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         if (message.length > 5000) {
@@ -345,7 +357,7 @@ function createMessagePopup(username, ReceiverID) {
         data.append = true;
         if (message) {
             const timestamp = getFormattedDateTime();
-            addMessage(username, loggeed,message, true, data.append, true, popup, timestamp);
+            addMessage(username, loggeed, message, true, data.append, true, popup, timestamp);
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
@@ -393,6 +405,25 @@ function getMessages(popup, data, ReceiverID) {
                 messageHistory.scrollTop = scrollHeightAfter - scrollHeightBefore;
             }
         })
+}
+function typingInProgress(popup, userName) {
+    console.log("from the function")
+    const messageHistory = popup.querySelector('.message-history');
+    const typingElement = document.createElement('div');
+    typingElement.className  = "message"
+    const contentElement = document.createElement('div');
+    const usernameElement = document.createElement('div');
+    usernameElement.className = 'message-username';
+    usernameElement.textContent = userName;
+    contentElement.className = 'typing-indicator';
+    contentElement.innerHTML = `
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>`
+    typingElement.appendChild(usernameElement)
+    typingElement.appendChild(contentElement);
+    messageHistory.appendChild(typingElement);
+    console.log(messageHistory)
 }
 
 function addMessage(userNameSender, userNameReceiver, message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {

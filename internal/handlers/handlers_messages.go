@@ -87,6 +87,17 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			})
 			m.ClientsMu.Unlock()
 		}
+		if data["simp"] == "Typing In Progress"{
+			user, errUser = m.AuthService.GetUserBySessionID(sessionId.Value)
+			if errUser != nil || user.ID == uuid.Nil {
+				log.Printf("user error: %#v\n", err)
+				break
+			}
+			m.Clients[data["id"]].Conn.WriteJSON(map[string]string{
+				"simp" : "Typing In Progress",
+				"username" : user.Username,
+			})
+		}
 		if data["type"] == "ping" && existSessions {
 			m.ClientsMu.Lock()
 			m.Clients[userID].LastPing = time.Now()
