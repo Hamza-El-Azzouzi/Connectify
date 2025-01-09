@@ -35,16 +35,16 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	mux.HandleFunc("/api/getmessages", utils.RateLimitMiddleware(messageHnadler.GetMessages))
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/",utils.RateLimitMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")
-	})
+	}))
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/",utils.RateLimitMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		handler, pattern := mux.Handler(r)
 		if pattern == "/" && r.URL.Path != "/" {
 			utils.OpenHtml("index.html", w, "404")
 			return
 		}
 		handler.ServeHTTP(w, r)
-	})
+	}))
 }

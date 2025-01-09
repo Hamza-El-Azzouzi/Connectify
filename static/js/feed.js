@@ -1,8 +1,8 @@
 import { NavigateTo } from "./app.js";
 import { errorPage } from "./error_page.js";
 let isLoading = false;
-
 let stopLoading = false;
+let loggeed
 let connectionToWS;
 let totalposts = 0;
 
@@ -26,21 +26,31 @@ export function feedPage() {
 }
 
 function initializeWebSocket() {
-    connectionToWS = new WebSocket("ws://localhost:1414/ws");
+    connectionToWS = new WebSocket("ws://127.0.0.1:1414/ws");
+    connectionToWS.addEventListener("open", () => {
+        connectionToWS.send(JSON.stringify({ Ask: "Who Are You" }))
+    });
+
+
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        if (data.hasOwnProperty("username")) {
+            loggeed = data["username"]
+        }
         if (data.hasOwnProperty("type")) {
             updateUserStatus(data.userID, data.online);
         }
         if (data.hasOwnProperty("msg")) {
-
+          
             const popup = document.querySelector('.message-popup');
+         
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
+
                 if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
-                    addMessage(data["msg"], false, true, true, popup, data["date"]);
+                    addMessage(data["senderUserName"], loggeed, data["msg"], false, true, true, popup, data["date"]);
                 } else {
-                    addMessage(data["msg"], false, true, false, popup, data["date"]);
+                    addMessage(loggeed, data["senderUserName"], data["msg"], false, true, false, popup, data["date"]);
                 }
             } else {
                 fetchUsers(0, false);
@@ -59,6 +69,7 @@ function initializeWebSocket() {
         NavigateTo("error")
         console.error("WebSocket error:", error);
     };
+
 }
 
 function newMeessage(receiverID) {
@@ -334,7 +345,7 @@ function createMessagePopup(username, ReceiverID) {
         data.append = true;
         if (message) {
             const timestamp = getFormattedDateTime();
-            addMessage(message, true, data.append, true, popup, timestamp);
+            addMessage(username, loggeed,message, true, data.append, true, popup, timestamp);
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID)
@@ -373,9 +384,9 @@ function getMessages(popup, data, ReceiverID) {
                 const scrollHeightBefore = messageHistory.scrollHeight;
                 for (let i = 0; i < messages.length; i++) {
                     if (messages[i].ReceiverID !== ReceiverID) {
-                        addMessage(messages[i].Content, false, data.append, false, popup, messages[i].FormattedDate);
+                        addMessage(messages[i].UserNameSender, messages[i].UserNameReceiver, messages[i].Content, false, data.append, false, popup, messages[i].FormattedDate);
                     } else {
-                        addMessage(messages[i].Content, true, data.append, false, popup, messages[i].FormattedDate);
+                        addMessage(messages[i].UserNameReceiver, messages[i].UserNameSender, messages[i].Content, true, data.append, false, popup, messages[i].FormattedDate);
                     }
                 }
                 const scrollHeightAfter = messageHistory.scrollHeight;
@@ -384,7 +395,7 @@ function getMessages(popup, data, ReceiverID) {
         })
 }
 
-function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {
+function addMessage(userNameSender, userNameReceiver, message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {
     const messageHistory = popup.querySelector('.message-history');
     const messageElement = document.createElement('div');
     messageElement.className = isMyMessage ? 'message my-message' : 'message other-message';
@@ -393,11 +404,16 @@ function addMessage(message, isMyMessage, append, shouldScrollToBottom, popup, t
     const timeString = formatTimestamp(timestamp);
     timestampElement.textContent = timeString;
     const contentElement = document.createElement('div');
+    const usernameElement = document.createElement('div');
+    usernameElement.className = 'message-timestamp';
+    usernameElement.textContent = !isMyMessage ? userNameSender : userNameReceiver;
     const preElement = document.createElement('pre');
     preElement.className = "messagePre"
     contentElement.className = 'message-content';
     preElement.textContent = message
+
     contentElement.appendChild(preElement)
+    messageElement.appendChild(usernameElement)
     messageElement.appendChild(contentElement);
     messageElement.appendChild(timestampElement);
     if (append) {
@@ -646,7 +662,7 @@ function submitComment(postId, comment, commentsContainer) {
             return response.json()
         })
         .then(newComment => {
-            const commentElement =commentCompenent(newComment);
+            const commentElement = commentCompenent(newComment);
             commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
             const noComment = commentsContainer.querySelector('.no-comment');
             if (noComment) commentsContainer.removeChild(noComment);

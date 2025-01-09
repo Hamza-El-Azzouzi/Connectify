@@ -15,34 +15,31 @@ type PostService struct {
 }
 
 func (p *PostService) PostSave(userId uuid.UUID, title, content string, category []string) error {
-		postId := uuid.Must(uuid.NewV4())
+	postId := uuid.Must(uuid.NewV4())
 
-		post := &models.Post{
-			ID:      postId,
-			UserID:  userId,
-			Title:   title,
-			Content: content,
-		}
-		for _, id := range category {
-			if p.CategoryRepo.CheckCategorie(id){
-				postCategory := &models.PostCategory{
-					PostID:     postId,
-					CategoryID: id,
-				}
-	
-				err := p.PostRepo.PostCatgorie(postCategory)
-				if err != nil {
-					return fmt.Errorf("error F categorie : %v ", err)
-				}
-			}else{
-				return fmt.Errorf("categorie not found")
+	post := &models.Post{
+		ID:      postId,
+		UserID:  userId,
+		Title:   title,
+		Content: content,
+	}
+	for _, id := range category {
+		if p.CategoryRepo.CheckCategorie(id) {
+			postCategory := &models.PostCategory{
+				PostID:     postId,
+				CategoryID: id,
 			}
-		}
-	
 
+			err := p.PostRepo.PostCatgorie(postCategory)
+			if err != nil {
+				return fmt.Errorf("error F categorie : %v ", err)
+			}
+		} else {
+			return fmt.Errorf("categorie not found")
+		}
+	}
 
 	return p.PostRepo.Create(post)
-
 }
 
 func (p *PostService) AllPosts(pagination int) ([]models.PostWithUser, error) {
@@ -52,12 +49,3 @@ func (p *PostService) AllPosts(pagination int) ([]models.PostWithUser, error) {
 	}
 	return posts, nil
 }
-
-func (p *PostService) GetPost(PostID string) (models.PostWithUser, error) {
-	posts, err := p.PostRepo.GetPostById(PostID)
-	if err != nil {
-		return models.PostWithUser{}, fmt.Errorf("error Kayn f one Post service : %v", err)
-	}
-	return posts, nil
-}
-

@@ -12,7 +12,6 @@ type MessageRepository struct {
 	DB *sql.DB
 }
 
-
 func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID, date string) error {
 	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message,created_at)VALUES (?,?,?,?,?)"
 	preparedQuery, err := m.DB.Prepare(Query)
@@ -25,11 +24,23 @@ func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id 
 
 func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int) ([]models.MessageWithTime, error) {
 	querySelect := `
-	SELECT *
-	FROM messages
-	WHERE (user_id_sender = ? AND user_id_receiver = ?) OR (user_id_sender = ? AND user_id_receiver = ?)
-	ORDER BY created_at DESC
-	LIMIT 10 OFFSET ?;
+SELECT 
+    m.*, 
+    sender.username AS sender_username, 
+    receiver.username AS receiver_username
+FROM 
+    messages m
+JOIN 
+    users sender ON m.user_id_sender = sender.id
+JOIN 
+    users receiver ON m.user_id_receiver = receiver.id
+WHERE 
+    (m.user_id_sender = ? AND m.user_id_receiver = ?) 
+    OR 
+    (m.user_id_sender = ? AND m.user_id_receiver = ?)
+ORDER BY 
+    m.created_at DESC
+LIMIT 10 OFFSET ?;
 	`
 	rows, queryErr := m.DB.Query(querySelect, senderID, receiverID, receiverID, senderID, offset)
 	if queryErr != nil {
@@ -46,6 +57,8 @@ func (m *MessageRepository) GetMessages(senderID, receiverID string, offset int)
 			&currentMessage.Content,
 			&currentMessage.Unreaded,
 			&currentMessage.CreatedAt,
+			&currentMessage.UserNameSender,
+			&currentMessage.UserNameReceiver,
 		)
 		if scanErr != nil {
 			return nil, scanErr
@@ -100,5 +113,5 @@ func (r *MessageRepository) IsNewUser(userId uuid.UUID) bool {
 		return err == sql.ErrNoRows
 	}
 
-	return exist <= 0
+	return exist == 0
 }

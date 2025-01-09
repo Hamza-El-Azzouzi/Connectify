@@ -28,13 +28,15 @@ type Client struct {
 }
 
 type MessageWithTime struct {
-	MessageID     uuid.UUID
-	SenderID      uuid.UUID
-	ReceiverID    uuid.UUID
-	Content       string
-	Unreaded      bool
-	CreatedAt     time.Time
-	FormattedDate string
+	MessageID        uuid.UUID
+	SenderID         uuid.UUID
+	UserNameSender   string
+	ReceiverID       uuid.UUID
+	UserNameReceiver string
+	Content          string
+	Unreaded         bool
+	CreatedAt        time.Time
+	FormattedDate    string
 }
 
 type MarkAsRead struct {

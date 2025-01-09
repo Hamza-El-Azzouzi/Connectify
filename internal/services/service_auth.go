@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"real-time-forum/internal/models"
@@ -23,23 +22,19 @@ func HashPassword(psswd string) (string, error) {
 }
 
 func (a *AuthService) Register(info models.SignUpData) error {
-	checkByEmail, err := a.UserRepo.FindUser(info.Email, "byEmail")
+	checkByEmail, _ := a.UserRepo.FindUser(info.Email, "byEmail")
 	if checkByEmail != nil {
 		return fmt.Errorf("email")
-	}
-	if err != nil {
-		return fmt.Errorf("user")
 	}
 
 	hash, err := HashPassword(info.Passwd)
 	if err != nil {
 		return err
 	}
-	nAge, _ := strconv.Atoi(info.Age)
 	user_id := uuid.Must(uuid.NewV4())
 	user := &models.User{
 		ID:           user_id,
-		Age:          nAge,
+		Age:          info.Age,
 		Gender:       info.Gender,
 		FirstName:    info.FirstName,
 		LastName:     info.LastName,
@@ -97,7 +92,7 @@ func (a *AuthService) GetUserByUserName(userName, session_id string) ([]models.U
 	if err != nil {
 		return nil, err
 	}
-	allUser, errUser := a.UserRepo.GetUserByUserName(userName,user.ID)
+	allUser, errUser := a.UserRepo.GetUserByUserName(userName, user.ID)
 	if errUser != nil {
 		return nil, errUser
 	}

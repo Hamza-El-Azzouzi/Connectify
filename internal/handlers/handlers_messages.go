@@ -57,16 +57,19 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			Conn:     connection,
 			LastPing: time.Now(),
 		}
+		
 		m.ClientsMu.Unlock()
 		log.Printf("Client connected: %s\n", userID)
-
+		
 		m.broadcastUserStatus(userID, true)
 	}
 
-
+	
 	defer connection.Close()
-
+	
+		
 	for {
+		
 		_, message, err := connection.ReadMessage()
 		if err != nil {
 			log.Printf("Reading error: %#v\n", err)
@@ -78,6 +81,13 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		if err != nil {
 			log.Printf("Unmarshal error: %#v\n", err)
 			continue
+		}
+		if data["Ask"] == "Who Are You" && existSessions{
+				m.ClientsMu.Lock()
+				m.Clients[userID].Conn.WriteJSON(map[string]string{
+					"username": user.Username,
+				})
+				m.ClientsMu.Unlock()
 		}
 		if data["type"] == "ping" && existSessions {
 			m.ClientsMu.Lock()
@@ -112,6 +122,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			receiverClient, exists := m.Clients[data["id"]]
 			m.ClientsMu.Unlock()
 			data["session"] = userSender.String()
+			data["senderUserName"] = user.Username
 			if exists {
 				err = receiverClient.Conn.WriteJSON(data)
 				if err != nil {

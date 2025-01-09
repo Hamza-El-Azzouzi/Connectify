@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	ID           uuid.UUID
-	Age          int
+	Age          string
 	Gender       string
 	FirstName    string
 	LastName     string

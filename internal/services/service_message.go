@@ -31,6 +31,7 @@ func (m *MessageService) GetMessages(senderID, receiverID string, pagination int
 	}
 
 	messages, err := m.MessageRepo.GetMessages(user.ID.String(), receiverID, pagination)
+	fmt.Println(err)
 	if err != nil {
 		return nil, fmt.Errorf("error Kayn f All messages service : %v", err)
 	}

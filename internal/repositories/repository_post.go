@@ -100,47 +100,6 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 	return posts, nil
 }
 
-func (r *PostRepository) GetPostById(PostId string) (models.PostWithUser, error) {
-	var post models.PostWithUser
-	query := `SELECT 
-	    posts.id AS post_id,
-	    posts.title,
-	    posts.content AS post_content,
-	    posts.created_at AS post_created_at,
-	    post_user.id AS post_user_id,
-	    post_user.username AS post_username,
-	    REPLACE(IFNULL(GROUP_CONCAT(DISTINCT categories.name), ''), ',', ' | ') AS category_names,
-		(SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id AND likes.react_type = "like") AS likes_count,
-		(SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id AND likes.react_type = "dislike") AS dislike_count
-		FROM 
-			posts
-		JOIN 
-			users AS post_user ON posts.user_id = post_user.id
-		LEFT JOIN 
-			post_categories ON posts.id = post_categories.post_id
-		LEFT JOIN 
-			categories ON post_categories.category_id = categories.id
-		WHERE 
-			posts.id = ?`
-
-	err := r.DB.QueryRow(query, PostId).Scan(
-		&post.PostID,
-		&post.Title,
-		&post.Content,
-		&post.CreatedAt,
-		&post.UserID,
-		&post.Username,
-		&post.CategoryName,
-		&post.LikeCount,
-		&post.DisLikeCount,
-	)
-	post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04:05 PM")
-	if err != nil {
-		return models.PostWithUser{}, fmt.Errorf("error f query : %v", err)
-	}
-	return post, nil
-}
-
 func (r *PostRepository) PostExist(postID string) bool {
 	var num int
 	query := `SELECT COUNT(*) FROM posts WHERE id = ?`
