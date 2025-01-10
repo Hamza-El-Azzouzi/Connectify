@@ -5,6 +5,9 @@ let stopLoading = false;
 let loggeed
 let connectionToWS;
 let totalposts = 0;
+let observator = 0
+let typingTimer;
+
 
 export function feedPage() {
     const navBar = document.querySelector("#app > header")
@@ -30,7 +33,7 @@ function initializeWebSocket() {
     connectionToWS.addEventListener("open", () => {
         connectionToWS.send(JSON.stringify({ Ask: "Who Are You" }))
     });
-    
+
 
     connectionToWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -55,14 +58,17 @@ function initializeWebSocket() {
                 newMeessage(data["session"]);
             }
         }
-        if (data.hasOwnProperty("simp")){
+        // Typing Stoped
+        if (data["pimp"] === "Typing In Progress") {
             const popup = document.querySelector('.message-popup');
-            console.log("got it")
-            console.log(popup)
             if (popup) {
-                console.log("popUp")
-                typingInProgress(popup,data["username"])
+                typingInProgress(popup, data["username"])
             }
+        }else if (data["pimp"] === "Typing Stoped" ){
+            const popup = document.querySelector('.message-popup');
+            const progress = popup.querySelector('.progress');
+            typingStopped(popup,progress)
+
         }
         if (data.hasOwnProperty("user")) {
             setTimeout(() => {
@@ -343,11 +349,22 @@ function createMessagePopup(username, ReceiverID) {
     const sendButton = popup.querySelector('.send-message');
     const textarea = popup.querySelector('textarea');
     const messageHistory = popup.querySelector('.message-history');
-    textarea.addEventListener(
-        'input',()=>{
-            console.log("typing...")
-        connectionToWS.send(JSON.stringify({ simp : "Typing In Progress",id: ReceiverID,session: getCookieByName("sessionId") }));
-    })
+    function userStoppedTyping() {
+        observator = 0
+        connectionToWS.send(JSON.stringify({ pimp: "Typing Stoped", id: ReceiverID, session: getCookieByName("sessionId") }));
+    }
+    textarea.addEventListener('input', () => {
+            clearTimeout(typingTimer)
+            
+            if (observator === 0) {
+                observator = 1
+                connectionToWS.send(JSON.stringify({ pimp: "Typing In Progress", id: ReceiverID, session: getCookieByName("sessionId") }));
+            }
+            typingTimer = setTimeout(userStoppedTyping, 1000);
+            
+        })
+
+
     sendButton.addEventListener('click', () => {
         const message = textarea.value.trim();
         if (message.length > 5000) {
@@ -406,11 +423,15 @@ function getMessages(popup, data, ReceiverID) {
             }
         })
 }
+function typingStopped(popup, progress) {
+    const messageHistory = popup.querySelector('.message-history');
+    messageHistory.removeChild(progress)
+
+}
 function typingInProgress(popup, userName) {
-    console.log("from the function")
     const messageHistory = popup.querySelector('.message-history');
     const typingElement = document.createElement('div');
-    typingElement.className  = "message"
+    typingElement.className = "message progress"
     const contentElement = document.createElement('div');
     const usernameElement = document.createElement('div');
     usernameElement.className = 'message-username';
@@ -423,7 +444,6 @@ function typingInProgress(popup, userName) {
     typingElement.appendChild(usernameElement)
     typingElement.appendChild(contentElement);
     messageHistory.appendChild(typingElement);
-    console.log(messageHistory)
 }
 
 function addMessage(userNameSender, userNameReceiver, message, isMyMessage, append, shouldScrollToBottom, popup, timestamp) {
