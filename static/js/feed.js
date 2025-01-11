@@ -59,16 +59,16 @@ function initializeWebSocket() {
             }
         }
         if (data["pimp"] === "Typing In Progress") {
-            const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
+            const popup = document.querySelector(`.message-popup[data-user-name="${data["usernametyper"]}"]`);
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
                 if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
-                    typingInProgress(popup, data["username"], true)
+                    typingInProgress(popup, data["usernametyper"], true)
                 } else {
-                    typingInProgress(popup, data["username"], false)
+                    typingInProgress(popup, data["usernametyper"], false)
                 }
             } else {
-                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"]);
+                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["usernametyper"]);
                 const isTyping = document.createElement('span');
                 isTyping.textContent = " Is typing ..."
                 if (usernameElement.childNodes.length === 2) {
@@ -78,11 +78,11 @@ function initializeWebSocket() {
                 }
             }
         } else if (data["pimp"] === "Typing Stoped") {
-            const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
+            const popup = document.querySelector(`.message-popup[data-user-name="${data["usernametyper"]}"]`);
             if (popup) {
-                typingStopped(data["username"])
+                typingStopped(data["usernametyper"])
             } else {
-                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"] + " Is typing ...");
+                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["usernametyper"] + " Is typing ...");
                 if (usernameElement) {
                     usernameElement.childNodes.forEach((child) => {
                         if (child.textContent === " Is typing ...") {
@@ -406,7 +406,8 @@ function createMessagePopup(username, ReceiverID) {
         data.append = true;
         if (message) {
             const timestamp = getFormattedDateTime();
-            addMessage(username, loggeed, message, true, data.append, true, popup, timestamp);
+        // addMessage(username, loggeed,message, true, data.append, true, popup, timestamp);
+            addMessage(username,loggeed, message, true, data.append, true, popup, timestamp);
             textarea.value = '';
             connectionToWS.send(JSON.stringify({ msg: message, session: getCookieByName("sessionId"), id: ReceiverID, date: timestamp }));
             MarkAsRead(ReceiverID);

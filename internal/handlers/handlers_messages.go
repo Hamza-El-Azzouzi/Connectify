@@ -95,7 +95,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			}
 			m.Clients[data["id"]].Conn.WriteJSON(map[string]string{
 				"pimp" : data["pimp"],
-				"username" : user.Username,
+				"usernametyper" : user.Username,
 			})
 		}
 		if data["type"] == "ping" && existSessions {
