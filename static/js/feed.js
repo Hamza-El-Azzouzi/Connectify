@@ -59,7 +59,6 @@ function initializeWebSocket() {
             }
         }
         if (data["pimp"] === "Typing In Progress") {
-            console.log(data)
             const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
@@ -68,19 +67,31 @@ function initializeWebSocket() {
                 } else {
                     typingInProgress(popup, data["username"], false)
                 }
-            }else{
+            } else {
                 const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"]);
-                usernameElement.textContent += " Is typing ..."
+                const isTyping = document.createElement('span');
+                isTyping.textContent = " Is typing ..."
+                if (usernameElement.childNodes.length === 2) {
+                    usernameElement.insertBefore(isTyping, usernameElement.lastChild);
+                } else {
+                    usernameElement.appendChild(isTyping);
+                }
             }
         } else if (data["pimp"] === "Typing Stoped") {
             const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
             if (popup) {
                 typingStopped(data["username"])
-            }else{
-                 const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"]+" Is typing ...");
-                usernameElement.textContent = data["username"]
+            } else {
+                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"] + " Is typing ...");
+                if (usernameElement) {
+                    usernameElement.childNodes.forEach((child) => {
+                        if (child.textContent === " Is typing ...") {
+                            child.remove();
+                        }
+                    })
+                }
             }
-           
+
 
         }
         if (data.hasOwnProperty("user")) {
@@ -386,7 +397,7 @@ function createMessagePopup(username, ReceiverID) {
     });
 
     function sendMessage() {
-       
+
         const message = textarea.value.trim();
         if (message.length > 5000) {
             document.getElementById('message-error').textContent = "Maximum 5000 characters.";
@@ -788,8 +799,8 @@ function fetchUsers(offset, append = true) {
                 }
                 users.forEach(user => {
                     const usernameElement = document.createElement('div');
-                    usernameElement.classList.add('username')
-                    usernameElement.classList.add('offline')
+                    usernameElement.classList.add('username');
+                    usernameElement.classList.add('offline');
                     usernameElement.textContent = user.Username;
                     usernameElement.setAttribute("data-user-id", user.ID);
                     usernameElement.addEventListener('click', () => {

@@ -658,8 +658,9 @@ button[style*="background"] {
 .typing-indicator {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border-radius: 20px;
+  width: 40px;
+  padding: 15px 10px 10px;
+  border-radius: 8px;
   background-color: #f1f1f1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
