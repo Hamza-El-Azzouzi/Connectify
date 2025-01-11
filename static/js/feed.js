@@ -58,22 +58,29 @@ function initializeWebSocket() {
                 newMeessage(data["session"]);
             }
         }
-        // Typing Stoped
         if (data["pimp"] === "Typing In Progress") {
+            console.log(data)
             const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
             if (popup) {
                 const messageHistory = popup.querySelector('.message-history');
-
                 if (Math.abs(messageHistory.scrollHeight - messageHistory.clientHeight - messageHistory.scrollTop) <= 1) {
                     typingInProgress(popup, data["username"], true)
                 } else {
                     typingInProgress(popup, data["username"], false)
                 }
-
+            }else{
+                const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"]);
+                usernameElement.textContent += " Is typing ..."
             }
         } else if (data["pimp"] === "Typing Stoped") {
+            const popup = document.querySelector(`.message-popup[data-user-name="${data["username"]}"]`);
+            if (popup) {
+                typingStopped(data["username"])
+            }else{
+                 const usernameElement = Array.from(document.querySelectorAll('.username')).find(el => el.textContent.trim() === data["username"]+" Is typing ...");
+                usernameElement.textContent = data["username"]
+            }
            
-            typingStopped(data["username"])
 
         }
         if (data.hasOwnProperty("user")) {
